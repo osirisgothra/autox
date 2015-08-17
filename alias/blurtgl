@@ -1,0 +1,1 @@
+alias blurtgl='[[ $AX_BLUR == ON ]] && bluroff || bluron; clear; true'

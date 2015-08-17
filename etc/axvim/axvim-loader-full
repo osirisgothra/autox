@@ -1,0 +1,415 @@
+" ''axvim-loader-full'' full settings for vim (all features)				===
+"
+" Date: October 9, 2014 - 8:08pm EDT
+" BinarySupports: gvim, vim
+" TerminalSupports: xterm, fbterm, linux, fallback(=unknown)
+" Depended: axvim-* (*=g,c,f,x)
+" Depends: vim,gvim,xterm,xgetty
+" Notes: now runs subscripts only, see individual files
+" Author: Gabriel Sharp <osirisgothra@hotmail.com>
+" Revision: Third Revision (CURRENT Revision C) 6/30/15
+"             . migrated into a plugin-like environment
+"             . part of the autox collection
+"             . removed from gxbase association
+"             . sets the stage to become official plugin by rev D
+"             FIXES
+"             . fixed nvidia detection routine 
+"             . eliminated 2-4 seconds of load time in the ff loader
+"             . fixed detection of vim.basic
+"             KNOWN ISSUES
+"             . no longer .vimrc, so issue WAS that vim.tiny
+"               couldn't run the script -- and the script has
+"               no way of knowing whether vim.tiny is running
+"               because parsing of vimscript is disabled there.
+"             . reliance on AX_BASE at this time is needed
+"               set AX_BASE to the /prefix/ax or ~/.autox dirs
+"			  . many internal names are still 'vimrc-xxxxx' can be misleading
+"               but is ok, just leftover from the .vimrc days
+"             . changes made in other axvim- scripts are simmilar, so no
+"               extra documentation is made there about THIS stuff above
+" History:  Second Revision (Major Revision B) 10/9/14
+"             . partitioned into .vimrc_ files
+"             . many fixes/additions/refinements/r&d in effect*
+"           First Revision (Major Revision A) 5/15/14
+"             . UTF-8 compliant text added
+"             . added support for vim-gtk/gnome/athena/crux/qt-experimental
+"             . includes valloric's plugin manager
+"           Original Version (Unrevised) 2/21/2014
+"             . objective to unify dynamic settings
+"             . dynamic and friendly editing merged with vim keymap
+"             . passive processing of :maps independant from term type
+"             . color scheme remembered (persistent) along with many others
+"                                                                           ...
+"
+"==============================================================================
+" {{{
+
+" vim basic mode, kind of like failsafe mode
+" except we  use the console's setup, probably available/compatible with it anyway
+if v:progname == "vim.basic"
+	if exists("g:basic_loaded") && g:basic_loaded == 1
+		" do not do this more than one time!
+		finish
+	else
+		let g:basic_loaded=1
+
+		set nocompatible
+		fu SetHighlighter(a,...)
+			return 0
+		endf
+
+
+		source axvim-c
+		source axvim-plugins
+		set mls=5
+		set t_Co=256
+		source axvim-color-xorg
+		finish
+	endif
+endif
+
+fu! MLON()
+	set mls=5
+	set modeline
+endf
+
+let g:failsafe_mode=0
+
+if g:failsafe_mode == 1
+	set nocompatible
+	source axvim-color-xorg
+	source axvim-plugins
+	finish
+else
+	" modelines should only be used in a normal mode
+	" since they can too be insecure to a point
+	set modeline
+endif
+
+" MASTER ENABLER for gui<->console crossover detection
+" update: disabling the enabler (ironic?) is now the default, remove that double-quote from the following line of code to re-enable it
+" if you are annoyed by the 'Use GUI' prompt, just comment out this next line by placing a double-quote in front of it
+" let g:master_guicheck_enabler=1
+" 0=no output when using ECHO, 1=ECHO behaves like echo
+let g:vimrc_debug_messages=0
+let g:lateloaded=0
+" nano is for those who dare to link nano to vim, so they expect console mode!
+if v:progname == 'vimdiff' || v:progname == 'cvim' || v:progname == 'nano'
+	let g:lateloaded=1
+en
+
+" now we need our gvim settings loaded too
+" (vimrc would have handled this, but since we are
+" not running via '/usr/bin/gvim' or the like, we must
+" do it ourselves! (granted: ~/.gvimrc does get called
+" but we should not call .axvim-g from that!)
+" we however do not know WHEN it is ready, or if it will be called
+fu! FN_VIMRC_GUILOAD_LATE()
+	" delegate the reload checks to the script itself (dont check here!)
+	if g:lateloaded == 0 && has("gui_running")
+		if file_readable(expand("axvim-g"))
+			source axvim-g
+			echo "sourced"
+			" and remove it
+			augroup VIMRC_GUILOAD_LATE
+				au!
+			augroup END
+			augroup! VIMRC_GUILOAD_LATE
+			let g:lateloaded=1
+		en
+	en
+endf
+
+fu! __gvim_wrapper_vimrc(silent)
+	"
+	" now ready to call :gvim, silently of course!
+	let pfx=a:silent?"silent! ":""
+	exec pfx . "gvim"
+	echo "inner wrapper"
+endf
+
+
+
+fu! VIMRC_POST_GUICHECK()
+	if exists("g:wants_gui") && exists("g:vimrc_reload_count") && !exists("g:vimrc_debug_guiloaddialog") )
+		let g:vimrc_reload_count+=1
+	else
+		let g:vimrc_reload_count=0
+		if $DISPLAY =~ '^:' && has("gui_running") == 0
+			" use gvim when in a gui environment!
+			echo "process"
+		en
+			" we waited until the UI is up and running before using confirm
+			" because otherwise readline will wait for ENTER to be pressed (annoying!)
+			let g:wants_gui=confirm("GUI Mode?","Yes\nNo\nAbort")
+			if g:wants_gui == 1
+				" wrapper needed to make the call truly silent!
+				silent! call __gvim_wrapper_vimrc(g:vimrc_debug_messages)
+			elsei g:wants_gui == 3
+				echo "abort requested, terminating"
+				q!
+			en
+		en
+	en
+	" NB: au! MUST be called before aug! or au will be orphaned!
+	aug VIMRC_POST_GUICHECK_AUTOCOMMANDS
+	au!
+	aug END
+	aug! VIMRC_POST_GUICHECK_AUTOCOMMANDS
+endf
+
+if exists("g:master_guicheck_enabler")
+	aug VIMRC_POST_GUICHECK_AUTOCOMMANDS
+		au!
+		" just do it when vim starts up only (called but once per execution)
+		au VimEnter * call VIMRC_POST_GUICHECK()
+		au VimEnter * call FN_VIMRC_GUILOAD_LATE()
+	aug END
+	" we do NOT say nuthun' if there ain't no enabler because we assume our user is pissed off at us at this point
+	" for being so annoyed enough to modify our source code :)
+en
+
+
+
+" }}}
+"
+" :EC[HO]
+" derivitive of :echo to allow for turning on/off debugging messages
+" (use :echo for non-debugging messages)
+com! -nargs=1 ECHO call _ECHO(<args>)
+com! -nargs=1 EC ECHO <args>
+fu! _ECHO(output)
+	if !exists("g:vimrc_debug_messages") || g:vimrc_debug_messages == 0
+		" just stick it here in case we want to look at it later
+		let v:warningmsg = a:output
+	el
+		echo a:output
+	en
+endf
+
+" :T[EST]O[PEN]
+" :T[EST]R[UN]
+" :T[EST]D[B]
+let g:testfile = "~/src/sandbox/plygnd/vimtest.vim"
+com! TESTCLOSE call _TESTCLOSE()
+com! TESTOPEN call _TESTOPEN()
+com! TESTRUN call _TESTRUN("normal",1)
+com! TESTDB call _TESTRUN("debug",1)
+com! TC TESTCLOSE
+com! TO TESTOPEN
+com! TR TESTRUN
+com! TD TESTDB
+fu! _DOCLOSEIFTEST()
+	if bufname("%") == expand(g:testfile)
+		write
+		close
+	en
+endf
+
+fu! _TESTCLOSE()
+	" prevent the final write-out from running the script again (_TESTRUN)
+	" [1]. select, [2]. delete group commands, [3]. select default, [4]. remove group
+	aug _TESTFILE
+	au!
+	aug END
+	aug! _TESTFILE
+
+	let ourtabnr=tabpagenr()
+	" visit all tabs
+	tabdo windo cal _DOCLOSEIFTEST()
+	exe "tabnext " . ourtabnr
+endf
+
+fu! _TESTOPEN()
+	call _TESTCLOSE()
+	set splitright
+	exec "vsplit " . g:testfile
+	" redefine group to invoke run when saving
+	aug _TESTFILE
+		au!
+		if exists("g:testfile_debugwrite")
+			exec "au BufWritePost " . g:testfile . " call _TESTRUN(\"normal\",0)"
+		el
+			exec "au BufWritePost " . g:testfile . " call _TESTRUN(\"normal\",0)"
+		en
+	aug END
+endf
+
+fun! _TESTRUN(kind,writeout)
+	if a:writeout == 1
+		write
+	en
+	if a:kind == "debug"
+		debug source ~/src/sandbox/plygnd/vimtest.vim
+	elsei a:kind == "normal"
+		source ~/src/sandbox/plygnd/vimtest.vim
+	el
+		ECHO "Invalid Mode: " . a:kind ."!"
+	en
+endf
+"
+" g:fallback_rc - pick the one you use the most: (the ~/. gets added on by the let statment below)
+"
+" axvim-g = gui (gvim) gnome or gtk X-server client application
+" axvim-x = gui but in a terminal /w 256-color+ support (konsole, xterm, rxvt, gnome-terminal, etc) (framebuffer does NOT count!)
+" axvim-f = non-X terminal /w 256-color+ support (framebuffer or svgalib terminals, usually 'fbterm') (MUST assign 'fbterm' as $TERM or no 256-color support!)
+" axvim-c = non-X, non-gui, low-color (8 colors, sometimes with intensity to create a total of 16), blinking usually not supported, italic/underline usually not either!
+" axvim-? = to define your own, add to the list of conditions to check
+"
+let g:fallback_rc="axvim-x"
+"
+" g:global_vimrc : used if you want to change it to something else, which is needed if you use :RELO[AD]
+"
+let g:global_vimrc="axvim-global"
+"
+" g:startup_time=1 : this is used when sourcing this file, if __GVRC_RELOAD is...
+" __GVRC_RELOAD called?   .vimrc sourced?     g:startup_time==
+" -------------------------------------------------------------
+"          Y                   -                    0
+"          -                   Y                    1
+"          Y                   Y                    1
+" -------------------------------------------------------------
+" This has the following meanings for __GVRC_RELOAD:
+" 0 - check buffer and save (/w prompt*)  1 = skip saving, but save next call to __GVRC_RELOAD
+" -1 (or less) - never save the buffer at all or check, just reload
+" If less than -1, then it's value(v) "abs(v-1)" is equal to the # of reloads without saving.
+" * prompting is done regardless of the 'prompt' setting in vim [this does not enable it either]
+let g:startup_time=1
+
+" SET YOUR VCSMI cmmodf
+let g:vcsmi_mode="separate"
+let g:show_warning_vcsrc=0
+
+let _vm=g:vcsmi_mode
+if _vm =~ 'separate'
+	let g:vcsmi_gui="-gui"
+	let g:vcsmi_console="-locolor"
+	let g:vcsmi_fbterm="-fbterm"
+	let g:vcsmi_xorg="-xorg"
+	let g:vcsmi_fallback="-fallback"
+elsei _vm =~ 'unified'
+	let g:vcsmi_gui="-hicolor"
+	let g:vcsmi_console="-hicolor"
+	let g:vcsmi_fbterm="-hicolor"
+	let g:vcsmi_xorg="-hicolor"
+	let g:vcsmi_fallback="-hicolor"
+elsei _vm =~ 'unified-grouped'
+	let g:vcsmi_gui="-hicolor"
+	let g:vcsmi_fbterm="-hicolor"
+	let g:vcsmi_xorg="-hicolor"
+	let g:vcsmi_console="-locolor"
+	let g:vcsmi_fallback="-locolor"
+elsei _vm =~ 'custom'
+	let g:vcsmi_gui="-custom"
+	let g:vcsmi_console="-custom"
+	let g:vcsmi_fbterm="-custom"
+	let g:vcsmi_xorg="-custom"
+	let g:vcsmi_fallback="-custom"
+	let v:errmsg = "NONE"
+	so ~/.vim_color_customrc
+	if v:errmsg != "NONE"
+		call confirm("Sorry, this ~/.vim_color_customrc does not appear to be (completely) valid! see example in <root>/extras, Any unspecified schemes will use ~/.vim_color_custom instead, so no other scheme is disturbed!")
+	en
+en
+
+let g:vcsmi=g:vcsmi_fallback " in case we dont make it past here :(
+" begin defaults
+if has("gui_running")
+	let g:vimrc="axvim-g"
+	let g:vcsmi=g:vcsmi_gui
+elsei $TERM == "linux"
+	let g:vimrc="axvim-c"
+	let g:vcsmi=g:vcsmi_console
+elsei $TERM == "fbterm"
+	let g:vimrc="axvim-f"
+	let g:vcsmi=g:vcsmi_fbterm
+elsei $DISPLAY =~ ':[0-9]\+' && system('xprop -root') =~ 'X'  " pretty much fool proof way of guarenteed X presence! (99% in common settings)
+	let g:vimrc="axvim-x"
+	let g:vcsmi=g:vcsmi_xorg
+el
+	let g:vimrc="axvim-?"
+	let g:vcsmi=g:vcsmi_fallback
+" end of defaults
+	" set defaults for rc too and complain
+	let g:vimrc=g:fallback_rc
+	let g:show_warning_vcsrc=1
+en
+if g:show_warning_vcsrc == 1
+	call confirm("Warning: display situation was NOT detected (that's bad), no idea where we are, so you might wanna fix it... i'll use the fall back settings for now")
+	call confirm("Just so you know - the bad setting detected because DISPLAY was=".$DISPLAY.", and TERM was=".$TERM." - these should be set to usual everyday settings (use best case terms, linux or xterm if unsure)! whenever you can, that is...")
+en
+
+let g:colorscheme_file=expand("axvim-color" . g:vcsmi)
+
+" runs both the global and mode-specific scripts
+fu! _COLORSCHEME_PERSIST_WRITE(nameofcolor)
+		if !exists("g:colors_name")
+			let g:colors_name = a:nameofcolor
+			echo "scheme provided no name, using filename - " . a:nameofcolor
+			"#input("This colorscheme did not set it's name, please enter it:")
+		en
+		if exists("g:colorscheme_reading_persist")
+			retu
+		en
+		if !writefile( [ "colo " . g:colors_name ] , g:colorscheme_file)
+			ECHO "Colorscheme file updated"
+		el
+			ECHO "Colorscheme file was not able to be written to!"
+		en
+endf
+
+fu! __GVRC_RELOAD(bang)
+	"when called like this: :RELOAD!
+	"skips writing the file altogether
+	if a:bang != "!"
+
+		if g:startup_time == 0
+
+		if bufname("%") != ""
+					let old_confirm = &confirm
+				set confirm
+				write
+				if old_confirm
+				set noconfirm
+		en
+			en
+		else
+		" so that the next call will allow us to write out the buffer
+		" (or disables it together, if it was set to -1)
+		let g:startup_time=g:startup_time-1
+		en
+	en
+	ECHO "Processing..."
+	exec "source" . " " . $AX_BASE . "/etc/axvim/" . g:global_vimrc
+	exec "source" . " " . $AX_BASE . "/etc/axvim/" . g:vimrc
+	if file_readable(g:colorscheme_file)
+		let g:colorscheme_reading_persist=1
+		exec "so " . g:colorscheme_file
+		" needed when re-sourcing after CSApprox load cycle
+		if exists("g:CSApprox_loaded") && g:CSApprox_loaded == 1
+			CSApprox
+		en
+		unlet g:colorscheme_reading_persist
+	en
+	aug COLORSCHEME_PERSIST
+		au!
+		au ColorScheme * call _COLORSCHEME_PERSIST_WRITE(expand("<amatch>"))
+	aug END
+	ECHO "Completed."
+	redr!
+endf
+
+command! -bang RELOAD call __GVRC_RELOAD("<bang>")
+
+" need to actually do the loading, or else nothing will get set
+" or change to "debug RELOAD" to debug it (or type :debug RELO[AD])
+
+RELOAD
+
+aug VIMRC_RELOAD
+	au!
+	au BufWritePost ~/.vimrc echo "Rereading Configuration" | so ~/.vimrc | if exists("g:colors_name") | exec "colo " . g:colors_name | en | echo "Done Processing New .vimrc"
+aug END
+
+
+" <end of file -- .vimrc>

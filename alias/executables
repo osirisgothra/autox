@@ -1,0 +1,1 @@
+alias executables='for x in $PATH; do cd $x; for i in *; do [[ -x $i ]] && [[ ! -d $i ]] && [[ -r $i ]] && echo $i;done; done'

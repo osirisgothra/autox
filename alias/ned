@@ -1,0 +1,1 @@
+alias ned='_ned(){ nano ~/.nano/$1.nanorc;F=$?;unset -f _ned;(exit $F); }; _ned'

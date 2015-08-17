@@ -1,0 +1,37 @@
+# vim:ft=rest
+# AX_PHASE variable takes on this form:
+
+# type: integer
+
+# sig bits: 3
+# res bits: 5
+
+# State Variable
+#   |  1         } |
+#   |  2631      }-|- bit values (read them from the top down)
+#   v  8426 8421 } v
+#   p  HHLL hhll <- bit positions (H=hiword/byte L=hiword/lobyte h=loword/hibyte l=loword/byte)
+#   #  7654 3210 <- bit number (intel)
+#    
+# Bits   Num of Bits		     Used For
+# -----  -----------     ----------------------
+# 0-1-2      3           Phase Info (AX_PHASES)
+# 34567      5           Reserved For Future Use
+#
+#  bit 1-3 values
+# ----------------
+#    000 (0x00) None (invalidated phase string passed)
+#    001 (0x01) Prologue (pre-completion execution)
+#    010 (0x02) Epilogue (post-completion execution)
+#    011 (0x03) Runtime (non-startup execution)
+#    100 (0x04) Exit (exiting shell, for cleanup)
+#    101 (0x05) Debugger (for debugging parts, may sometimes not be presently in use, mainly for bootstrap parts)
+#    110 (0x06) Cache Loader (not yet implemented)
+#    111 (0x07) Cache Storage (not yet implemented)
+# 
+#  bit 4-8 values
+# ----------------
+#   0000 1xxx (0x00) Reserved In Use (compatibility check, fails to load when in use -- newer autox component in use)
+#
+#
+#

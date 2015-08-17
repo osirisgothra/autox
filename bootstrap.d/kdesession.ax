@@ -1,0 +1,35 @@
+#!/bin/bash
+if xprop --root &> /dev/null; then
+	AX_ON_XSESSION=yes
+else
+	AX_ON_XSESSION=no
+	return 1
+fi
+
+if KDE_SESSION_VERSION=`xprop -notype -root KDE_SESSION_VERSION 2>/dev/null | grep -P '[0-9]+' -o 2> /dev/null`; then
+
+	echo "* KDE Session (Version $KDE_SESSION_VERSION) Detected"
+	export AX_KDE_SESSION=TRUE
+	# TODO: soft-set the following - these are just 'placehodlers'
+	export GS_LIB="$HOME/.fonts"
+	export GTK2_RC_FILES="/etc/gtk-2.0/gtkrc:$HOME/.gtkrc-2.0:$HOME/.kde/share/config/gtkrc-2.0"
+	export GTK_RC_FILES="/etc/gtk/gtkrc:$HOME/.gtkrc:$HOME/.kde/share/config/gtkrc"
+	export KDE_FULL_SESSION="true"
+	export LANG="en_US.UTF-8"
+	export LANGUAGE="en"
+	export LC_ADDRESS="en_US.UTF-8"
+	export LC_IDENTIFICATION="en_US.UTF-8"
+	export LC_MEASUREMENT="en_US.UTF-8"
+	export LC_MONETARY="en_US.UTF-8"
+	export LC_NAME="en_US.UTF-8"
+	export LC_NUMERIC="en_US.UTF-8"
+	export LC_PAPER="en_US.UTF-8"
+	export LC_TELEPHONE="en_US.UTF-8"
+	export LC_TIME="en_US.UTF-8"
+	export LESS="-raw"
+	export LIBDIR="/usr/lib:/lib:/usr/share/lib:/usr/local/lib"
+	export LOGNAME="$USER"
+	export MAIL="/var/mail/$USER"
+	export XCURSOR_SIZE="0"
+	export XCURSOR_THEME="PolarCursorTheme"
+fi

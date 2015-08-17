@@ -1,0 +1,1 @@
+alias bye='while true; do suspend; sleep 5; done'

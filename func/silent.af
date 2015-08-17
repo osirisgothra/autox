@@ -1,0 +1,4 @@
+silent () 
+{ 
+    "$@" &> /dev/null
+}

@@ -1,0 +1,44 @@
+#!/bin/bash -c false header is for editor's syntax highlighting detection
+
+source "$AX_BASE/bootstrap.d/axmacros.ax"
+
+ax.flag()
+{
+	AX_FLAGBASE=~/.config/autox/flags
+	[[ -d $AX_FLAGBASE ]] || mkdir --parents $AX_FLAGBASE
+	if [[ $# -gt 2 ]]; then
+		# loop through pairs and (re)pass them to ourselves
+		while [[ $# -gt 0 ]]; do
+			A="$1"; B="$2"; shift 2
+			ax.flag "$A" "$B"
+		done
+		return
+	elif [[ $# -gt 0 ]]; then
+
+		case $1 in
+			list)
+				pushd . > /dev/null
+				cd $AX_FLAGBASE
+				shift
+				eval "ls -C${*+ }${*- $*}"
+				popd > /dev/null
+				;;
+			on)
+				touch $AX_FLAGBASE/$2
+			;;
+			off)
+				if [[ -r $AX_FLAGBASE/$2 ]]; then
+						if ax.choice "Remove flag $(ax.file ns $2)?"; then
+							rm $AX_FLAGBASE/$2
+						else
+							echo "Aborted."
+						fi
+				fi
+			;;
+			*)
+				tree $AX_FLAGBASE
+				;;
+		esac
+	fi
+
+}

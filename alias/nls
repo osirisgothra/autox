@@ -1,0 +1,1 @@
+alias nls='_nls(){ ls "$@" ~/.nano/*.nanorc | column -s $COLUMNS; local F=$?; unset -f _nls; return $F; }; _nls'

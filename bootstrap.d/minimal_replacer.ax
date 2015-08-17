@@ -1,0 +1,8 @@
+#!/bin/bash -c 'echo dont execute this in this manner!' --
+
+echo "* Minimalist Completions Replaced by LongOpt Scanner"
+_minimal() { _longopt "$@"; }
+readonly -f _minimal
+
+	
+

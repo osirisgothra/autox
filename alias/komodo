@@ -1,0 +1,1 @@
+alias komodo='function _k() { unset -f $FUNCNAME; komodo "$@" &> /dev/null & disown; }; _k'

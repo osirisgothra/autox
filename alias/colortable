@@ -1,0 +1,1 @@
+alias colortable='cat /gxbase/doc/colortable256.data | less -P "256-Color ANSI (8-bit) Color Code Table + FBTERM Derivitave$(printf %${COLUMNS}s \" \")" -raw'

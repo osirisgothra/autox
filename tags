@@ -1,0 +1,32 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+Autox::Config	/src/ax/lib/Autox/Config.pm	/^package Autox::Config;$/;"	p
+BOOTSTRAPNAME	/src/ax/etc/templates/template.ax	/^BOOTSTRAPNAME()$/;"	f
+__BOOTSTRAPNAME_loader	/src/ax/etc/templates/template.ax	/^__BOOTSTRAPNAME_loader()$/;"	f
+_menustub	/src/ax/installer	/^	_menustub()$/;"	f
+absolute_env	/src/ax/lib/axbe.pl	/^sub absolute_env {$/;"	s
+alias	/src/ax/autox	/^alias() {$/;"	f
+cnfh	/src/ax/bootstrap.d/prefixer.ax	/^		function cnfh()$/;"	f
+command_not_found_handle	/src/ax/bootstrap.d/prefixer.ax	/^			function command_not_found_handle()$/;"	f
+dmenu	/src/ax/installer	/^	dmenu() { MENUDOUBLER=1; MENUFLAGS=( --no-tags ); _menustub "$@"; }$/;"	f
+galias	/src/ax/autox	/^galias(){$/;"	f
+gexport	/src/ax/autox	/^gexport(){$/;"	f
+gunalias	/src/ax/autox	/^gunalias(){$/;"	f
+lalias	/src/ax/autox	/^lalias() {$/;"	f
+lunalias	/src/ax/autox	/^lunalias(){$/;"	f
+mbox	/src/ax/installer	/^	mbox() { "${D[@]}" --msgbox "$*" "${S[@]}"; }$/;"	f
+menu	/src/ax/installer	/^	menu() { MENUDOUBLER=0; MENUFLAGS=( ); _menustub "$@"; }$/;"	f
+mvfunc	/src/ax/bootstrap.d/prefixer.ax	/^		function mvfunc()$/;"	f
+new	/src/ax/lib/Autox/Config.pm	/^sub new {$/;"	s
+read_config_value	/src/ax/lib/Autox/Config.pm	/^sub read_config_value$/;"	s
+read_config_values	/src/ax/lib/Autox/Config.pm	/^sub read_config_values$/;"	s
+read_entire_config	/src/ax/lib/Autox/Config.pm	/^sub read_entire_config$/;"	s
+readsub	/src/ax/gentags.pl	/^sub readsub {$/;"	s
+unalias	/src/ax/autox	/^unalias(){$/;"	f
+unshift_if_exec	/src/ax/lib/axbe.pl	/^sub unshift_if_exec {$/;"	s
+write_config_setting	/src/ax/lib/Autox/Config.pm	/^sub write_config_setting$/;"	s
+yn	/src/ax/installer	/^	yn() { "${D[@]}" --yesno "$*" "${S[@]}"; }$/;"	f

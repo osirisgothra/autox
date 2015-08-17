@@ -1,0 +1,166 @@
+Directory: /ax/
+
+	Files: alias  completers  env	      lib	bootstrap.d
+autox  config	   etc	      logs	autox.id
+bind   data	   func       MANIFEST	ax.id
+cache  DEVELOPER   installer  tags	autox.komodoproject
+	Count: 20
+	UUID: 3791d72a-242a-11e5-8c08-00196605e97c
+
+Directory: /ax/alias/
+
+	Files: 	     dolphin	j		     next	  suspend
+a	     du		komodo		     nls	  thendo
+ac	     duu	ks		     of		  tputtest
+alert	     e		l		     okular	  unlink
+apt-get      egrep	la		     pc		  x
+apt-upgrade  elseif	list		     perlconsole  xchg
+arg1	     endif	ll		     pgrep	  xclip
+argtest      endselect	ls		     phash	  xprop
+ark	     enduntil	makeduid	     pip	  xprop2
+autox	     endwhile	makepercpp	     pkgconf	  xterm
+b	     fgrep	makepercpp_cleanall  qbittorrent  ax.kde.control
+bar	     firefox	makepercpp_targets   qtcreator	  ax.echoa
+bluroff      fo		mann		     rem	  alias.id
+bluron	     foo	med		     rmpwd	  beep.off
+blurtgl      free	merge		     ro		  sbax.off
+c	     grep	mergedirs	     s		  beep.on
+clem	     hash	modin		     second	  sbax.on
+colortable   hib	modout		     startx	  ax.reloader
+cpan	     idle	mvln		     stub	  beep.toggle
+cpln	     int	n		     stubfunc
+define	     ishash	nano		     subl
+df	     islist	ned		     sunlink
+	Count: 107
+	UUID: 3792d472-242a-11e5-805f-00196605e97c
+
+Directory: /ax/bind/
+
+	Files: bind.id
+	Count: 1
+	UUID: 3793d64c-242a-11e5-8f2e-00196605e97c
+
+Directory: /ax/bootstrap.d/
+
+	Files: axmacros.ax		    flagger.ax		 promptfactory.ax
+bootstrapedit.ax	    kdesession.ax	 simple-nopwrman.ax
+compbind.ax		    makeblur.ax		 bootstrap.d.id
+env.ax			    minimal_replacer.ax
+fast whitespace checker.ax  prefixer.ax
+	Count: 13
+	UUID: 3794e816-242a-11e5-9a0d-00196605e97c
+
+Directory: /ax/cache/
+
+	Files: cache.id
+	Count: 1
+	UUID: 3795f936-242a-11e5-8cb2-00196605e97c
+
+Directory: /ax/completers/
+
+	Files: completers.id
+	Count: 1
+	UUID: 3796f4c6-242a-11e5-942e-00196605e97c
+
+Directory: /ax/config/
+
+	Files: autoxrc  filetemplate-header  config.id
+	Count: 3
+	UUID: 3797eda4-242a-11e5-97d2-00196605e97c
+
+Directory: /ax/data/
+
+	Files: xterm-title-set  data.id
+	Count: 2
+	UUID: 379a922a-242a-11e5-9429-00196605e97c
+
+Directory: /ax/env/
+
+	Files: env.id
+	Count: 1
+	UUID: 379b8d6a-242a-11e5-85c6-00196605e97c
+
+Directory: /ax/etc/
+
+	Files: devel  disabled  templates  k4.dlist  k5.dlist	etc.id
+	Count: 6
+	UUID: 379c8814-242a-11e5-bf3c-00196605e97c
+
+Directory: /ax/etc/devel/
+
+	Files: staging  devel.id
+	Count: 2
+	UUID: 379f5f44-242a-11e5-9021-00196605e97c
+
+Directory: /ax/etc/devel/staging/
+
+	Files: staging.id  staging.pl
+	Count: 2
+	UUID: 37a05a20-242a-11e5-88bf-00196605e97c
+
+Directory: /ax/etc/disabled/
+
+	Files: alias  bind  env  func	bootstrap.d  disabled.id
+	Count: 6
+	UUID: 37a15556-242a-11e5-874f-00196605e97c
+
+Directory: /ax/etc/disabled/alias/
+
+	Files: alias.id
+	Count: 1
+	UUID: 37a24c0e-242a-11e5-80cb-00196605e97c
+
+Directory: /ax/etc/disabled/bind/
+
+	Files: bind.id
+	Count: 1
+	UUID: 37a345aa-242a-11e5-92b2-00196605e97c
+
+Directory: /ax/etc/disabled/bootstrap.d/
+
+	Files: debugstatus.ax	statusbar.ax  bootstrap.d.id
+	Count: 3
+	UUID: 37a4402c-242a-11e5-ac7e-00196605e97c
+
+Directory: /ax/etc/disabled/env/
+
+	Files: env.id
+	Count: 1
+	UUID: 37a53d06-242a-11e5-9ea3-00196605e97c
+
+Directory: /ax/etc/disabled/func/
+
+	Files: func.id
+	Count: 1
+	UUID: 37a64106-242a-11e5-ae36-00196605e97c
+
+Directory: /ax/etc/templates/
+
+	Files: header	template.ax  templates.id  bootstrap.template~
+	Count: 4
+	UUID: 37a73976-242a-11e5-892b-00196605e97c
+
+Directory: /ax/func/
+
+	Files: func.id
+	Count: 1
+	UUID: 37a836a0-242a-11e5-907e-00196605e97c
+
+Directory: /ax/lib/
+
+	Files: Autox  lib.id  axbe.pl	gentags.pl
+	Count: 4
+	UUID: 37a93410-242a-11e5-82f4-00196605e97c
+
+Directory: /ax/lib/Autox/
+
+	Files: Autox  Config  Autox.id  Config.pm
+	Count: 4
+	UUID: 37aa37fc-242a-11e5-80b2-00196605e97c
+
+Directory: /ax/lib/Autox/Config/
+
+	Files: Autox::Config  Config.id
+	Count: 2
+	UUID: 37ab34f4-242a-11e5-a079-00196605e97c
+

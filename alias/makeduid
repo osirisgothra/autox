@@ -1,0 +1,1 @@
+alias makeduid='uuid > $(basename $PWD).id'

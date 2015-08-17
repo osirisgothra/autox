@@ -1,0 +1,322 @@
+#!/bin/bash -c false -- "cannot run this file"
+
+# vim: ft=sh:fen:fdm=syntax:fcl=all:fdo=hor:tw=0:sw=2:ts=2
+
+	#RELOAD_BINDINGS_INCLUDE
+
+		function _b_edit_loc 		{
+			[[ ! -v $EDITOR ]] && EDITOR=vim
+			$EDITOR ~/.bashrc
+		}
+		function _b_edit_glo {
+			[[ ! -v $EDITOR ]] && EDITOR=vim
+			if [[ $UID -ne 0 ]]; then
+				if sudo -l $EDITOR &> /dev/null; then
+					sudo $EDITOR /etc/bash.bashrc
+				else
+					echo "sudo access denied, read only privs..."
+					$EDITOR /etc/bash.bashrc
+				fi
+			else
+				$EDITOR /etc/bash.bashrc
+			fi
+		}
+
+		function _setup_bvars() {
+			if [[ $UID -lt 1000 ]]; then
+				GLOF2="F2"
+				LOCF2="Ctrl+F2"
+				GLOF2_k="kf2"
+				LOCF2_k="kf14"
+			else
+				GLOF2="Ctrl+F2"
+				LOCF2="F2"
+				GLOF2_k="kf14"
+				LOCF2_k="kf2"
+			fi
+		}
+
+function _detect_terminal()
+{
+	echo -n "* Terminal Detection "
+	# in this day and age, its pretty easy to guess a user's term
+	# if this is not right for you, please add your own into the config
+	if ax.config.has custom_terminal; then
+		local NEWTERM="$(ax.config.get custom_terminal)"
+		case $NEWTERM in
+			keep)	echo "Left Untouched ($TERM)";;
+			*) 		echo "Usera-Defined ($NEWTERM)"; TERM="$NEWTERM";;
+		esac
+	else
+		if xprop -root &> /dev/null; then
+			TERM="xterm-256color"
+		else
+			case $(tty) in
+				*/*tty*[0-9])
+					if [[ -L /vmlinuz ]]; then
+						TERM=linux;
+					else
+						TERM=cons25;
+					fi
+					;;
+				*pts*)
+					# serial or telnet most likely
+					TERM=ansi
+					# for safety and maximum compatibility
+					;;
+				*)
+					# 80-column, no line len, with
+					# limited support for Bell, Carriage Returns,
+					# Delete,and/or Backspace
+					TERM=dumb
+					;;
+			esac
+		fi
+		echo " [detected as $TERM]"
+	fi
+
+}
+function _reload_bindings() {
+
+		GLOF2_B="$(tput $GLOF2_k)"
+		LOCF2_B="$(tput $LOCF2_k)"
+
+		# must eval because we can't expand $XXXF2_B inside of '' in just one pass
+
+		eval "bind -x '\"$GLOF2_B\": _b_edit_glo'"
+		eval "bind -x '\"$LOCF2_B\": _b_edit_loc'"
+
+		bind -x '"\C-p": _b_perltoggle'
+		bind -x '"\C-n": _b_reresource'
+		bind -x '"\C-o": _b_commit'
+		bind -x '"\C-f": _b_flushme'
+		bind -x '"\C-e": _b_poweroff'
+		bind -x '"\C-a": _ctrl_a_handler'
+		bind -x '"\C-l": clear'
+		bind -x '"\C-k": { clear; /gxbase/tools/filters/dirs-short; }'
+		bind -x '"[1;3A": cd ..'
+}
+
+		function _b_perltoggle()
+		{
+			if [[ $1 == SETUP ]] && [[ ! -v PERLMODEPATH && ! -v PERLLIBPATH ]]; then
+				true debug echo "Setting Defaults for Perl Modes (Just Two: AP On/Off)"
+				true debug echo "Set your own by creating an array of PERLMODEPATHs and PERLLIBPATHs"
+				if ax.config.has perl_mode_paths; then
+					eval declare -ga PERLMODEPATH=( `ax.config perl_mode_paths` )
+					eval declare -ga PERLMODELIB=( `ax.config perl_mode_libs` )
+				fi
+				if [[ ${#PERLMODEPATH[@]} -lt 2 ]] || [[ ${#PERLMODELIB[@]} -lt 2 ]]; then
+					declare -ga PERLMODEPATH=( "$PATH" "/opt/activeperl/bin:$PATH" )
+					declare -ga PERLMODELIB=( "" "/opt/activeperl/lib" )
+					PERLTOGGLEMODE="(${#PERLMODEPATH[@]} alternatives configured!)"
+				else
+					PERLTOGGLEMODE="(unconfigured sample settings mode)"
+				fi
+				if [[ $1 == SETUP ]]; then
+					# force into mode 0 by setting to > max index
+					ACTIVEPERL_MODE=${#PERLMODEPATH[@]}
+					_b_perltoggle SETUP_MSG
+					# print debug message and finish
+					#[[ -r ~/.debugmsg ]] && echo "setup complete."
+					return
+				fi
+			elif [[ $1 == SETUP ]]; then
+				echo "PERLTOGGLE: already set up"
+				return
+			fi
+			local -a MODES=( '[32;1mSystem (Perl 5.18.2)[0m' '[35;1mActivePerl+Perl 5.20.1[0m' )
+			[[ -v ACTIVEPERL_MODE ]] || declare -gi ACTIVEPERL_MODE
+			let ACTIVEPERL_MODE++
+			if [[ $ACTIVEPERL_MODE -ge ${#PERLMODEPATH[@]} ]]; then
+				ACTIVEPERL_MODE=0
+			fi
+			if [[ $1 == SETUP_MSG ]]; then
+				echo "* Perl Mode Switcher Created (Starting with ${MODES[$ACTIVEPERL_MODE]})"
+			else
+				echo "Perl Mode Now: ${MODES[$ACTIVEPERL_MODE]}"
+			fi
+			export PATH="${PERLMODEPATH[$ACTIVEPERL_MODE]}"
+			export PERL5LIB="${PERLMODELIB[$ACTIVEPERL_MODE]}"
+			if [[ -z $PERL5LIB ]]; then
+				unset PERL5LIB
+			fi
+		}; [[ ! -v ACTIVEPERL_MODE ]] && _b_perltoggle SETUP
+
+		function _b_reresource()
+		{
+			echo -ne "Re-Resourcing..."
+			echo "setting defaults..."
+			set +o nounset
+			shopt -s progcomp
+			shopt -u nullglob
+			unset IFS
+			echo -ne "completion..."
+			source /etc/bash_completion
+			source /usr/share/bash-completion/bash_completion
+			echo -ne "completion loaders..."
+			for i in /usr/share/bash-completion/completions/*; do
+				echo -ne "[2K[scompletion loaders...$i[u"
+				. "$i"
+			done
+			echo -ne "completion loaders... bindings"
+			bind '"	": complete'
+			echo -ne "finished."
+		}
+		function _b_commit()
+		{
+			echo -ne "Committing..."
+			builtin alias > ~/.bash_aliases
+			builtin bind -v > ~/.inputrc
+			builtin bind -s >> ~/.inputrc
+			builtin bind -p >> ~/.inputrc
+			echo "done!"
+		}
+		function _b_flushme()
+		{
+			# for debugging, but also good for scrollback use
+			# we dont want to confuse old data with new..
+			# this is why I am leaving this as a nondebug setting
+			if ax.config.has disable_flush_longlines && [[ $(ax.config disable_flush_longlines) == true ]]; then
+				true debug echo "nb: long-line flushout is disabled at this time."
+			else
+				eval "for i in {0..$((LINES*COLUMNS))}; do echo; done"
+			fi
+			echo -e "\n\n**** Starting a New Session ****\n"
+				exec "$SHELL"
+		}
+		function _b_poweroff()
+		{
+			echo -e "\n\n*** Powering Down ***\n\n"
+			echo "sending other processing the term signal, logging off, harmfully... (in 2 seconds) [X=abort]"
+			export TMOUT=2
+			read -sn 1
+			export TMOUT=0
+			if [[ ${REPLY,,} == x ]]; then
+				echo "ABORT"
+			else
+				if sudo pm-hibernate; then
+					echo "Returning from hibernation...ok"
+				else
+					echo "Hibernation failed, doing a true power-off..."
+					exec shutdown -P now
+					echo -e "$bad"
+				fi
+			fi
+		}
+
+
+		function _ctrl_a_add() { [[ ! -v BASH_CA_HANDLERS ]] && declare -ga BASH_CA_HANDLERS; BASH_CA_HANDLERS+=( "$@" ); }
+	    function _ctrl_a_del()
+		{
+			case $# in 0) echo "usage: $FUNCNAME [handler|index] ..."; return 1;; esac
+
+			if [[ ! -v BASH_CA_HANDLERS ]]; then
+				declare -ga BASH_CA_HANDLERS
+			else
+				declare -n b=BASH_CA_HANDLERS
+				declare -ga NEW_BCH=( )
+				declare -i i=0
+				declare -i max=${#b[@]}
+				# elements removed two ways: $n represents an index, or $n represents the data
+				# elements may be data or indexes, and can be interleaved as either
+				NEEDSMOD=0
+				for ((i=0;i<max;i++)); do
+					for j in "$@"; do
+						if [[ $j != $i ]] && [[ $j != "${b[i]}" ]]; then
+							NEW_BCH+=( "${b[i]}" )
+						else
+							echo "removed $j (index=$i, data=${b[i]}) from handlers!"
+							NEEDSMOD=1
+						fi
+					done
+				done
+				case $NEEDSMOD in
+				 1) 	BASH_CA_HANDLERS=( "${NEW_BCH[@]}" )	;;
+				 0)		echo "Error: none found ($*)" 			;;
+				esac
+			fi
+		}
+
+		function _ctrl_a_handler()
+		{
+			if [[ -v BASH_CA_HANDLERS ]]; then
+				for i in "${BASH_CA_HANDLERS[@]}"; do
+					$i "$@"
+				done
+			else
+				echo "No Hook (CTRL+A) Handlers Installed, Install One First"
+			fi
+		}
+
+
+	function _b_showhlp_page_text
+	 {
+
+		echo "---------------------------------------------------------------"
+		echo " Press Ctrl+N To Reload Completions/Aliases Any Time"
+		echo " Press Ctrl+O To Output Aliases/Completions to Cache"
+		echo " Press Ctrl+D To Logout"
+		echo " Press Ctrl+F To Flush Session Changes"
+		echo " Press Ctrl+E To Exit System and Power Down"
+		echo " Press Ctrl+L To Clear The Screen"
+		echo " Press Ctrl+K For A Compact Directory Listing"
+		echo " Press Alt+Up To Go Up One Directory Branch"
+		echo " Press Ctrl+P To Change Perl Mode"
+		echo " Press F1 To Show This Page Again and Reload Bindings"
+		echo "---------------------------------------------------------------"
+		echo "Press $GLOF2 To Edit Global Bash Startup (/etc/bash.bashrc)"
+		echo "Press $LOCF2 To Edit Local Bash Startup (~/bash.bashrc)"
+		echo "---------------------------------------------------------------"
+
+	}
+
+	function _b_showkeyhelp_page_
+	{
+		echo -ne "[0;44m"
+		bind -p | grep -P 'self-insert|backward-ch|lowercase-ver|not bound|[a-z]-insert' -v | sed -r 's/\\\C/Ctrl/g;s/\\e/Esc-/g' | tr  '"' ' '                 | sed -r 's/(\S)(Ctrl|Esc)/\1,\2/g' | sed -r 's/(Ctrl|Esc)(-)(\s|,)/\1\3/g'      | awk ' { printf "[1m%-20s[0;44m\t%s\n",$1,$3}; ' | column -c $COLUMNS | sed -r 's/-/[1;30m-[0;44m/g'
+
+	}
+	function _b_showhlp_page
+	{
+		if [[ $1 == SETUP ]]; then
+			_detect_terminal
+			_setup_bvars
+			_reload_bindings
+			_reload_bindings_f1
+		fi
+		echo "* Keyboard Bindings and Display Help (F1=Help F2=Readline Bindings)"
+		#
+
+	}
+	#RELOAD_BINDINGS_DISCLUDE
+
+	function _reload_bindings_f1() {
+		# do not put in reload_bindings because
+		# it will cause errors if rebound during
+		# it's processing itself:
+		bind -x '"'$(tput kf1)'": _b_showhlp_page;_b_showhlp_page_text'
+		bind -x '"'$(tput kf2)'": _b_showkeyhelp_page_'
+	}
+
+
+stty sane
+
+#reload_bindings# no longer used
+_b_showhlp_page SETUP
+
+# use longopt insetad of minimal for unknown completions
+
+function _minimal() { _longopt "$@"; }
+
+# standard ax parts, followed by the stubs (put extra code in those)
+declare -Ag AX_DESCRIPTION[$BASH_SOURCE]="$(head $BASH_SOURCE | grep -Po '(?<=Description: ).*')"
+function _compbind.ax_POSTLOAD() {	ax.echo "$AX_DESCRIPTION{$(basename $BASH_SOURCE)}: $FUNCNAME.$LINENO: loaded"; eval "${FUNCNAME}_stub \"\$@\""; }
+function _compbind.ax_PRELOAD()  {	ax.echo "$AX_DESCRIPTION{$(basename $BASH_SOURCE)}: $FUNCNAME.$LINENO: loading";eval "${FUNCNAME}_stub \"\$@\""; }
+function _compbind.ax_REMOVE()	 {	ax.echo "$AX_DESCRIPTION{$(basename $BASH_SOURCE)}: $FUNCNAME.$LINENO: removed";eval "${FUNCNAME}_stub \"\$@\""; }
+# stubs (core)
+_compbind.ax_POSTLOAD_stub() { : ; }
+_compbind.ax_PRELOAD_stub() { : ; }
+_compbind.ax_REMOVE_stub() { : ; }
+
+

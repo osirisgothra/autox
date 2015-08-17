@@ -1,0 +1,1 @@
+alias unlink='_unln() { t=$(readlink $1); rm $1; mv $t $1; r=$?; unset -f _unln; }; _unln'

@@ -1,0 +1,9 @@
+USEID=-id 0x52000d7
++++++ [[ '' == 1 ]]
++++++ eval xprop -f _KDE_NET_WM_BLUR_BEHIND_REGION 32c -set _KDE_NET_WM_BLUR_BEHIND_REGION 1 -id 0x52000d7
+++++++ _xprop2 -f _KDE_NET_WM_BLUR_BEHIND_REGION 32c -set _KDE_NET_WM_BLUR_BEHIND_REGION 1 -id 0x52000d7
+++++++ unset -f _xprop2
+++++++ command xprop -f _KDE_NET_WM_BLUR_BEHIND_REGION 32c -set _KDE_NET_WM_BLUR_BEHIND_REGION 1 -id 0x52000d7
+++++++ xprop -f _KDE_NET_WM_BLUR_BEHIND_REGION 32c -set _KDE_NET_WM_BLUR_BEHIND_REGION 1 -id 0x52000d7
+++++++ grep --color=auto -vP '^(\s|\t|$|_NET_SUPPORTED|_NET_WM_ICON|_?QT|RESOURCE).*'
++++++ set +x

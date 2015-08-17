@@ -1,0 +1,88 @@
+"==================================================================================
+"
+"          File: axvim-g
+" 
+"   Description:  Graphical (Full-Fledged) True-Color "Non-Terminal" Configuration 
+" 
+"  Dependencies:  axvim-global, axvim-plugin
+"   VIM Version:  7.0+
+"        Author:  Gabriel Thomas Sharp (gts), osirisgothra@hotmail.com
+"  Organization:  Paradisim Enterprises, LLC - http://paradisim.twilightparadox.com
+"       Version:  1.0
+"       Created:  10/11/2014 07:42 (original 7/1/2014, derived from ~/.gvimrc)
+"      Revision:  ---
+"       License:  Copyright (c) 2014, Gabriel Thomas Sharp
+"===================================================================================
+
+if file_readable("~/.gvimrc")
+	" TODO: make it a one-time warning?
+	" (decide if thats a good idea?)
+	cal confirm("Warning: ~/.gvimrc EXISTS, their settings will/would be loaded BEFORE axvim-g and AFTER axvim, it is not suggested to use this file in conjunction with the GxBase vimrc config files!:")
+	so ~/.gvimrc
+en
+
+" turn off toolbar and turn on console-based dialogs (no popup dialog boxes!)
+set guioptions-=T
+set guioptions+=cgthba
+let g:current_register='*'
+
+" Doesn't make much sense in other modes
+vmap <S-Del> "+x
+smap <S-Del> "+x
+" so.. (for logic's sake)
+imap <S-Del> <Left><Del><Right>
+" and... (for sanity's sake)
+silent! nunmap <S-Del>
+silent! cunmap <S-Del>
+
+" the magic combination to make paste for
+" shift-insert work as expected in both
+" INSERT and NORMAL modes is:
+nmap <S-Insert> "+P
+imap <S-Insert> <Right>"+p
+omap <S-Insert> <Right>"+p
+" Cue: This is an original and tested method that I developed myself after hours
+" of painstaking labor, credit me... Damn it! (yes after writing a plug-in that
+" was like 2000 lines of script ended up being completely unnecessary).
+" BTW: Before you say, "what about..." -- I'll tell you: VISUAL,exModes,feature-less versions, 
+" and MODE(paste) DO NOT COME INTO THIS BECAUSE A REGULAR TEXT EDITOR NEVER HAD 
+" THAT CRAP IN THE FIRST PLACE... (and everyone's idea on how it 'should act'
+" is different!!
+" Here's mine: (for *me*) (actually its comming from the unnamed register,
+" where the last text came from because now +" is no longer THAT text, its
+" now the text you just selected stupid.) Put the other text in the black
+" hole because most ex-windows users are destructive by nature ....
+vmap <S-Insert> "_xP
+smap <S-Insert> "_xP
+" once again, for sanity:
+silent! cunmap <S-Insert>
+" annnnnddddd........ we're good!"
+
+" should NOT be set in G-VIM (or for sane folks, Q-VIM)!!
+set t_Co=
+set guipty
+" quiet, and in the background (ironically, to be put in the foreground)
+map  :silent! !bash -c "konsole --fullscreen --profile 'gvim pseudo-suspend mode' &"<CR>
+map!  <Esc>
+" set to Onuava if we have it...
+" use kfontinst to install it to these obvious places...
+" CAUTION: if you force this with no font it will cause vim to use "fixed"
+" width mode on serif letter width fonts, which by the way looks terrible!
+" (this is what this check is for)
+
+if file_readable(expand("~/.fonts/o/onuava_.ttf"))
+	set guifont=Onuava\ 16
+else
+	if file_readable("/usr/share/fonts/truetype/onuava_.ttf")
+		set guifont=Onuava\ 16
+	endif
+endif
+
+" footnote: if you install with kfontinst, you will need to restart
+" vim-[g*|q*] for changes to take effect because the fonts are cached.
+
+
+
+" === KEEP AT END - NOTIFY USER OF ACTUAL LOAD
+call SetHighlighter("on","update",expand("<sfile>"))
+" ...

@@ -1,0 +1,39 @@
+!_TAG_FILE_SORTED	2	/0=unsorted, 1=sorted, 2=foldcase/
+addCompletion	/usr/share/perl5/PerlConsole/Console.pm	/^sub addCompletion($$)$/;"	s	language:Perl
+addError	/usr/share/perl5/PerlConsole/Console.pm	/^sub addError($$)$/;"	s	language:Perl
+addLog	/usr/share/perl5/PerlConsole/Console.pm	/^sub addLog($$)$/;"	s	language:Perl
+addNamespace	/usr/share/perl5/PerlConsole/Console.pm	/^sub addNamespace($$)$/;"	s	language:Perl
+clean_exit	/usr/share/perl5/PerlConsole/Console.pm	/^sub clean_exit($$)$/;"	s	language:Perl
+clearErrors	/usr/share/perl5/PerlConsole/Console.pm	/^sub clearErrors($)$/;"	s	language:Perl
+cnfh	/src/ax/bootstrap.d/prefixer.ax	/^		function cnfh()$/;"	f	language:Sh
+command	/usr/share/perl5/PerlConsole/Console.pm	/^sub command($$)$/;"	s	language:Perl
+command_not_found_handle	/src/ax/bootstrap.d/prefixer.ax	/^			function command_not_found_handle()$/;"	f	language:Sh
+compile	/usr/share/perl5/PerlConsole/Console.pm	/^sub compile($$)$/;"	s	language:Perl
+error	/usr/share/perl5/PerlConsole/Console.pm	/^sub error($$)$/;"	s	language:Perl
+evaluate	/usr/share/perl5/PerlConsole/Console.pm	/^sub evaluate($$)$/;"	s	language:Perl
+getError	/usr/share/perl5/PerlConsole/Console.pm	/^sub getError($)$/;"	s	language:Perl
+getInput	/usr/share/perl5/PerlConsole/Console.pm	/^sub getInput$/;"	s	language:Perl
+getLog	/usr/share/perl5/PerlConsole/Console.pm	/^sub getLog($)$/;"	s	language:Perl
+getLogs	/usr/share/perl5/PerlConsole/Console.pm	/^sub getLogs$/;"	s	language:Perl
+getPreference	/usr/share/perl5/PerlConsole/Console.pm	/^sub getPreference($$)$/;"	s	language:Perl
+getTime	/usr/share/perl5/PerlConsole/Console.pm	/^sub getTime($)$/;"	s	language:Perl
+get_output	/usr/share/perl5/PerlConsole/Console.pm	/^sub get_output($@)$/;"	s	language:Perl
+header	/usr/share/perl5/PerlConsole/Console.pm	/^sub header$/;"	s	language:Perl
+interpret	/usr/share/perl5/PerlConsole/Console.pm	/^sub interpret($$)$/;"	s	language:Perl
+is_completion	/usr/share/perl5/PerlConsole/Console.pm	/^sub is_completion$/;"	s	language:Perl
+kcmshell5	/src/gxbase/tools/ks	/^	kcmshell5() $/;"	f	language:Sh
+kcmshell5	/usr/local/bin/systemsettings5	/^	kcmshell5() $/;"	f	language:Sh
+learn	/usr/share/perl5/PerlConsole/Console.pm	/^sub learn($$)$/;"	s	language:Perl
+load	/usr/share/perl5/PerlConsole/Console.pm	/^sub load($$;$)$/;"	s	language:Perl
+message	/usr/share/perl5/PerlConsole/Console.pm	/^sub message$/;"	s	language:Perl
+mvfunc	/src/ax/bootstrap.d/prefixer.ax	/^		function mvfunc()$/;"	f	language:Sh
+new	/usr/share/perl5/PerlConsole/Console.pm	/^sub new($@)$/;"	s	language:Perl
+parse_options	/usr/share/perl5/PerlConsole/Console.pm	/^sub parse_options$/;"	s	language:Perl
+PerlConsole::Console	/usr/share/perl5/PerlConsole/Console.pm	/^package PerlConsole::Console;$/;"	p	language:Perl
+print_result	/usr/share/perl5/PerlConsole/Console.pm	/^sub print_result$/;"	s	language:Perl
+setOutput	/usr/share/perl5/PerlConsole/Console.pm	/^sub setOutput($$)$/;"	s	language:Perl
+setPreference	/usr/share/perl5/PerlConsole/Console.pm	/^sub setPreference($$$)$/;"	s	language:Perl
+source_rcfile	/usr/share/perl5/PerlConsole/Console.pm	/^sub source_rcfile($)$/;"	s	language:Perl
+useModule	/usr/share/perl5/PerlConsole/Console.pm	/^sub useModule($$)$/;"	s	language:Perl
+_ks	/src/gxbase/tools/ks	/^_ks() $/;"	f	language:Sh
+_ks	/usr/local/bin/systemsettings5	/^_ks() $/;"	f	language:Sh

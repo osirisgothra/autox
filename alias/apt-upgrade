@@ -1,0 +1,1 @@
+alias apt-upgrade='sudo nice apt-get update; sudo nice apt-get dist-upgrade --no-remove --yes'

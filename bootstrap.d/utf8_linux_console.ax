@@ -1,0 +1,47 @@
+#!/usr/bin/env bash 
+#======================================================================================================================
+#
+#          FILE: utf8_linux_console.ax
+# 
+#         USAGE: [within autox]->utf8_linux_console [arguments]
+# 
+#   DESCRIPTION: 
+# 
+#       OPTIONS: ---
+#  REQUIREMENTS: ---
+#          BUGS: ---
+#         NOTES: ---
+#        AUTHOR: Gabriel Thomas Sharp (gts), osirisgothra@hotmail.com
+#  ORGANIZATION: Paradisim Enterprises, LLC, PA, USA
+#       CREATED: 05/03/2015 07:20
+#      REVISION:  ---
+#  HELP CONTENT:
+#					usage: utf8_linux_console <arguments>
+#					
+#					<arguments>		options you can pass to utf8_linux_console
+#									
+#					This script (C) Copyright 2014-2015 Paradisim Enterprises, LLC, PA, USA, Licensed under GNU GPL v3
+#					You may get a copy of this LICENSE at the website: http://gpl.gnu.org
+#					For more info, contact the author Gabriel Thomas Sharp osirisgothra@hotmail.com
+#======================================================================================================================
+
+__utf8_linux_console_loader()
+{
+	if [[ $TERM == linux ]] && [[ $TTY =~ /dev/tty ]]; then
+		echo "* utf8 console support loaded"
+		
+		# TODO utf8 specific resources
+		
+		
+	fi
+	unset -f $FUNCNAME
+}
+
+# entry point
+__utf8_linux_console_loader
+
+
+
+
+
+

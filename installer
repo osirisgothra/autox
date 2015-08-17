@@ -1,0 +1,63 @@
+#!/bin/bash
+
+#set -xET
+
+if [[ $- =~ i ]]; then
+	"$BASH_SOURCE" "$@"
+	return $?
+elif ! tty -s; then
+	TERMINAL=`which x-terminal-emulator` || TERMINAL=`which xterm` || exit 127
+	"$TERMINAL" "$BASH_SOURCE" "$@"
+	exit 0
+else
+	D=( dialog --backtitle "autox install program v1.0" --output-fd 1 )
+	S=( 0 0 )
+	mbox() { "${D[@]}" --msgbox "$*" "${S[@]}"; }
+	yn() { "${D[@]}" --yesno "$*" "${S[@]}"; }
+	menu() { MENUDOUBLER=0; MENUFLAGS=( ); _menustub "$@"; }
+	dmenu() { MENUDOUBLER=1; MENUFLAGS=( --no-tags ); _menustub "$@"; }
+	_menustub()
+	{
+		TXT="$1";
+		shift
+		local ITEMS=(  )
+		local IFS=$'\n'
+		if [[ $MENUDOUBLER == 1 ]]; then
+			for i do
+				ITEMS+=( "$i" "$i" )
+			done
+			set -- "${ITEMS[@]}"
+		fi
+		"${D[@]}" ${MENUFLAGS[@]} --menu "$TXT" "${S[@]}" 0 "$@";
+	}
+
+	if ANSWER=$(dmenu "Tagless.." "t shirt" gloves pants underwear); then
+		exit 1
+	fi
+	# TODO FINISH WRITING ME
+	mbox "Finish writing me!"
+	if	yn "Asking a question"; then
+		mbox "Yes?"
+		if ANSWER=$(menu "Pick something already..." "Have a nice day" "nice_day" "Have a bad day" "bad_day"); then
+			mbox "You chose to $ANSWER"
+			mbox "Now for a tagless menu..."
+			if ANSWER=$(dmenu "Tagless.." "t shirt" gloves pants underwear); then
+				mbox "You are wearing (a) tagless $ANSWER"
+			else
+				mbox "What are you, naked?"
+			fi
+		else
+			mbox "You picked your nose..(didnt answer)"
+		fi
+	else
+		mbox "No?"
+	fi
+	mbox "Thanks for playing!"
+
+
+
+
+fi
+
+
+

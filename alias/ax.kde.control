@@ -1,0 +1,1 @@
+alias ax.kde.control='$(eval "dialog --output-fd 1 --menu \"systemsettings 5.2.2\" 0 0 0 $(cat $AX_BASE/etc/k4.dlist $AX_BASE/etc/k5.dlist | tr '\''\n'\'' '\'' '\'')")'

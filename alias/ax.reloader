@@ -1,0 +1,1 @@
+alias ax.reloader="declare -pF | grep ax\.reloader | perl -wne 'use v5.20;say \$& if /(?<=-f ).*/;'"

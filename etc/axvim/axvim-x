@@ -1,0 +1,25 @@
+"===============================================================================
+"
+"          File:  axvim-x
+" 
+"   Description:  XTERM256-Compatible Terminal Specific Configuration
+"      Supports:  xterm-256color,rxvt-256color,konsole,gnome-terminal
+"  Reccommended:  gnome-terminal
+" 
+"   VIM Version:  7.0+
+"        Author:  Gabriel Thomas Sharp (gts), osirisgothra@hotmail.com
+"  Organization:  Paradisim Enterprises, LLC - http://paradisim.twilightparadox.com
+"       Version:  1.0
+"       Created:  10/11/2014 07:32
+"      Revision:  ---
+"       License:  Copyright (c) 2014, Gabriel Thomas Sharp
+"===============================================================================
+
+se t_Co=256
+
+" keep last
+
+ECHO "XTERM compatible (".$TERM.") configuration loaded."
+" === KEEP AT END - NOTIFY USER OF ACTUAL LOAD
+call SetHighlighter("on","update",expand("<sfile>"))
+" ...

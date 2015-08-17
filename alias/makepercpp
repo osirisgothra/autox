@@ -1,0 +1,1 @@
+alias makepercpp='for i in *.cpp; do echo -e "${i%%.cpp}: $i\n\tg++ $i -o ${i%%.cpp} \${CFLAGS}\n"; done'

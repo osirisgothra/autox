@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [[ $AX_SB_PROCESSID ]]; then
+	kill %
+fi
+	
+	
+
+AX_STATUSBAR_SESSIONGO="$(mktemp)"
+if [[ ! -w $AX_STATUSBAR_SESSIONGO ]]; then
+	echo "* Statusbar Clock Off: cannot write to $AX_STATUSBAR_SESSIONGO file, disk full?"
+else
+	# TODO: change to helper aliases pending new feature test run
+	alias sbax.off="rm $AX_STATUSBAR_SESSION_GO"
+	alias sbax.on="touch $AX_STATUSBAR_SESSION_GO"
+	( while true; do [[ -r $AX_STATUSBAR_SESSIONGO ]] && xtitle "$USER $UID $PWD $(date +%x\ -\ %X)" ;sleep 1; done ) & 
+	declare -gxr AX_SB_PROCESSID=`jobs -p`
+	
+	 
+fi
+
+

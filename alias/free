@@ -1,0 +1,1 @@
+alias free='echo -n "[5A";while /src/mini/kbhit/kbhit; do echo -n "[s";free -ht;sleep 0.5;echo -n "[u"; done'

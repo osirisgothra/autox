@@ -1,0 +1,28 @@
+
+"
+" axvim-t
+"
+" terminal low-mode settings (for terminals that have no hi colors, and no special attributes)
+"
+
+set nocompatible
+
+set modeline
+set nowrap
+set tw=0
+set noet
+set ts=4
+set sw=4
+
+" remember not to set anything fancy here --- especially things that require escape sequences or control codes
+" do not assume: tab size, backspace/delete key works, insert/over selection works, shift/caps methods
+" never assume: arrow keys and anything else that is not part of the 'main key pool' on your keyboard (like fkeys, ins/home/pgup, etc)
+" no, using the Ctrl-K codes wont work here: (using <C-w> instead of ^W will not make it all beter, just dont use em)
+
+" FYI: Nobody "WANTS" this setup, it is just what happens when all the other ones, even the 'console' settings fail or communication
+"      with the device itself is blocked (like when in telnet or rlogin) -- that said, avoid such sessions unless emergency ensues!
+"      These settings should work no matter if it is a dumb terminal or a 'xterm-256color-unicode-advanced' or whatever, even if
+"      you have TERM='some-obscure-terminal' it should STILL work as a dumb terminal. From here, find out why you got this detection
+"      in the main loader file. 
+"
+"      See: axvim(1) axvim-global(1)

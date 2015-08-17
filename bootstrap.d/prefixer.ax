@@ -1,0 +1,234 @@
+#!/bin/bash -rc false "You can't (-won't-) run this as a script!!"
+#vim: nowrap:et:noet:ts=4:sw=4
+shopt -s interactive_comments
+#======================================================================================================================
+#
+#                 FILE: prefixer.ax
+#
+#                USAGE: . $AX_BSTRAP/prefixer.ax [bootstrap-globals]
+#
+#           DESCRIPTION: The most awesome, makes-your-life-easier, kick-ass, stuff-you-wish-bash-had-but-dont, prefixer!
+# DESCRIPTION (REALLY!): Scans the first word of the command line (the command) and checks for a handful of special
+#			 symbols (prefixes). For example, @firefox; !login, starts the web browser quietly and runs
+#                        'sudo login'.
+#
+#          REQUIREMENTS: AX_BASE and AX_BSTRAP must be set at this point (and AX_PHASE too)
+#                  BUGS: makes the CNFH read-only, so other greedy CNFH-functions will fail to overwrite it, giving an ugly error!
+#                 NOTES: Original CNFH code from bash is still used, but as a hook.
+#                AUTHOR: Gabriel Thomas Sharp (gts), osirisgothra@hotmail.com
+#          ORGANIZATION: Paradisim Enterprises, LLC, PA, USA
+#               CREATED: 04/14/2015 12:20
+#              REVISION: B - 05/15/2015 - added header (this stuff)
+#          HELP CONTENT:
+#					usage: source $AX_BSTRAP/BOOTSTRAPNAME <bootstrap caller's arguments>
+#
+#					The typical bootstrap arguments are pretty much ignored
+#
+#					This script (C) Copyright 2014-2015 Paradisim Enterprises, LLC, PA, USA, Licensed under GNU GPL v3
+#					You may get a copy of this LICENSE at the website: http://gpl.gnu.org
+#					For more info, contact the author Gabriel Thomas Sharp osirisgothra@hotmail.com
+#======================================================================================================================
+
+# ** This is a /special/ boot loader, so it doesnt use the typical structure! **
+
+
+declare -i AX_PREFIXER_DEBUG_THRESHOLD=4		# num of times to allow this to run before debugging output
+
+source $AX_BASE/bootstrap.d/axmacros.ax
+
+if [[ $- =~ i ]]; then
+	# cannot use ! prefixes w/o
+	let AX_PREFIXER_LOAD_COUNT++
+	if [[ $AX_PREFIXER_LOAD_COUNT -gt $AX_PREFIXER_DEBUG_THRESHOLD ]]; then
+		set -x -v
+	fi
+		set +H
+		echo -e "* Added Shell Feature: Rename Shell Function (mvfunc)"
+		echo -e "* Enabling Special Prefixes \e[1m!\e[0m and \e[1m@\e[0m for \e[1msudo\e[0m and \e[1mcoproc\e[0m +more"
+		TMPFILE=$(mktemp)
+
+		# renames command_not_found_handle to cnfh_stub
+		# provides mvfunc (use with care: no error checking is provided!)
+		# yet another function probably been written about 15,000,000,000 times by 5+ billion people
+		# but yet we are still doing it and error checking it... regardless of the fact
+		# that bashlib now exists to supposedly eliminate this problem... (*slap* -- you cant just
+		# hope for people to use it.. you have to 'advertise')
+
+		function mvfunc()
+		{
+			eval `declare -pf $1 | sed 's/'$1'/'$2'/g'`
+		}
+
+		# raise your hand if you know what bashlib is...
+		# ....(*crickets creek and frogs croak silently in the background*)
+		# how about how to get ddd and bashdb to actually work?
+		# ....(*sounds of a wind blowing in the dead of night*)
+		if declare -pF cnfh_stub &> /dev/null; then
+			echo "Notice: Skipping Move of cnfh to stub function, already moved!"
+		else
+			mvfunc command_not_found_handle cnfh_stub
+		fi
+
+		function cnfh()
+		{
+			CMDPFX=""
+			PREFIX=${1: 0:1}
+			SUFFIX=${1: 1}
+			CMDNAME=""
+			ORGCMD="$1"
+			IFS=:
+			shift
+			AX_PX_STATUS="INIT_VARS_COMPLETE"
+			for j in $PATH; do
+				if [[ -x $j/$SUFFIX ]]; then
+					CMDNAME=$j/$SUFFIX
+					break
+				fi
+			done
+			unset IFS
+			CMDSUFF=""
+			GI=0
+			if ! [[ $(compgen -A function) =~ prefixer.warning ]]; then
+				prefixer.warning()
+				{
+					if ax.config.has prefixer_warnings && ax.config prefixer_warnings; then
+							true debug echo "prefixer warnings disabled: $* but do nothing"
+					else
+							echo -e "\e[33;1m[prefixer/$LINENO/$BASH_SOURCE]warning\e[0;33m:\e[0;1m $1"
+							echo -e "\e[30;1mhint: $2 \e[0m"
+					fi
+				}
+			else
+				true debug echo "prefixer warning already defined, using cached version"
+			fi
+			
+			if [[ -x $CMDNAME ]]; then
+				# BEGIN: please keep this structure in a "X) CMDPFX=xxxx;; #description" form so that help shows them properly
+				#        any other way of doing it WILL screw up the help feature
+				case $PREFIX in
+					!)  CMDPFX=sudo;;
+					@)  CMDPFX=coproc;CMDSUFF="&> /dev/null &";;
+					%)  CMDPFX="nice ionice";;
+					^)  CMDPFX=man;;     # (see next for same warning)
+					:)  CMDPFX=thunar;;  # warning, only works for items that are executable
+					_)  CMDPFX=pushd;;
+					-)  CMDPFX=popd;;
+					+)  CMDPFX="bash --norc -c";;
+					=)  CMDPFX=builtin;;
+					### WARNING -- EXPERIMENTAL BELOW THIS LINE!!! ###
+					### THESE MAY NOT WORK AS EXPECTED USE AT OWN RISK!! ###
+					### PROBLEMS?? COMMENT OUT! ### HIGHLY EXPERIMENTAL! ###
+					\?)  CMDPFX=exec;GI=1;;			# warning: glob may corrupt name before this point  (prob = 35%)
+					\*)  CMDPFX=bg;GI=1;;       # warning: glob MOST LIKELY to corrupt name before this point (prob = 95%)
+					\.)  CMDPFX=source;GI=1;;   # warning: (mumble..) (corrupted = 20%, misnamed as = 35%, missed due to not-executable: 99%)
+					*) 	 CMDPFX=""; prefixer.warning "prefix \"$PREFIX\" unknown - aborting prefixication..." "set option prefixer_warnings=0 in $AX_BASE/config/autoxrc to disable these messages";;
+				esac
+				if ((GI)); then
+					prefixer.warning "glob-interference prefix \"$CMDPFX\" used, be mindful of the filenames in $PWD when using a gi-prefix." "use backslash to override normal glob behavior (set prefixer_warnings=0 to turn off these messages)"
+				fi					
+
+				if ax.config.has prefixer_notify && ! ax.config prefixer_notify; then
+					# in case we actually care what we are doing here.... we can uncomment:
+					for ((j=0;j<11;j++)); do 
+						echo -e "\e[1;34m$(printf '%40s' ' ')"
+					done
+					echo -ne '\e[[10A'
+					echo "CMDARGS           "
+					echo "                  "
+					echo " CMDNAME=$CMDNAME"
+					echo " ORGCMD=$ORGCMD"
+					echo " PREFIX=$PREFIX"
+					echo " SUFFIX=$SUFFIX"
+					echo " CMDPFX=$CMDPFX"
+					echo " CMDSUFF=$CMDSUFF"
+					echo "                 "
+					echo -ne '[0m'
+				fi
+
+				if [[ $CMDPFX ]]; then
+					AX_PX_STATUS="CMDPFX is a-go"
+					if [[ $CMDPFX =~ --norc ]]; then
+						eval $CMDPFX -- $CMDNAME '"$@"' $CMDSUFF
+					else
+						eval $CMDPFX $CMDNAME '"$@"' $CMDSUFF
+					fi
+					return $?
+				else
+					AX_PX_STATUS="CMDPFX is no-go"
+					:
+				fi
+			fi
+			# tired of reading boring comments yet? lets make it interesting... (hope your boss isn't standing over your shoulder!)
+			# .....well, we made this far, then it is _still_ an error because we didn't:
+			# *find a prefix  *cmd was not in path
+			# lets capture it's output for fun *cheering crowds*
+			TMPFILE=$(mktemp)
+			# hey, lazy number 3 and 4 file handles, can you hold on to stdout/stderr for me? great..thanks
+			# number 3: but i was going to...   number 4: ...shut up asswipe, I was gonna say that!
+			exec 3>&1 4>&2
+			# ok 2 and 1, you guys can hold this nice NEW file for me | 2 & 1 together: **barely audible bitching back&fo under breath**
+			exec 1> $TMPFILE 2>&1
+			# heheh.. now we snook some outage from the overworked, out of pay: c-n-f-h
+			cnfh_stub "$ORGCMD" "$@"
+			# okay 3,4, cough up those handles, give them back to their rightful owners!! *kick*
+			exec 1>&3 2>&4
+			# 3 and 4: ow! that hurts *lawsuit call*
+			# oh yeah, thanks, now bash... please take them out back and
+			# shoot them in the face... (2 seconds later... *distant bang*) 2&1: *quickly stands straight up like a statue as I walk by*
+			exec 3>/dev/null 4>/dev/null
+			# have you ever seen so many retarded comments, of course not... i did...
+			# ...this...
+			# .....to annoy  you! Yes, even those last 3 sentences were a feeble attempt.
+			# Am I great or what?! (sounds of crickets fill the baren memory banks)
+			cat $TMPFILE
+			if grep -q apt-get $TMPFILE; then
+			while true; do
+				PKGLINE=`grep -P '^(sudo\s)?apt-get' $TMPFILE`
+				PKGNAME=`echo "$PKGLINE" | grep -Po '(?<=apt-get install\s)\S+'`
+
+				echo -n "You want to install [1m$PKGNAME[0m? [y]es [n]o e[x]amine <ENTER=[n]o>:"
+				TMPRES=$(mktemp)
+				unset REPLY
+				# go until user press y/n/x || user presses ENTER (=no)
+				until [[ $REPLY =~ [ynx] ]] || [[ -v REPLY && -z $REPLY ]]; do
+					unset REPLY
+					(read -en1 &> $TMPRES)
+					REPLY=$(cat $TMPRES)
+				done
+				cat $TMPRES
+				if [[ $REPLY == y  ]]; then
+					unset SUDO
+					if [[ $UID -ne 0 ]]; then
+						SUDO=sudo
+					fi
+					${SUDO+ $SUDO }apt-get install $PKGNAME
+
+				elif [[ $REPLY == x ]]; then
+					echo -e "\e[1;44m\e[2K$PKGNAME\e[0m"
+					apt-cache show $PKGNAME
+					echo -e "\e[1;44m\e[2K$PKGNAME\e[0m"
+					continue
+				fi
+				break
+			done
+			fi
+
+		}
+		if [[ $CNFHDEFINED == 1 ]]; then
+			true true  # <- agree with if statement
+			# dont do anything anymore
+			# *but maybe in the future*
+			# thats why we have a statement block here
+		else
+			function command_not_found_handle()
+			{
+				cnfh "$@"
+			}
+			# make them readonly so nobody stomps on our nuts (that's how nutter butter is made!)
+			readonly -f command_not_found_handle
+			readonly CNFHDEFINED=1
+		fi
+#@@	fi
+else
+	echo "Please execute me interactively, running me this way wont do anything to your _current_shell_!!"
+fi

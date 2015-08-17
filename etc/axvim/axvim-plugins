@@ -1,0 +1,217 @@
+" vim: ft=vim:fdm=marker:fen:fcl=all:fdo=hor:fml=0:fmr=BEGIN,END
+
+" CSApprox: BEGIN ColorScheme Approximation Plugin
+
+let g:CSApprox_verbose_level=0
+
+" CSApprox: END
+" Vspra: BEGIN
+"  =  Various startup plugin-related actions 
+
+" -- turn off vi compatibility (this is a GOOD thing, vi is grossly
+"    underdeveloped in terms of usability vs. vim mode)
+" -- disable (experimental) or defer the c.vim loading until
+"    it is needed (like i said, this may or may not work as expected to yet)
+"    if you get messages then set it to =0, DONT COMMENT IT OUT!
+
+set nocompatible
+let g:disable_c_vim=1
+
+" Vspra: END
+" Vundle: BEGIN
+
+" -- begin Vundle plugin support (it loads many --but not all-- other plugins)
+
+" -- temporarily turn off filetype auto-handling
+filetype off
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+" -- obviously we need this one or the others wont be able to load properly!
+Plugin 'gmarik/Vundle.vim'
+" -- please comment out/uncomment the plugins you want
+"    (variables can be left -- they wont hurt anything)
+"    make sure you use :VundleInstall and :VundleClean and their
+"    simmilar commands (see :help vundle) after making changes (and saving
+"    them of course!)
+Plugin 'git://github.com/hail2u/vim-css3-syntax.git'
+Plugin 'git://github.com/scrooloose/syntastic.git'
+"Plugin 'git://github.com/sirver/ultisnips.git'
+"Plugin 'tpope/vim-fugitive'
+"Plugin 'L9'
+"Plugin 'mu-template@lh'
+"Plugin 'system-tools'
+"Plugin 'tlib'
+"Plugin 'utilsnips'
+"Plugin 'vim-pi'
+"Plugin 'matchit.zip'
+"Plugin 'git://git.wincent.com/command-t.git'
+Plugin 'git://github.com/WolfgangMehner/vim-plugins.git'
+Plugin 'git://github.com/Valloric/YouCompleteMe.git'
+"Plugin 'rstacruz/sparkup', {'rtp': 'vim/'}
+"Plugin 'git://github.com/MarcWeber/vim-addon-manager.git'
+Plugin 'git://github.com/Shougo/unite.vim.git'
+"Plugin 'git://github.com/c9s/perlomni.vim'
+"Plugin 'home'
+" Added: Jul 2015 "
+Plugin 'git://github.com/xolox/vim-easytags.git'
+Plugin 'git://github.com/xolox/vim-misc.git'
+call vundle#end()
+filetype plugin indent on
+
+" -- end Vundle plugin support
+
+
+
+" YCM - commented out options are showing their defaults (at the time of this
+" writing!)
+
+let g:ycm_confirm_extra_conf=0
+let g:ycm_complete_in_comments=1
+let g:ycm_global_ycm_extra_conf="~/.global_ycm_extra.conf"
+let g:ycm_collect_identifiers_from_comments_and_strings=1
+"let g:ycm_autoclose_preview_window_after_insertion #0
+"let g:ycm_collect_identifiers_from_tags_files #0
+"let g:ycm_server_keep_logfiles #0
+"let g:ycm_filetype_blacklist {'notes': 1, 'markdown': 1, 'unite': 1, 'tagbar': 1, 'pandoc': 1, 'qf': 1, 'vimwiki': 1, 'text': 1, 'infolog': 1, 'mail': 1}
+"let g:ycm_key_list_previous_completion ['<S-TAB>', '<Up>']
+"let g:ycm_seed_identifiers_with_syntax #0
+"let g:ycm_auto_stop_csharp_server #1
+"let g:ycm_server_log_level   info
+"let g:ycm_show_diagnostics_ui #1
+"let g:ycm_key_invoke_completion  <C-Space>
+
+" that feature is just silly!!
+let g:ycm_collect_identifiers_from_comments_and_strings=0
+
+"let g:ycm_max_diagnostics_to_display #30
+
+" turn on only if filetype is perl
+let g:ycm_complete_in_strings=0
+augroup YcmCompleteInStringsSettings
+	au!
+	au BufEnter * let g:ycm_complete_in_strings=(&filetype=~'\v(perl|pod|pm|pl)'?1:0)
+augroup end
+
+"let g:ycm_filetype_specific_completion_to_disable {'gitcommit': 1}
+let g:ycm_open_loclist_on_ycm_diags=1
+"let g:ycm_extra_conf_vim_data []
+let g:ycm_min_num_of_chars_for_completion=1
+let g:ycm_enable_diagnostic_highlighting=1
+let g:ycm_key_detailed_diagnostics='<leader>d'
+let g:ycm_use_ultisnips_completer=1
+let g:ycm_auto_trigger=1
+let g:ycm_goto_buffer_command="same-buffer"
+let g:ycm_hmac_secret=""
+let g:ycm_autoclose_preview_window_after_completion=1
+let g:ycm_csharp_server_port=2000
+let g:ycm_confirm_extra_conf=0
+"let g:ycm_path_to_python_interpreter
+"let g:ycm_warning_symbol     .
+let g:ycm_disable_for_files_larger_than_kb=1000
+let g:ycm_add_preview_to_completeopt=0
+"let g:ycm_global_ycm_extra_conf  ~/.global_ycm_extra.conf
+"let g:ycm_error_symbol       !
+let g:ycm_check_if_ycm_core_present=1
+let g:ycm_enable_diagnostic_signs=1
+let g:ycm_always_populate_location_list=1
+"let g:ycm_key_list_select_completion ['<TAB>', '<Down>']
+let g:ycm_server_use_vim_stdout=0
+"let g:ycm_extra_conf_globlist []
+let g:ycm_complete_in_comments=1
+let g:ycm_filepath_completion_use_working_dir=0
+let g:ycm_auto_start_csharp_server=1
+let g:ycm_cache_omnifunc=0    " default: 1
+"let g:ycm_filetype_whitelist {'*': 1}
+let g:ycm_echo_current_diagnostic=1
+let g:ycm_allow_changing_updatetime=1
+let g:ycm_min_num_identifier_candidate_chars=0
+"let g:ycm_semantic_triggers {}
+"
+
+" SYNTASTIC
+let g:syntastic_enable_perl_checker = 1
+let g:syntastic_perl_checkers = ['perl', 'podchecker']
+let g:syntastic_check_on_open=1
+let g:syntastic_enable_balloons=1
+let g:syntastic_always_populate_loc_list=1
+let g:syntastic_echo_current_error=1
+let g:syntastic_enable_highlighting=1
+let g:syntastic_auto_jump=1
+let g:syntastic_auto_loc_list=1
+let g:syntastic_loc_list_height=5
+let g:syntastic_perl_lib_path=['/usr/lib/perl/5.18','/usr/lib/perl5']
+let g:syntastic_aggregate_errors=1
+let g:syntastic_id_checkers=1
+let g:syntastic_python_checkers=['python', 'pyflakes']
+let g:syntastic_enable_signs=1
+let g:syntastic_error_symbol="!"
+let g:syntastic_warning_symbol="."
+let g:syntastic_auto_loc_list=1
+let g:syntastic_full_redraws=1
+let g:syntastic_enable_balloons=1
+let g:syntastic_exit_checks=1
+let g:syntastic_bash_hack=0
+let g:syntastic_always_populate_loc_list=1
+let g:syntastic_enable_highlighting=1
+let g:syntastic_check_on_open=1
+let g:syntastic_cursor_columns=1
+let g:syntastic_echo_current_error=1
+let g:syntastic_check_on_wq=1
+let g:syntastic_reuse_loc_lists=0
+let g:syntastic_debug=0
+let g:syntastic_enable_signs=1
+let g:syntastic_auto_jump  =1
+let g:syntastic_id_checkers=1
+let g:syntastic_loc_list_height=5
+let g:syntastic_enable_perl_checker=1
+let g:syntastic_aggregate_errors=1
+let g:syntastic_sort_aggregated_errors=1
+"let g:syntastic_cpp_checkers []
+"let g:syntastic_perl_lib_path ['/usr/lib/perl/5.18', '/usr/lib/perl5']
+"let g:syntastic_filetype_map {}
+"let g:syntastic_objcpp_checkers []
+"let g:syntastic_perl_checkers ['perl', 'podchecker']
+"let g:syntastic_warning_symbol  .
+"let g:syntastic_python_checkers ['python', 'pyflakes']
+"let g:syntastic_c_checkers  []
+"let g:syntastic_objc_checkers []
+"let g:syntastic_error_symbol  !
+"let g:syntastic_style_warning_symbol  S>
+"let g:syntastic_stl_format   [Syntax: line:%F (%t)]
+"let g:syntastic_ignore_extensions  \c\v^([gx]?z|lzma|bz2)$
+"let g:syntastic_ignore_files []
+"let g:syntastic_style_error_symbol  S>
+"let g:syntastic_quiet_messages {}
+
+highlight SyntasticErrorLine guibg=#320032 cterm=underline
+highlight SyntasticWarningLine guibg=#323200 cterm=underline
+
+" --- END OF SYNTASTIC GLOBALS
+" Man: BEGIN
+
+runtime! ftplugin/man.vim
+
+" Man: END
+" Desktop: BEGIN Desktop Syntax Plugin
+
+" causes freedesktop .desktop files to be highlighted
+" properly per freedesktop's rules, which is much bigger of
+" a help for people writing proper desktop files!
+" For those of you writing programs to INTERPRET .desktop files (like window
+" managers, for example), please DO NOT use .desktop files as an extension to
+" your own programs' settings. That is not supposed to be what desktop files
+" are for and it ends up hurting everyone when you have files with nonstandard
+" shit in it, even if the rule 'ignore if unknown' persists, there is the good
+" bet that two of you exist and probably will make a named setting that will
+" clash (like "DisplayScreen" as in setting the display and screen, and the
+" other for Displaying the screen (verb)) so please, DONT!!!!!!!!!! ...?ok
+let enforce_freedesktop_standard=1
+
+" Desktop: END
+
+" === KEEP AT END - NOTIFY USER OF ACTUAL LOAD
+" FIX: was a todo, but now: removed(add this: call SetHighlighter("on","update",expand("<sfile>")))
+"      was responsible for a crash bug, plus it added time to the loadup 
+"      most load times are fast now (only c-support is still slow, but thats
+"      not my fault!)
+" ...

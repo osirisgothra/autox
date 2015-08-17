@@ -1,0 +1,1 @@
+alias apt-builds='sudo apt-get build-deps'

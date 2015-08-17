@@ -1,0 +1,99 @@
+#!/bin/bash -c false ax.priority=0
+
+#======================================================================================================================
+#
+#          FILE: axmacros.ax
+#
+#         USAGE: ./axmacros.ax
+#
+#   DESCRIPTION: General Macros
+#
+#       OPTIONS: Load Once, Read Many
+#  REQUIREMENTS: Single PID Mode, xterm-256color recommended
+#          BUGS: currently, there is no easy way to pass values to tput codes such as
+#         NOTES: ---
+#        AUTHOR: Gabriel Thomas Sharp (gts), osirisgothra@hotmail.com
+#  ORGANIZATION: Paradisim Enterprises, LLC, PA, USA
+#       CREATED: 04/29/2015 07:17
+#      REVISION: A (initial release --- set repository notes in /.git)
+#					This script (C) Copyright 2014-2015 Paradisim Enterprises, LLC, PA, USA, Licensed under GNU GPL v3
+#					You may get a copy of this LICENSE at the website: http://gpl.gnu.org
+#					For more info, contact the author Gabriel Thomas Sharp osirisgothra@hotmail.com
+#======================================================================================================================
+
+# vim:ft=sh
+
+if [[ $AX_MACROS_LOADED -eq $$ ]]; then
+	[[ -v AX_DEBUG_LOG ]] && echo "$BASH_SOURCE not reloading macros on same process (PID=$$)" >> $AX_DEBUGLOG
+	return 0;
+else
+	echo "* Bash Extended Environmental Macros"
+	if [[ ! -d $AX_BASE || ! -r $AX_BASE || ! -w $AX_BASE ]]; then
+		echo "Error: AX_BASE is not fully acessible in $BASH_SOURCE"
+	fi
+	declare -gi AX_MACROS_LOADED=$$
+	BOLD="$(tput bold)"
+	OFF="$(tput sgr0)"
+	BUL="${BOLD}*${OFF} "
+	FG="tput setaf" # $($FG code)
+	BG="tput setab" # $($BG code)	
+	RGB() { 
+			if [[ $# -lt 3 ]]; then
+				if [[ $(caller) =~ $FUNCNAME ]]; then
+					echo "$FUNCNAME: Fatal: <=2 args for -- stopping at second recursion ($(caller))"
+					return 2;
+				fi
+				case $# in 
+					2) RGB ${1//,/ } ${@: 2};; 1) RGB ${1//,/ };; 
+					*) echo "Error in SGR Call: RGB Codes Must Be Separated by Commas(,) or Spaces( )"; return 1;;
+				esac
+				return
+			fi
+			local -i R=$1;G=$2;B=$3;F=${4-f};			
+			local -i RSL;
+			# SGR RGB: bit 7 > BBGGRR < bit 0 (bits 2 & 3 are in the midst)			
+			let 'RSL = R | (G<<3) | (B<<7)';
+			case ${F} in f|b) tput seta${F} ${RSL} ;; # singular (usual way to s.g. rendition)
+				a) for x in f b; do tput seta${x} ${RSL}; done ;;  # both (only shows in bold or dim renditions)
+				*) tput ${F} ${RSL} ;; # literalize the rendition (for nonstandard devices)			
+			esac
+	 }
+	 # usage: $(RGB 12 24 201 b) -- commas virtualized out
+
+	 # _hrule [marquee(defaults to '-')] [forecolor] [backcolor*]
+	 # * colors range from 0 to 256 colors
+	 _hrule()   # note: immutable, nondestrutable
+	 {
+		local R=$?
+		local COLORBG=${3:-0}
+		local COLORFG=${2:-NONE}
+		local CHARITEM=${1:--}
+		which resize &> /dev/null && eval `resize`
+		declare -i COLUMNS=${COLUMNS:-80}
+		[[ $COLORFG == NONE ]] || echo -ne "[38;5;$[COLORFG];48;5;$[COLORBG]m"
+		for ((i=0;i<COLUMNS;i+=${#CHARITEM})); do
+			if [[ $[ COLUMNS-i ] > ${#CHARITEM} ]]; then
+				echo -ne "$CHARITEM"
+			else
+				echo -ne "${CHARITEM: 0:$[COLUMNS-i]}"
+			fi
+		done
+		[[ $COLORFG == NONE ]] || echo -ne '[0m'
+		return $R
+	 }
+	 clear()
+	 {
+		if tput sgr0 &&	tput clear; then
+			return 0
+		else
+			if infocmp | grep clear; then
+				echo -ne "\e[2J\e[0m"
+			else
+				# last resort old fashioned way
+				for ((i=0;i<1000;i++)); do echo; done
+			fi
+		fi
+
+	 }
+
+fi

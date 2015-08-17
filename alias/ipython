@@ -1,0 +1,1 @@
+alias ipython='ipython3 qtconsole --style=monokai & jobs -pl | sed s?Running?Detached/Running?g; disown'

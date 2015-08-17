@@ -1,0 +1,1 @@
+alias bluroff='AX_BLUR=OFF; makeblur -iu; dialog --colors --nook --nocancel --pause "Blur Has Been Disabled" $((LINES/4 > 8?LINES/4:8)) $((COLUMNS/2)) 0; clear; true'

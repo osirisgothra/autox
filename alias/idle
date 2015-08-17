@@ -1,0 +1,1 @@
+alias idle='_idle() { PID=`pidof $1`; sudo renice -n 20 -p $PID; sudo ionice -c idle -p $PID; echo "Idle on $PID ($1)"; shift; if [[ $1 ]]; then _idle "$@"; fi; unset -f _idle; }; _idle'

@@ -1,0 +1,1 @@
+alias c='_c(){ unset -f $FUNCNAME; cat "$@"; local r=$?; echo; return $r; };_c'

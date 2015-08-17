@@ -1,0 +1,5 @@
+#!/bin/bash
+
+for t in SIGCHLD SIGINT DEBUG RETURN ERR EXIT SIGQUIT
+	do trap 'echo -e "\e[s\e[2;2H\e[5;33;42m\e[2K "'$t'"($?)\e[0m\e[u"' $t
+done

@@ -1,0 +1,28 @@
+"
+" ax-helpbufferinit
+"
+" used by GoVimHelp functions to pre-init the new help buffer before filling it with contents
+" if you wish to change the GVH buffer's settings globally, this is the place to do it!
+"
+
+set comments=:#
+set commentstring=#%s
+set define=[^A-Za-z_]
+set dictionary=~/.vim/bundle/vim-plugins/perl-support/wordlists/perl.list
+set filetype=perl
+set formatoptions=crqol
+set include=\<\(use\|require\)\>
+set includeexpr=substitute(substitute(substitute(v:fname,'::','/','g'),'->*','',''),'$','.pm','')
+set indentexpr=GetPerlIndent()
+set indentkeys=0{,0},:,0#,!^F,o,O,e,0=,0),0],0=or,0=and
+set iskeyword=@,48-57,_,192-255,:
+set keywordprg=perldoc -f
+set number
+set omnifunc=PerlComplete
+set path=.,/usr/include,,,/etc/perl,/usr/local/lib/perl/5.18.2,/usr/local/share/perl/5.18.2,/usr/lib/perl5,/usr/share/perl5,/usr/lib/perl/5.18,/usr/share/perl/5.18,/usr/local/lib/site_perl,,
+set shiftwidth=4
+set syntax=perl
+set tabstop=4
+
+" end help buffer settings
+

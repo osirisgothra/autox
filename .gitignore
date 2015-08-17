@@ -1,0 +1,6 @@
+
+*.save
+*~
+*.bak
+.*.swp
+a.out

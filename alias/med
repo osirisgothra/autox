@@ -1,0 +1,1 @@
+alias med='echo "cd yes4" | source /dev/stdin'

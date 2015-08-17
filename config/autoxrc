@@ -1,0 +1,55 @@
+;#!autoxrc 1.0
+;################################################################################
+;#
+;#           FILE: <filename>                    LANGUAGE:
+;#
+;#          USAGE: <usage>                       HELP URL: [<man -K <filename>>]
+;#
+;#    DESCRIPTION: <desc>                         LICENSE: GNU GPL v3
+;#        OPTIONS: <opts>                          STATUS: 3-YEAR
+;#   REQUIREMENTS: <reqs>                     POSTLICENSE: PPSA SHAREALIKE
+;#           BUGS: <bugs>                          EXPIRY: NONE
+;#          NOTES: <note>
+;#         AUTHOR: Gabriel Thomas Sharp
+;#  CONTACT EMAIL: <etherial_raine@outlook.com>
+;#   ORGANIZATION: Paradisim Enterprises
+;#        CREATED: <date1>                   MANAGED BY: <prj-manager>
+;#       REVISION: <date2>                      ADDRESS: <person-in-charge>
+;# REPOSITORY URL: <private>           WEBSITE OR PHONE: <none>
+;################################################################################
+;# Information Provided Here is For Informational Purposes Only, For Full Legal #
+;# License and Documentation, Please Read The Accompanied LICENSE and README!!! #
+;################################################################################
+
+[autox]
+configuration_created=1
+maxshlvl=3
+editor=/usr/bin/nano
+killjobs_on_restart=0
+cancelrestart_when_jobs=1
+allow_dropin_mode=1
+allow_nondropin_mode=1
+
+[axbe_aliases]
+conf=autoxrc
+bse=bootstrapedit.ax
+mb=makeblur.ax
+ax=autox
+px=prefixer.ax
+mac=axmacros.ax
+fwc=fast whitespace checker.ax
+pwr=simple-nopwrman.ax
+flag=flagger.ax
+
+[axbe]
+editor=/usr/bin/subl
+
+[makeblur]
+makeblur_disable=no
+makeblur_no_kde_test=no
+
+[prefixer]
+prefixer_warnings=0
+
+[weather]
+weatherlocation=/US/PA/Latrobe

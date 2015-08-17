@@ -1,0 +1,38 @@
+#!/bin/bash -c false
+# vim: ft=sh:fo=:tw=0:sw=2:noet:ts=2:fdm=syntax:fcl=all:fdo=hor
+
+
+axbe()
+{
+	local TARGET="$AX_BASE/lib/axbe.pl"
+	if [[ -r "$TARGET" ]]; then
+		perl -I$AX_BASE/lib -s "$TARGET" -- "$@"
+	else
+		echo "Fatal: cannot execute $TARGET, is AX_BASE set properly? (autox initialized properly?)"
+	fi
+}
+
+__axbe_loader()
+{
+	local msghdr="Cannot use AXBE:"
+	unset -f "$FUNCNAME"
+	local TARGET="$AX_BASE/lib/axbe.pl"
+	NOUNSET=0
+	if [[ -r "$TARGET" ]]; then
+		# check perl and make sure it is a good enough version
+		if which perl &> /dev/null; then
+			if ! perl -we 'use v5.16' &> /dev/null; then
+				echo "$msghdr perl version is less than 5.16, please upgrade your perl to use it!"
+			else
+				echo "* AX Blind Edit Feature Enabled (type axbe --help for more)"
+				NOUNSET=1
+			fi
+		else
+			echo "$msghdr can't locate perl, make sure it is in your PATH!"
+		fi
+	fi
+	[[ $NOUNSET -eq 0 ]] && unset -f axbe
+
+}
+
+__axbe_loader "$@"

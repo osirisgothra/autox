@@ -1,0 +1,187 @@
+#!/usr/bin/env bash 
+#======================================================================================================================
+#
+#          FILE: promptfactory.ax
+# 
+#         USAGE: ./promptfactory.ax 
+# 
+#   DESCRIPTION: 
+# 
+#       OPTIONS: ---
+#  REQUIREMENTS: ---
+#          BUGS: ---
+#         NOTES: ---
+#        AUTHOR: Gabriel Thomas Sharp (gts), osirisgothra@hotmail.com
+#  ORGANIZATION: Paradisim Enterprises, LLC, PA, USA
+#       CREATED: 04/27/2015 13:35
+#      REVISION:  ---
+#  HELP CONTENT:
+# usage: $FUNCNAME -efs [--setfunc <alt. function name> | --editor | --show [<<prompt>|more|select>]]
+#  
+# -e --editor         launch the promptfactory editor, if you set 'autoedit=1' under '[promptfactory]' 
+#                     in autoxrc this will happen anyway
+# -f --setfunc        set alternate function to draw the prompts, read the promptfactory(1) manpage for details
+# -s --show           displays the current rendering of the prompts you specify, or all if none are specified after
+# -h --help           this help you are reading now
+# -m --manpage        open the perldoc for promptfactory.pl
+#  
+# promptfactory is an arbitrary editor for bash prompt variable management under autox. It replaces the way prompts
+# normally work by binding it's injector function into a readonly PS1, PS2, and PS3 variables*. This allows the prompt
+# to be edited in ways not formerly possible (and very cumbersome as well).
+#  
+# promptfactory is still under development and is NOT a finished component. Until this message is removed, beware that
+# some or all features may simply just not work at all.
+# 
+# *due to a (reported) quirk or "bug" in bash, PS3 is not evaluated at runtime. Instead the injector rewrites PS3 everytime
+# PS1 or PS2 are evaluated to ensure that it is update (since PS3 wont show before PS1 does in most cases). It is also setup
+# and refreshed in the DEBUG trap chain.
+#  
+# This script (C) Copyright 2014-2015 Paradisim Enterprises, LLC, PA, USA, Licensed under GNU GPL v3
+# You may get a copy of this LICENSE at the website: http://gpl.gnu.org
+# For more info, contact the author Gabriel Thomas Sharp osirisgothra@hotmail.com
+#  
+#======================================================================================================================
+
+
+declare -i 	PROMPTFACTORY_HELP_TRIMLEADINGCHARCOUNT=1					# Change if you reformat above content!
+declare    	PROMPTFACTORY_HELP_BAD_OPTION="error: Unknown Option:"
+declare    	PROMPTFACTORY_HELP_BAD_EDITOR="error: editor failed - "
+declare		PROMPTFACTORY_HELP_START="u[s]ag[e]:"
+declare		PROMPTFACTORY_HELP_END="mo[r]e [i]nfo, contac[t]"
+
+
+promptfactory_editor()
+{
+	if ! perl -w -s -I "$AX_BASE/lib" "$AX_BASE/lib/promptfactory.pl" -- "$@"; then
+		echo "$PROMPTFACTORY_HELP_BAD_EDITOR $?"
+	fi
+}
+
+
+promptfactory()
+{
+
+	local TEMP=`getopt -o h?f:es:: --long help,setfunc:,editor,show:: -n '$FUNCNAME' -- "$@"`
+	local HELP=$'\n'`cat $BASH_SOURCE | perl -wne 'print if /'"$PROMPTFACTORY_HELP_START"'/ .. /'"$PROMPTFACTORY_HELP_END"'/'`$'\n\n'
+	local HELP=`eval "echo \"$HELP\""`
+	
+	if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
+	eval set -- "$TEMP"
+	while true ; do
+		case "$1" in
+			-f|--setfunc) 
+				eval "AX_PROMPT_FUNCTION='\$$2'" ; shift 2
+				;;
+			-e|--editor) 
+				echo "launching editor" ; shift
+				PF_ACTION=runeditor
+				;;
+			-s|--show) 			
+				PF_ACTION=show
+				case "$2" in
+					"") 
+						unset PF_ACTION_ARG; shift 2 
+						;;
+					*)  
+						PF_ACTION_ARG="$2" ; shift 2 
+						;;
+				esac 
+				;;
+			--) 
+				shift ; break 
+				;;
+			-h|-\?|--help) 				
+				echo -n "$HELP" | sed -r 's/^.{'$PROMPTFACTORY_HELP_TRIMLEADINGCHARCOUNT'}//g'
+				echo -e "\n"
+				return 0
+				;;		
+			*) 
+				echo "$PROMPTFACTORY_HELP_BAD_OPTION $1" ; exit 1 
+				;;
+		esac
+	done	
+
+	case $PF_ACTION in
+		runeditor)
+			$AX_BASE/lib/promptfactory.pl "$@"
+			;;
+		show)
+			[[ $PF_ACTION_ARG ]] || PF_ACTION_ARG="all"
+			case PF_ACTION_ARG in
+				all|prompt)
+					echo "$PS1"
+					;;&
+				all|more)
+					echo "$PS2"
+					;;&
+				all|select)
+					echo "$PS3"
+					;;
+				*)  echo "warning: unknown show type: $PF_ACTION_ARG"
+					;;
+			esac
+			;;
+		"")
+			echo "please type $FUNCNAME --help for help"
+			return 127
+			;;
+
+		*)			
+			echo "error: action ${PF_ACTION-was not specified}${PF_ACTION+ is unknown}!"
+			;;
+	esac
+	
+}
+
+
+ax.promptfactory()
+{
+	[[ $- =~ T ]] && trap DEBUG
+	case $1 in
+		PS1)
+			echo -ne "$USER@$HOSTNAME $PWD [$2]:"
+			for ((i=0;i<$SHLVL;i++)); do
+				printf "$i"
+			done
+			printf ":"
+			;;
+		PS2)
+			echo -ne "more?"
+			;;
+		PS3)
+			case "$2" in
+				REWRITE) [[ $PS3_CACHE ]] && eval PS3="$PS3_CACHE";;
+				*)	eval PS3="$2";; # see notes on header(1)
+			esac
+			;;
+	esac
+}
+
+promptfactory_loader()
+{
+
+	if [[ $(declare -p PS1) =~ -r ]]; then
+		echo "* Bypassing PromptFactory Init (init already happened)"
+	else
+		declare -gr PS1='$(ax.promptfactory PS1 $?)'	PS2='$(ax.promptfactory PS2 $?)'			
+	   	declare -g  PS3="select: "						PS3_CACHE=$PS3	
+	   	# see notes on header(1) for PS3 special case
+		echo "* Prompt Factory Feature Enabled, use 'promptfactory' to edit your Prompts"
+	fi
+	unset -f $FUNCNAME
+}
+
+eval 'ax.reloader.promptfactory()
+{
+	source "$BASH_SOURCE";
+}'
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,1 @@
+alias kill='_kill() { if ! kill $*; then killall $*; fi; local R=$?; unset -f $FUNCNAME; return $R; }; _kill "$@"'

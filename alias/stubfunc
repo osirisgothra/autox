@@ -1,0 +1,1 @@
+alias stubfunc='function sf() { function $1 () { stub_${1}; }; }; function stub_'

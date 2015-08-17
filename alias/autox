@@ -1,0 +1,1 @@
+alias autox='_autox_temp() { cd ~/.autox && source ./autox "$@"; R=$?;unset -f $FUNCNAME; return $R;}; _autox_temp'

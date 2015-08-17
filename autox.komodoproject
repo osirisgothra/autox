@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Komodo Project File - DO NOT EDIT -->
+<project id="ae20ee61-b213-447e-8898-cacd3f98760a" kpf_version="5" name="autox.komodoproject">
+<file id="2b91e22e-5fed-4b0a-8d52-67a06f8bbe26" idref="06afdc98-6ef7-4c3d-867e-3214df520b05" name="install" url="install">
+</file>
+<file id="ca35ae6b-1ba2-4e64-b8b8-703564138a87" idref="06afdc98-6ef7-4c3d-867e-3214df520b05" name="autox" url="autox">
+</file>
+<file id="01f7170b-6c23-4d10-abe3-c9af7df2dff1" idref="08064536-7987-4062-bb23-96b1eea80257" name="kdesession.ax" url="bootstrap.d/kdesession.ax">
+</file>
+<file id="27694df9-19f3-4477-b11a-a189f1f53fad" idref="08064536-7987-4062-bb23-96b1eea80257" name="flagger.ax" url="bootstrap.d/flagger.ax">
+</file>
+<file id="44a2e6f6-e9a4-4fc7-a728-c5c56726ce01" idref="08064536-7987-4062-bb23-96b1eea80257" name="prefixer.ax" url="bootstrap.d/prefixer.ax">
+</file>
+<file id="4f3be16f-60a2-4359-aa79-156d8709d478" idref="08064536-7987-4062-bb23-96b1eea80257" name="makeblur.ax" url="bootstrap.d/makeblur.ax">
+</file>
+<file id="56618b82-d749-43fb-abc5-e400a26398c6" idref="08064536-7987-4062-bb23-96b1eea80257" name="outax" url="bootstrap.d/outax">
+</file>
+<file id="642e175a-5bfb-456b-aae8-4799072f9abf" idref="08064536-7987-4062-bb23-96b1eea80257" name="axmacros.ax" url="bootstrap.d/axmacros.ax">
+</file>
+<file id="6880afd2-09d1-440a-b137-67731f9873b6" idref="08064536-7987-4062-bb23-96b1eea80257" name="bootstrapedit.ax" url="bootstrap.d/bootstrapedit.ax">
+</file>
+<file id="69816663-3cbc-4d18-ad83-8f3c712bc53a" idref="08064536-7987-4062-bb23-96b1eea80257" name="compbind.ax" url="bootstrap.d/compbind.ax">
+</file>
+<file id="7256a27a-c53d-4e03-a88a-ff8155077580" idref="08064536-7987-4062-bb23-96b1eea80257" name="promptfactory.ax" url="bootstrap.d/promptfactory.ax">
+</file>
+<file id="a84549e9-cb70-4943-9f4b-1ac1cb067d31" idref="08064536-7987-4062-bb23-96b1eea80257" name="env.ax" url="bootstrap.d/env.ax">
+</file>
+<file id="c422b17b-b0e8-42cf-a8d5-34cd3dfe1d56" idref="08064536-7987-4062-bb23-96b1eea80257" name="simple-nopwrman.ax" url="bootstrap.d/simple-nopwrman.ax">
+</file>
+<file id="ea8dec2f-556f-47e1-9a48-b93b6dff9153" idref="08064536-7987-4062-bb23-96b1eea80257" name="minimal_replacer.ax" url="bootstrap.d/minimal_replacer.ax">
+</file>
+<file id="0748b725-351c-48dc-a4c9-e72b8ec8daa0" idref="2b50a489-5b2d-43f3-97af-80f433ddff70" name="axbe.pl" url="lib/axbe.pl">
+</file>
+<file id="a96c642e-59fe-4f6c-8d4a-04f3694be132" idref="2f9ac179-3c86-4efa-b8a9-7d92043d5972" name="autoxrc" url="config/autoxrc">
+</file>
+<folder id="06afdc98-6ef7-4c3d-867e-3214df520b05" idref="ae20ee61-b213-447e-8898-cacd3f98760a" name="Sources">
+</folder>
+<folder id="08064536-7987-4062-bb23-96b1eea80257" idref="ae20ee61-b213-447e-8898-cacd3f98760a" name="Bootstraps">
+</folder>
+<folder id="2b50a489-5b2d-43f3-97af-80f433ddff70" idref="ae20ee61-b213-447e-8898-cacd3f98760a" name="Library Files">
+</folder>
+<folder id="2f9ac179-3c86-4efa-b8a9-7d92043d5972" idref="ae20ee61-b213-447e-8898-cacd3f98760a" name="Configuration">
+</folder>
+<preference-set idref="ae20ee61-b213-447e-8898-cacd3f98760a" id="project" preftype="project">
+  <string relative="path" id="import_dirname"></string>
+  <string id="perlDefaultInterpreter">/usr/bin/perl</string>
+  <long id="prefs_version">1</long>
+  <string id="userEnvironmentStartupOverride">AX_BASE=/ax
+AX_EDITOR=bad_editor_name_test
+</string>
+</preference-set>
+</project>

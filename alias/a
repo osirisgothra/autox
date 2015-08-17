@@ -1,0 +1,1 @@
+alias a='cat <<< '\''echo arg1=$1'\'' | source /dev/stdin'

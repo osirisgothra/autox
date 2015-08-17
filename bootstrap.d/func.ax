@@ -1,0 +1,125 @@
+#!/bin/bash
+
+unset AX_FUNCS
+declare -gA AX_FUNCS
+declare -g AX_FUNC_CMPMODE=or
+declare -gA AX_FUNC_CMPMODES=( [and]="&" [or]="|" )
+
+source "$AX_BASE/bootstrap.d/axmacros.ax"
+
+isfunc()
+{
+	FUNC_ISFUNC_CMP_MODE=${AX_FUNC_CMPMODE}
+	[[ $FUNC_ISFUNC_CMP_MODE =~ ^(and|or)$ ]] || { 
+		FUNC_ISFUNC_CMP_MODE=or
+		echo "warn: AX_FUNC_CMPMODE setting is not supported: $AX_FUNC_CMPMODE"
+	}
+	
+	case $# in
+		0) 	echo "syntax: isfunc [-and|-or] names"; false;;
+		1) 	declare -pF "$1" &> /dev/null;;
+		*)  eval {unset,local}\ EVALSTR\;
+			for z in unset local; do $z EVALSTR; done
+			unset EVALSTR;local EVALSTR
+			for x; do 
+				case $x in
+					-or)	FUNC_ISFUNC_CMP_MODE=or;;
+					-and)	FUNC_ISFUNC_CMP_MODE=and;;
+					*)	isfunc $x
+						[[ $EVALSTR ]] && {
+							case $FUNC_ISFUNC_CMP_MODE in
+								or)	EVALSTR+=" | ";;
+								and) EVALSTR+=" & ";;
+							esac								
+						}
+						EVALSTR+="$?"
+				esac
+			done
+			echo "Evaluate: $EVALSTR"
+			eval "(( $EVALSTR )) && R=1 || R=0"
+			echo "R = $R"
+			;;
+	esac		
+}
+
+func()
+{
+	true
+	case $# in
+		0)	declare -pF;;
+		1)	__func "$1";;
+		*)	for x; do __func "$x"; done;;
+	esac
+}
+unfunc()
+{
+	true
+	case $# in
+		0) echo "required: name of func(s) to remove"; false;;
+		1) __unfunc "$1";;
+		*) for x; do __unfunc "$x"; done;;
+	esac
+}
+		
+__unfunc()
+{		
+	if [[ -z ${AX_FUNCS[$1]} ]]; then
+		if isfunc $1; then
+			echo "$1 is a function, not a func!"
+			echo "hint: use unset -f to delete functions."
+		else
+			echo "$1: unknown func name"			
+		fi
+		false
+	else
+		if rm "${AX_FUNCS[$1]}" || [[ ! -f ${AX_FUNCS[$1]} ]]; then
+			unset -f $1
+			unset AX_FUNCS[$1]
+			echo "func $1 deleted"
+			true
+		else			
+			echo "failed to delete $1, check your permissions of ${AX_FUNCS[$1]} and try again"
+			echo "$1 will not be removed from memory unless you are allowed to delete the file."
+			echo "hint: You may delete the file yourself, and then re-run this command to force a delete."
+			false
+		fi
+	fi
+		
+}
+__func()
+{
+	case $1 in
+		*=*)	source /dev/stdin <<EOF
+				function ${1/=*}()
+				{
+					$(echo ${1/*=})
+				}
+EOF
+				declare -pf ${1/=*} > $AX_BASE/func/${1/=*}.af
+				;;
+		*)		if [[ "${AX_FUNCS[$1]}" ]]; then					
+					printf "func $1='%s'" "$(declare -pf "$1" | head -n-1 | tail -n+3)"
+				else
+					echo "Unknown func ($1)"
+				fi
+				;;
+	esac
+	
+	
+}
+__func_loader()
+{
+	local NONULLGLOB=0
+	shopt -q nullglob || NONULLGLOB=1
+	shopt -s nullglob
+	for fname in $AX_BASE/func/*.af; do
+		source "$fname"
+		local FNAME=$(basename $fname | sed 's/\.af$//g' )
+		AX_FUNCS[$FNAME]="$fname"
+	done
+	[[ $NONULLGLOB -eq 1 ]] && shopt -u nullglob
+
+	
+}
+
+__func_loader "$@"

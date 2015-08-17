@@ -1,0 +1,115 @@
+"===============================================================================
+"
+"          File:  axvim-c
+" 
+"   Description:  Non-Graphical Console (True Console) Specific Configuration 
+"      Supports:  cons25,console,linux,ansi,vt\d{2,3},tty{0,3}
+"
+"   VIM Version:  7.0+
+"        Author:  Gabriel Thomas Sharp (gts), osirisgothra@hotmail.com
+"  Organization:  Paradisim Enterprises, LLC - http://paradisim.twilightparadox.com
+"       Version:  2.0
+"       Created:  10/11/2014 07:37 (derived from original 7/1/2014)
+"      Revision:  B
+"       License:  Copyright (c) 2014, Gabriel Thomas Sharp
+"===============================================================================
+
+
+se t_Co=16
+
+" force ansi clearscreen if no terminal specified
+if $TERM == ""
+	se t_CS=[2J[0;0H
+en
+
+" keep at end
+if v:progname != "vim.basic"
+
+	let g:nvidia_cfdir=$HOME."/.config/.vimflags_nvidia_console"
+	let g:normal_cfdir=$HOME."/.config/.vimflags_normal_console"
+
+
+	if filereadable(g:nvidia_cfdir)	
+	let conf_answer = confirm ("Notice: you are running in NVIDIA limited console mode -- if you dont want this, delete the " .g:normal_cfdir." and restart","Continue\nDelete+Retry\nAbort+Quit") 
+	if conf_answer == 3
+		" make sure quit happens, but dont allow files to be abandoned
+		" automatically!!
+		set confirm
+		qall
+	elseif conf_answer == 2
+		" delete it, and try again...
+		if delete(g:nvidia_cfdir)
+			call confirm("Configuration reset, press OK to continue reset")
+			source axvim-c
+			finish
+		el
+			call confirm("Unable to delete configuration, check permissions (now exiting)")
+			set confirm
+			qall
+		en
+	en
+	set t_Co=8
+	else
+
+	if ! filereadable(g:normal_cfdir)
+		call system("bash -c 'apt-cache rdepends dkms' | grep nvidia")
+		if v:shell_error == 0
+	 		if confirm("NVIDIA drivers detected -- Use all 16 colors, or 8 colors (load the vesavbe if getting 8 colors!)? You will not be asked again if you choose 16 color mode!","16\n8") == 2
+				call system("touch " . g:nvidia_cfdir)
+				set t_Co=1
+			else
+				call system("touch " . g:normal_cfdir)
+				set t_Co=8
+			en
+		else
+			echo "If you need 8-color support, please delete: " . g:normal_cfdir
+			set t_Co=8
+		en
+	else
+		" normal_cfdir readable, we're ok! (dont hog the command window!)
+		set t_Co=8
+		redraw!
+		echo "16 color support verified!"
+		sleep 620m
+		redraw!
+	en
+
+	en
+
+
+	if &t_Co < 8
+	" avoid using :colo here because that will save via the :au ColorScheme *
+	source /usr/share/vim/vim74/colors/default.vim
+	let g:nvtag = "  [**NVIDIA DRIVER LIMITATION]"
+	el
+	let g:nvtag = ""
+	en
+
+	set cmdheight=2
+	ec "Console (" . &t_Co . " colors) Configuration Loaded." . g:nvtag
+	" === KEEP AT END - NOTIFY USER OF ACTUAL LOAD
+	call SetHighlighter("on","update",expand("<sfile>"))
+	" 1 second + 5/8ths of a second (1.625 seconds)
+	sleep 1625m
+else
+	if exists("g:vimrc_c_loaded_basic")
+		finish
+	else
+		let g:vimrc_c_loaded_basic=1
+		" do any on-time specific startup here for vim.basic
+	endif
+endif
+
+" do any vimrc_c (basic or otherwise) init here
+
+	" use double cmdline
+	set cmdheight=2
+	" display command and mode
+	set showmode
+	set showcmd
+	" show Ctrl+X messages
+	set shortmess-=cC
+	" remove logo
+	redraw!
+
+" ...

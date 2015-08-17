@@ -1,0 +1,1805 @@
+" vim:ft=vim:ts=4:sw=4:tw=0:fo=tcqrl:vbs=0:cc=170:fdm=marker:fml=0:fen:fmr=\ ===,\ ...:fcl=all:vbs=0:nowrap:fdc=7:fdo=hor
+"==============================================================================
+"
+"          File:  axvim-global
+"
+"   Description:  Global Definition File
+"
+"   VIM Version:  7.0+ [7.4 rec]
+"          Note:  StaticOpts OVERRIDE modelines! To disable it, first
+"                 press # over: "StaticOptionsDisabler" to go to the disabler!
+"          Bugs:  #1 modelines = As of testing on 4.9.0-19 kernels /w 7.4 (kubuntu 15.04), the modeline support, now disabled by default
+"                 however, this was always the case as far as the docs it's supposed to be that way. The MLON() at the
+"                 end of this file is a quirk feature that works around this 'bug' (like i said though, it was a bug that
+"                 it was stuck ON in previous versions by some random script) this may later be cooerced into the startup
+"                 proceedure. Be aware, dynamic folding won't function without MLON() being called.
+"                 #2 syntastic = After a fresh install of linux, adding syntastic back as before with same settings, however,
+"                 the user-specified checkers are not being seen. This bug is to be investigated ASAP.
+"					
+"
+"       Authors:  Gabriel Sharp <osirisgothra@hotmail.com>
+"                 Etherial Raine <etherialraine@outlook.com>
+"  Organization:  Paradisim Enterprises, LLC - http://paradisim.twilightparadox.com
+"       Version:  2.0
+"       Created:  10/09/2014 20:40
+"      Revision:  Major Rev. B (II)
+"       License:  (C)Copyright 2014-2015 Paradisim Enterprises(tm), LLC. (Gabriel Sharp <osirisgothra@hotmail.com>)
+" .:  When Editing This Script Follow These Guidelines ===
+"        		  1) Keep Variables, Options, Functions, etc. in ALPHABETICAL ORDER!! "
+"                 2) Functions should be in ProperCase()
+"                 3) Commands should be in :UPPERCASE
+"                 4) Variables should be in g:underscore_lower_case
+"                 5) Abbreviations should not be words that the user may need to type (ie, not 'name')
+"                 6) Autocommands must be defined in groups like so, please don't deviate:
+"                    aug GroupName_SubGroupName
+"                    	au!
+"                    	au SomeEvents   . . .
+"                    aug END
+"				  7) Fold Methods and Long Blocks ...
+"
+"================================================================================
+
+" === PROLOGUE
+"
+" TABLE OF CONTENTS
+"
+"	I.		VARIABLES							(C-S-F1)	1
+"					I-i		Global Variables
+"	II.		SOURCE								(C-S-F2)	2
+"					II-i	Plugin Source
+"	III.	OPTIONS							(C-S-F3)	3
+"					III-i	Startup_Options		(C-S-F11)	a
+"					III-ii	Static_Options		(C-S-F12)	b
+"					III-iii GlobalStaticOptions (C-S-F13)	c
+"	IV.		FUNCTIONS							(C-S-F4)	4
+"					IV-i	Functions A-Z
+"	V.		COMMANDS							(C-S-F5)	5
+"	VI.		ABBREVIATIONS						(C-S-F6)	6
+"	VII.	AUTOCOMMANDS						(C-S-F7)	7
+"	IIX.	MAPS								(C-S-F8)	8
+"					IIX-i	RegularMaps
+"					IIX-ii	FunctionalMaps
+"					IIX-iii RegularNoRemaps
+"					IIX-iv	MenuMaps			(C-S-F9)	9
+"					IIX-v	MenuNoRemaps
+"
+"	X.		EPILOGUE							(C-S-F10)	0
+"
+"  To Quick Jump:
+"	1)	Position your cursor over the subject in CAPS above and press '#'.
+"   2)  Press the key sequence noted on the right of each item (where applicable).
+"   3)  Type an apostrophe (') followed by the letter/number on the far-right column.
+"
+" ...
+
+" === CHECKS
+
+if has("unix")
+	let g:features={}
+	let g:features={ 
+			\'acl':'Compiled with ACL support.',
+			\'all_builtin_terms':'Compiled with ALL builtin terminals enabled.',
+			\'amiga':'Amiga version of Vim.',
+			\'arabic':'Compiled with Arabic support "Arabic".',
+			\'autocmd':'Compiled with autocommand support. "autocommand"',
+			\'balloon_eval':'Compiled with "balloon-eval" support.',
+			\'balloon_multiline':'GUI supports multiline balloons.',
+			\'arp':'Compiled with ARP support (Amiga).',
+			\'beos':'BeOS version of Vim.',
+			\'browse':'Compiled with ":browse" support, and browse() will work.',
+			\'browsefilter':'Compiled with support for "browsefilter".',
+			\'builtin_terms':'Compiled with some builtin terminals.',
+			\'byte_offset':'Compiled with support for "o" in "statusline"',
+			\'cindent':'Compiled with "cindent" support.',
+			\'clientserver':'Compiled with remote invocation support "clientserver".',
+			\'clipboard':'Compiled with "clipboard" support.',
+			\'cmdline_compl':'Compiled with "cmdline-completion" support.',
+			\'cmdline_hist':'Compiled with "cmdline-history" support.',
+			\'cmdline_info':'Compiled with "showcmd" and "ruler" support.',
+			\'comments':'Compiled with "comments" support.',
+			\'compatible':'Compiled to be very Vi compatible.',
+			\'cryptv':'Compiled with encryption support "encryption".',
+			\'cscope':'Compiled with "cscope" support.',
+			\'debug':'Compiled with DEBUG defined.',
+			\'dialog_con':'Compiled with console dialog support.',
+			\'dialog_gui':'Compiled with GUI dialog support.',
+			\'diff':'Compiled with "vimdiff" and "diff" support.',
+			\'digraphs':'Compiled with support for digraphs.',
+			\'dnd':'Compiled with support for the "~ register "quote_~".',
+			\'dos16':'16 bits DOS version of Vim.',
+			\'dos32':'32 bits DOS (DJGPP) version of Vim.',
+			\'ebcdic':'Compiled on a machine with ebcdic character set.',
+			\'emacs_tags':'Compiled with support for Emacs tags.',
+			\'eval':'Compiled with expression evaluation support. Always true, of course!',
+			\'ex_extra':'Compiled with extra Ex commands "+ex_extra".',
+			\'extra_search':'Compiled with support for "incsearch" and "hlsearch"',
+			\'farsi':'Compiled with Farsi support "farsi".',
+			\'file_in_path':'Compiled with support for "gf" and "<cfile>"',
+			\'filterpipe':'When shelltemp is off pipes are used for shell read/write/filter commands',
+			\'find_in_path':'Compiled with support for include file searches "+find_in_path".',
+			\'float':'Compiled with support for "Float".',
+			\'fname_case':'Case in file names matters (for Amiga, MS-DOS, and Windows this is not present).',
+			\'folding':'Compiled with "folding" support.',
+			\'footer':'Compiled with GUI footer support. "gui-footer"',
+			\'fork':'Compiled to use fork()/exec() instead of system().',
+			\'gettext':'Compiled with message translation "multi-lang"',
+			\'gui':'Compiled with GUI enabled.',
+			\'gui_athena':'Compiled with Athena GUI.',
+			\'gui_gnome':'Compiled with Gnome support (gui_gtk is also defined).',
+			\'gui_gtk':'Compiled with GTK+ GUI (any version).',
+			\'gui_gtk2':'Compiled with GTK+ 2 GUI (gui_gtk is also defined).',
+			\'gui_mac':'Compiled with Macintosh GUI.',
+			\'gui_motif':'Compiled with Motif GUI.',
+			\'gui_photon':'Compiled with Photon GUI.',
+			\'gui_running':'Vim is running in the GUI, or it will start soon.',
+			\'gui_win32':'Compiled with MS Windows Win32 GUI.',
+			\'gui_win32s':'idem, and Win32s system being used (Windows 3.1)',
+			\'hangul_input':'Compiled with Hangul input support. "hangul"',
+			\'iconv':'Can use iconv() for conversion.',
+			\'insert_expand':'Compiled with support for CTRL-X expansion commands in Insert mode.',
+			\'jumplist':'Compiled with "jumplist" support.',
+			\'keymap':'Compiled with "keymap" support.',
+			\'langmap':'Compiled with "langmap" support.',
+			\'libcall':'Compiled with "libcall()" support.',
+			\'linebreak':'Compiled with "linebreak", "breakat" and "showbreak" support.',
+			\'lispindent':'Compiled with support for lisp indenting.',
+			\'listcmds':'Compiled with commands for the buffer list ":files" and the argument list "arglist".',
+			\'localmap':'Compiled with local mappings and abbr. ":map-local"',
+			\'lua':'Compiled with Lua interface "Lua".',
+			\'mac':'Macintosh version of Vim.',
+			\'macunix':'Macintosh version of Vim, using Unix files (OS-X).',
+			\'menu':'Compiled with support for ":menu".',
+			\'mksession':'Compiled with support for ":mksession".',
+			\'modify_fname':'Compiled with file name modifiers. "filename-modifiers"',
+			\'mouse':'Compiled with support mouse.',
+			\'mouse_dec':'Compiled with support for Dec terminal mouse.',
+			\'mouse_gpm':'Compiled with support for gpm (Linux console mouse)',
+			\'mouse_netterm':'Compiled with support for netterm mouse.',
+			\'mouse_pterm':'Compiled with support for qnx pterm mouse.',
+			\'mouse_sysmouse':'Compiled with support for sysmouse (*BSD console mouse)',
+			\'mouse_sgr':'Compiled with support for sgr mouse.',
+			\'mouse_urxvt':'Compiled with support for urxvt mouse.',
+			\'mouse_xterm':'Compiled with support for xterm mouse.',
+			\'mouseshape':'Compiled with support for "mouseshape".',
+			\'multi_byte':'Compiled with support for "encoding"',
+			\'multi_byte_encoding':'"encoding" is set to a multi-byte encoding.',
+			\'multi_byte_ime':'Compiled with support for IME input method.',
+			\'multi_lang':'Compiled with support for multiple languages.',
+			\'mzscheme':'Compiled with MzScheme interface "mzscheme".',
+			\'netbeans_enabled':'Compiled with support for "netbeans" and connected.',
+			\'netbeans_intg':'Compiled with support for "netbeans".',
+			\'ole':'Compiled with OLE automation support for Win32.',
+			\'os2':'OS/2 version of Vim.',
+			\'path_extra':'Compiled with up/downwards search in "path" and "tags"',
+			\'perl':'Compiled with Perl interface.',
+			\'persistent_undo':'Compiled with support for persistent undo history.',
+			\'postscript':'Compiled with PostScript file printing.',
+			\'printer':'Compiled with ":hardcopy" support.',
+			\'profile':'Compiled with ":profile" support.',
+			\'python':'Compiled with Python 2.x interface. "has-python"',
+			\'python3':'Compiled with Python 3.x interface. "has-python"',
+			\'qnx':'QNX version of Vim.',
+			\'quickfix':'Compiled with "quickfix" support.',
+			\'reltime':'Compiled with "reltime()" support.',
+			\'rightleft':'Compiled with "rightleft" support.',
+			\'ruby':'Compiled with Ruby interface "ruby".',
+			\'scrollbind':'Compiled with "scrollbind" support.',
+			\'showcmd':'Compiled with "showcmd" support.',
+			\'signs':'Compiled with ":sign" support.',
+			\'smartindent':'Compiled with "smartindent" support.',
+			\'sniff':'Compiled with SNiFF interface support.',
+			\'spell':'Compiled with spell checking support "spell".',
+			\'startuptime':'Compiled with "--startuptime" support.',
+			\'statusline':'Compiled with support for "statusline", "rulerformat" and special formats of "titlestring" and "iconstring".',
+			\'sun_workshop':'Compiled with support for Sun "workshop".',
+			\'syntax':'Compiled with syntax highlighting support "syntax".',
+			\'syntax_items':'There are active syntax highlighting items for the current buffer.',
+			\'system':'Compiled to use system() instead of fork()/exec().',
+			\'tag_binary':'Compiled with binary searching in tags files "tag-binary-search".',
+			\'tag_old_static':'Compiled with support for old static tags "tag-old-static".',
+			\'tag_any_white':'Compiled with support for any white characters in tags files "tag-any-white".',
+			\'tcl':'Compiled with Tcl interface.',
+			\'terminfo':'Compiled with terminfo instead of termcap.',
+			\'termresponse':'Compiled with support for "t_RV" and "v:termresponse".',
+			\'textobjects':'Compiled with support for "text-objects".',
+			\'tgetent':'Compiled with tgetent support, able to use a termcap or terminfo file.',
+			\'title':'Compiled with window title support "title".',
+			\'toolbar':'Compiled with support for "gui-toolbar".',
+			\'unix':'Unix version of Vim.',
+			\'user_commands':'User-defined commands.',
+			\'vertsplit':'Compiled with vertically split windows ":vsplit".',
+			\'vim_starting':'True while initial source-ing takes place. "startup"',
+			\'viminfo':'Compiled with viminfo support.',
+			\'virtualedit':'Compiled with "virtualedit" option.',
+			\'visual':'Compiled with Visual mode.',
+			\'visualextra':'Compiled with extra Visual mode commands. "blockwise-operators".',
+			\'vms':'VMS version of Vim.',
+			\'vreplace':'Compiled with "gR" and "gr" commands.',
+			\'wildignore':'Compiled with "wildignore" option.',
+			\'wildmenu':'Compiled with "wildmenu" option.',
+			\'win16':'Win16 version of Vim (MS-Windows 3.1).',
+			\'win32':'Win32 version of Vim (MS-Windows 95 and later, 32 or 64 bits)',
+			\'win32unix':'Win32 version of Vim, using Unix files (Cygwin)',
+			\'win64':'Win64 version of Vim (MS-Windows 64 bit).',
+			\'win95':'Win32 version for MS-Windows 95/98/ME.',
+			\'winaltkeys':'Compiled with "winaltkeys" option.',
+			\'windows':'Compiled with support for more than one window.',
+			\'writebackup':'Compiled with writebackup default on.',
+			\'xfontset':'Compiled with X fontset support "xfontset".',
+			\'xim':'Compiled with X input method support "xim".',
+			\'xpm':'Compiled with pixmap support.',
+			\'xpm_w32':'Compiled with pixmap support for Win32. (Only for backward compatibility. Use xpm instead.)',
+			\'xsmp':'Compiled with X session management support.',
+			\'xsmp_interact':'Compiled with interactive X session management support.',
+			\'xterm_clipboard':'Compiled with support for xterm clipboard.',
+			\'xterm_save':'Compiled with support for saving and restoring the xterm screen.',
+			\'x11':'Compiled with X11 support.' }
+el
+	call confirm("Sorry, this script is written for unix/linux based systems. Though most of vim can be compatible it relies on many outside elements of the unix operating system, I cannot be held responsible for what happens should you choose to run this script (win users: get cygwin!). Additionally, you will have to manually disable this line of code to avoid this warning, it is in axvim-global, line approx # = 217 ATOT publication.")
+en
+	
+" ...
+
+" === VARIABLES
+let g:current_register='*'
+let g:mapleader="|"
+let g:maplocalleader=g:mapleader
+let g:insert_mode=0
+let g:SETIFUNSET_MAXSEARCH=4096
+""NOTE: new-tab-on-:e is now disabled, you can turn it back on here:
+let g:usebuftabhandler=0
+" ... -var-
+" === SOURCE
+
+" we know AX_BASE is there now, if it isnt, we must've loaded/sourced this file
+" by hand, which is a no-no, if AutoX is installed properly, the AX_BASE points
+" to it's root dir (unpacked into /opt/autox, AX_BASE should be AX_BASE="/opt/autox")
+" we reccomend to use "/usr/share/autox" for networks, "/usr/local/autox" for system-wide
+" and "~/.local/autox" for user-only installations. Root should install a private copy
+" even when using a shared version to avoid accidental overwriting of some read only
+" items, since root can do that :)
+exec "source " . $AX_BASE . "/etc/axvim/axvim-plugins"
+
+" ... -src-
+" === OPTIONS
+
+" === HELPER(S)
+
+" helper for debug time testing of varadic functions
+fu! __vardic(var,...)
+	echo "  var: " . a:var
+	echo "count: " . a:0
+	echo "extra: " . string(a:000)
+	echo ":?: " . (a:0 > 0 ? "not zero" : "zero" )
+endf
+" helper for options, sets an option/setting with 'set' but only when no modelines exist for it, overriding any other plugin's "automatic" settings
+" this was needed to defeat some of the other more persistent plugin settings and defeat some of the modelines that were tainted or not wanted
+" additionally, we can scan for an author name to trust modelines in as well
+
+fu! __isflag(var,...)
+	let flagvalue = (a:0 > 0 ? a:1 : -1)
+	if l:flagvalue == -1
+		return exists(a:var) && str2nr(eval(a:var)) != 0
+	else
+		silent! return exists(a:var) && eval(a:var) == flagvalue
+	fi
+endf
+fu! SETIFUNSET(item,param)
+	if !exists("g:SETIFUNSET_MAXSEARCH")
+		" default to 4k lines (not bytes) to search for a 'vim' (more than this requires a buttload of memory)
+		let g:SETIFUNSET_MAXSEARCH=4096
+	endif
+	if exists("b:vimline")
+		if b:vimline =~ a:param
+			if exists("b:flag_debug_setifunset")
+			return
+		endif
+	else
+		if !exists("b:novimline")
+			" need to determine this right now, this will get the vimline(s) and add them
+			" to a single variable, even if scattered all over the file! (in accord with modlines)
+			let b:vimline = []
+			for l in getbufline("%",0,g:SETIFUNSET_MAXSEARCH)
+				if l =~ '\vvim: .*\=.*'
+					let b:vimline += [ strpart(l,strridx(l,'vim:')) ]
+				endif
+			endfor
+			if len(b:vimline) == 0
+				unlet b:vimline
+				let b:novimline=1
+			endif
+			" now that things are valid, rerun the check and return
+			return SETIFUNSET(a:item,a:param)
+		endif
+	endif
+	execute 'set ' . item . '=' . param
+endf
+
+" ...
+
+" === SUMMARY
+" Static Options  	These options are evaluated every time a buffer is read (after reading is completed).
+" Startup Options 	Startup options are read when VIM or GVIM is started, or, when .vimrc, .gvimrc, or any .vimrc_* files are written/updated (again, AFTER, not before)
+" ...
+" ===-STATIC OPTIONS-===
+fu!   Static_Options(fname)
+
+	" === Preliminary Checkpoints (Proper Arguments, Named Buffer, g:disable_static_options not set, etc...)
+	if a:fname == ""
+		if buffer_name("%") != ""
+			call Static_Options(buffer_name("%"))
+		en
+		return
+	en
+	" StaticOptionsDisabler: comment out 2 of next 3 lines to make it permanant, or use ":let g:disable_static_options=1" to disable this
+	if exists("g:disable_static_options")
+		return
+	en
+	" ...
+" === Options
+" === File/Buffer-Name Specific Settings
+
+"if a:fname =~ "\.pl$"
+if &filetype == "perl"
+	" Perl Files
+	set keywordprg=/src/gxbase/lib/perlhelp.pm
+	" But, allow us to use F1 help...
+	map <F1> :silent! call GetExtHelp()<CR>
+	map! <F1> :silent! callGetExtHelp()<CR>i
+	map <F2> :write<CR>gv
+	map! <F2> :write<CR>gv
+	if exists("g:omnicompleter_lastchosen")
+		exec "set omnifunc=" . g:omnicompleter_lastchosen
+	else
+		let g:omnicompleter_lastchosen=&omnifunc
+	en
+
+	" conceal modelines and fold level markers when not on that line
+	if !exists("b:perl_conceal_done")
+		syn clear  perlComment
+		syn match  perlComment		"#.*" contains=perlTodo,@Spell,perlConcealComment,perlConcealVimModeline extend
+		syn match  perlConcealComment "{{{[0-9]" contained conceal
+		syn match  perlConcealVimModeline "vim[0-9]*:.*" contained conceal
+		let b:perl_conceal_done=1
+	en
+
+"elsei a:fname =~ "\.html$"
+elsei &filetype == "html" || &filetype == "css"
+	" HTML files (links)
+	set keywordprg=links2\ -g\ http://www.google.com/search?q=
+elsei &filetype == "sh" || &filetype == "bash"
+	" Settings for Files Not Specified Above
+	set keywordprg=man\ -s
+en
+" ...
+" === Color/Appearance/Cursor/Mode/Statusline/Highlighter/Folding
+
+" === static highlighter /w dynamic insert (heavy color, more CPU intensive)
+" adjust some of the colorscheme to make them a bit more the way you (I) want
+" but not intrusive on the scheme either! (dont mess with color= for the most part!)
+
+if exists("g:NoHighLighter") && g:NoHighLighter == 1
+	echohl None
+el
+	hi Visual none
+	hi VisualNOS none
+	hi Visual cterm=reverse term=reverse gui=reverse
+	hi link VisualNOS Visual
+	if g:insert_mode == 1
+
+		set cursorline
+		set cursorcolumn
+
+		hi LineNr cterm=reverse gui=reverse term=reverse
+		exec "set cc=" . &tw
+
+	else
+		set nocursorline
+		set nocursorcolumn
+
+		hi StatusLine none
+		hi StatusLineNC none
+		hi StatusLine cterm=reverse,underline term=reverse gui=reverse,underline,italic,bold
+		hi StatusLineNC cterm=none term=none gui=none
+
+		" dont show cc for now, since :e % can override tw and nocc,
+		" lets just set it to something else without touching nocc or tw, 9999 is far enough to the right for now (?) <- better than 640k tho :)
+		hi LineNr cterm=none gui=none term=none
+		set cc=9999
+	en
+en
+" ...
+" === pmenu colors from basic theme colors (links) - for colorschemes that do not modify the pmenu colors (not CPU intensive)
+	if exists("g:no_pmenu_highlighter")
+		" normalize the constant (existing is enough, but values other than 1 can be confusing when reviewing)
+		let g:no_pmenu_highlighter=1
+
+	el
+		" can't link until entries are cleared
+		hi clear Pmenu
+		hi clear PmenuSel
+		hi clear PmenuSbar
+		hi clear PmenuThumb
+
+        " use search colors for menu items
+		" use status line colors for the scrollbar and thumb (thumb is the square indicator of the list's position)
+		hi link Pmenu IncSearch
+		hi link PmenuSel Search
+		hi link PMenuSbar StatusLineNC
+		hi link PmenuThumb StatusLine
+
+	en
+" ...
+" === Fold Colors
+" LEFT OFF HERE: let l:igncolor=ReRedir("hi Ignore")
+
+
+" ...
+
+" ...
+" " === Test (~/.vim/experimental/test.vim) Support for Experimental Features or Scripts
+let testfile = "/.vim/experimental/test.vim"
+if file_readable(testfile)
+	let last_exp_size = fsize(testfile)
+	if exists(g:last_exp_size_rec)
+		if last_exp_size != g:last_exp_size_rec
+			exec "so " . testfile
+		en
+	en
+	let g:last_exp_size_rec = last_exp_size
+en
+
+
+" ...
+" === Global Settings:
+"     GlobalStaticOptions -global-static-opt-
+
+
+" for the explanation of this weird mapping, see the next line below it -not in MAPS->RegularMaps to save you the trouble of jumping back up the document!!
+map fold :tabnew axvim-global<CR>:set hls<CR>/STATIC.SETTINGS.ARE.HERE..DON.T.USE.SET.<CR>
+" STATIC_SETTINGS ARE HERE: DON'T USE SET!!!!
+
+"
+" autoclose if one of these conditions is true: - fold levels are NOT being used
+"                                               - folds have been closed but never opened
+" otherwise, fold auto-closing is disabled
+"
+let g:no_autofoldclose=1
+
+if !exists("g:no_autofoldclose")
+	if &foldlevel > 0 || exists("g:used_refold") && !exists("g:used_unfold")
+		set foldclose=all
+	el
+		set foldclose=
+	en
+el
+	if exists("g:used_unfold")
+
+		unlet g:used_unfold
+	en
+	if exists("g:used_refold")
+
+		unlet g:used_refold
+	en
+en
+
+
+set number
+set selection=inclusive
+set foldcolumn=4
+" NOTE: don't use all because we dont want INSERT to open folds!
+set foldopen=jump,mark,hor,search,quickfix,tag,undo
+" 1=when split  0=never 2=even if one (or more) windows
+set laststatus=2
+
+" disable text wrapping except at edge of screen (gui only)
+
+" use 3 lines for console
+
+
+if $TERM != "console" && $TERM != "linux"
+	set	wm=1
+else
+	" force no wrapping when working on consoles
+	set wm=0
+	set nowrap
+	" use the COLUMNS variable, if available
+	" but if it isnt, set the text width to 80, if none is already set (and is less than 40)
+	if $COLUMNS > 0
+		set tw=$COLUMNS
+	el
+		if &tw > 0 && &tw < 40
+			set tw=80
+		en
+	en
+en
+
+" ...
+
+"= -opt-global- =
+
+" ...
+" === Cleanup (flag function as ran)
+if exists("g:static_options_set")
+	let g:static_options_set=g:static_options_set+1
+el
+	let g:static_options_set=0
+en
+" ...
+
+endf
+" ...
+" ===-STARTUP OPTIONS-===
+
+" === Startup Options (function)
+fu!   Startup_Options ()
+
+	set keywordprg=man
+	let g:NoHighLighter=1
+	"= -opt-startup- =
+	if exists("g:startup_options_set")
+		let g:startup_options_set=g:startup_options_set+1
+	el
+		let g:startup_options_set=0
+	en
+endf
+" ...
+
+call Startup_Options()
+
+" ...
+
+" ... -opt-
+" === FUNCTIONS (Alphabetically Listed)
+
+" [C]
+" === CYCLEPERLCOMPLETER()
+fu! CYCLEPERLCOMPLETER()
+	if &ft !~# '\v(perl|pod)'
+		echoh WarningMsg
+		ec "WARNING: FILETYPE NOT PERL -- NOT USING COMPLETER CHANGER!"
+		echoh None
+		retu
+	en
+
+
+	" Next two blocks:
+	" to avoid possible misses when users change their own initial settings,
+	" they are done in separated form to ensure both are set before evaluation
+	if !exists("g:omniother")
+		" still set the second, this way if user adds more completers, they
+		" must define BOTH of these variables for the declaration to be skipped
+		let g:omniother=&omnifunc
+		let g:omnicompleterindex=2
+	en
+	if !exists("g:omnicompleterindex")
+		" this block won't get entered unless the user defines g:omniother without
+		" g:omnicompleterindex! Further, omniother can be multiple items separated by commas
+		" set it to g:omniother's index since that's what is really selected right now
+		let g:omnicompleterindex=2
+	en
+
+	if g:omniother =~ '\v(OmniPerl_Complete|PerlComplete)'
+		let suff=" (g:omniother OFF)"
+		let omnicompleters=[ 'OmniPerl_Complete', 'PerlComplete' ]
+	else
+		let suff=" (g:omniother ON=" . g:omniother . ")"
+		let omnicompleters=[ 'OmniPerl_Complete', 'PerlComplete', g:omniother ]
+	en
+	let g:omnicompleterindex+=1
+	if g:omnicompleterindex > len(omnicompleters)-1
+		let g:omnicompleterindex=0
+	en
+	exe "set omnifunc=" . omnicompleters[g:omnicompleterindex]
+	let g:omnicompleter_lastchosen=&omnifunc
+	echohl None
+	echon "Set Completer "
+	echohl Comment
+	echon &omnifunc
+	echohl None
+	echon " To Active"
+
+endf
+" ...
+" === CycleRegister()
+fu! CycleRegister()
+	call CurrentRegister()
+	let curreg=g:current_register
+	if curreg == '+'
+		let curreg='*'
+	elseif curreg == '*'
+		let curreg="0"
+	elseif (curreg == "0") || (curreg >= 1 && curreg <= 8)
+		let curreg+=1
+	else
+		let curreg='+'
+	en
+	call SelectRegister(curreg)
+	return CurrentRegister()
+endf
+" ...
+" === CurrentRegister()
+fu! CurrentRegister()
+	let l:retval = "<empty>"
+	let l:ww = winwidth("%")
+	if g:current_register == '+'
+ 		let l:retval ="Mouse Paste Buffer"
+	elsei g:current_register == '*'
+		let l:retval = "GUI Clipboard"
+	elsei len(g:current_register) == 1
+		let l:retval = "Register #".g:current_register
+	else
+		let g:current_register='+'
+		return CurrentRegister()
+	en
+	let l:retval.='<'.GetRegisterContents(l:ww > 55 ? winwidth("%") - 50 : 5,g:current_register).'>'
+	return l:retval
+endf
+" ...
+
+" [D]
+" === DisableStaticMaps()
+fu! DisableStaticMaps()
+		ec "Static Maps Disabled"
+		augroup Static_Maps
+			au!
+		augroup END
+		augroup! Static_Maps
+
+endf
+" ...
+" === DoAutoCompile
+fu! DoAutoCompile()
+	
+	if exists("b:disable_autocompile")
+		redraw!
+		echohl WarningMsg
+		echo "Written, but autocompile was disabled for this file, so no compile was performed!"
+		echohl None
+		return
+	el
+		if !exists("b:enable_autocompile")
+			let l:choice=confirm("Use autocompile for this buffer?","Yes\nNo\nAsk Later",1,"Q")
+			if l:choice==1
+				let b:enable_autocompile=1
+			el
+				if l:choice!=3
+					let b:disable_autocompile=1
+				en
+				return
+			en
+		en
+	en
+	let showconf=1
+	redraw!
+	echohl DiffChange
+	echo "autocompiling (running 'make')..."
+	if exists("g:last_make_results")
+		unlet g:last_make_results
+	en
+	let l:results=[]
+	let g:last_make_results=[]
+	let l:results=systemlist("make")
+	let g:last_make_results=l:results
+
+	if exists("g:autocompile_pts") && filewritable(g:autocompile_pts)
+		if (stridx(g:autocompile_pts,'dev') == 1)
+			if v:shell_error==0
+				" no error (aka 'the really good error')
+				let suff_pre=[ '[1;32m' ]
+			elseif v:shell_error < 3
+				" usual errors
+				let suff_pre=[ '[1;31m' ]
+			else
+				" really bad error(s)
+				let suff_pre=[ '[1;41;30m' ]
+			en
+			let suff_post=[ '[0m' ]
+		el
+			let suff_pre=[]
+			let suff_post=[]
+		en	
+
+		" IMPORTANT: The suff_pre and suff_post vars MUST be [lists], otherwise you'll get a generic
+		"            'trying to add a string to a number' error when using even a string.
+		if writefile ( suff_pre + g:last_make_results + suff_post, g:autocompile_pts ) == 0
+			let suff="(see results in " . g:autocompile_pts . ")"
+			let showconf=0
+		el
+			let suff="(could not write to file specified in g:autocompile_pts: " . g:autocompile_pts .")"
+		en
+	el
+		let suff="(no redirect)"
+	en
+
+	if v:shell_error==0
+		redraw!
+		echohl DiffAdd
+		echo "Succeded " . suff
+	el
+		redraw!
+		echohl DiffDelete
+		echo "Failed " . suff
+		" When results are shown in the pty, there's no need to show them in confirmation dialogs.
+		if showconf == 1
+			call confirm(string(results))
+		en
+	en
+	echohl None
+
+endf
+" ...
+" === DoAutoChmod()  ( called by autocommand BufWritePost *, sets script execs to executable!)
+fu! DoAutoChmod()
+
+	if system("file " . expand("%")) =~ 'script'
+		let oldval=&autoread
+		set autoread
+		redraw!
+		silent! exec ':!sudo chmod a+x ' . expand("%")
+		silent! echohl WarningMsg
+		echo "Notice: file " . expand("%") . " is a script, mode set to a+x"
+		silent! echohl None
+		sleep 432ms
+		redraw!
+		if oldval == 0
+			set noautoread
+		en
+	en
+endf
+" ...
+" === DoColorEcho(arg,...)
+fu! DoColorEcho(arg,...)
+	let l:str=a:arg
+	" first param only, color carries across parameters
+	if a:0 > 0
+		echohl None
+		for item in a:000
+			call DoColorEcho(item)
+		endfor
+		echohl None
+	el
+		let l:itemindicies=[]
+		let l:colorcodes=[]
+		let l:curindicie=0
+		while 1
+			let l:curindicie = match(l:str,'\v\|\w+\|',l:curindicie+1)
+			if l:curindicie >= 0
+				let l:itemindicies+=[ l:curindicie ]
+			el
+				break
+			en
+		endw
+		for l:indicie in l:itemindicies
+			let l:colorcodes+=[ substitute(matchstr(l:str,'\v\|\w+\|',l:indicie),'\v(^.|.$)','','g') ]
+		endfo
+		let l:strparts = split(l:str,'\v\|\w+\|',0)
+		" now for the puzzle pieces...
+		echo l:itemindicies
+		echo l:colorcodes
+		echo l:strparts
+		call confirm("")
+		let l:i=0
+		let l:curindicie=0
+		let l:curindex=0
+		for l:item in l:strparts
+			let l:i = len(l:item)
+			if l:i > l:itemindicies[l:curindex]
+				echon l:colorcodes[l:curindex]
+				let l:curindex+=1
+				print l:colorcodes
+			en
+		endfor
+	en
+endf
+" ...
+" === DoMan(page)
+fu! DoMan(page)
+	if a:page == ""
+		let oldh=&cmdheight
+		set cmdheight=3
+    	call confirm " warning: this is meant for :view mode only (view)\nfrom the command line: vim -Rmc 'DOMAN manpage'"
+		exec "set cmdheight=" . oldh
+	en
+	" static maps/globals wont allow us to set our specific settings to manpages!
+    let g:disable_static_options=1
+	DISABLESTATICMAPS
+	" hope it exists!
+	exec "Man " . a:page
+	only
+	set nonumber
+	set hls
+	set nofen
+	set cc=1
+	" Alt-Left/Right for navigation (right also navigates into tags)
+	" + Hitting Enter on Tags Navigates Into Them As Well (ie, "..ee also perl(3perl) for deta.." <- perl(3perl) is a 'tag')
+	map  
+	map <M-Right> 
+	map <M-Left> 
+	" allow an alternate color scheme for manpages
+	if exists("g:man_colorscheme")
+		exec "colo " . g:man_colorscheme
+	en
+endf
+" ...
+" === DoMap(kind,lhand,rhand)
+fu! DoMap(kind,lhand,rhand)
+	if a:kind == "regular" || a:kind == "" || a:kind =="regular_ins"
+		let rh_before = ""
+		let rh_after = ""
+	elsei a:kind == "command"
+		let rh_before = ":"
+		let rh_after = "<CR>"
+	elsei a:kind == "vproc"
+		let rh_before = ":call "
+		let rh_after = "()"
+	elsei a:kind == "aproc" || a:kind == "proc"
+		let rh_before = ":call "
+		let rh_after = ""
+	else
+		ec "ERROR: command type unknown: " . a:kind
+		retu
+	en
+
+	exe "map " . a:lhand .    " "   . rh_before . a:rhand . rh_after
+	if a:kind == "regular_ins"
+		exe "imap ".a:lhand." <Esc>". a:rhand . "i"
+	el
+		exe "map! ". a:lhand . " <Esc>" . rh_before . a:rhand . rh_after
+	en
+
+endf
+
+" ...
+" === DoMapX(kind,diagraph,ansi,arg)
+fu! DoMapX(kind,diagraph,ansi,arg)
+	if has("gui_running")
+		call DoMap(a:kind,a:diagraph,a:arg)
+	el
+		call DoMap(a:kind,a:ansi,a:arg)
+	en
+endf
+" ...
+
+" [E]
+" === EnableStaticMaps()
+fu! EnableStaticMaps()
+		augroup Static_Maps
+			au!
+			au BufEnter * call SetStaticMaps()
+			au BufReadPost * call SetStaticMaps()
+			" reserved for future use
+		augroup END
+endf
+" ...
+
+" [G]
+" === GetExtHelp()
+fu! GetExtHelp()
+	" Change (exp) using cfile instead of cword now because of Modules (like Math::Util will match only when using cfile)
+	let hkeyword=expand("<cfile>")
+	let hkeyfile=expand("<cfile>")
+	if stridx(expand("<cword>"),'::') > 0
+		let hkeyword=expand("<cword>")
+	en		
+
+
+
+	if file_readable(hkeyfile)
+		" use file under filenames
+
+		split hkeyfile
+	el
+		if exists("g:test_filetype")
+			let curft=input("test_filetype is defined, enter your filetype name: ")
+			if len(curft) < 1
+
+				let curft=&filetype
+			en
+		el
+			let curft=&filetype
+		en
+
+
+		if curft == "vim"
+
+			" pretty simple with vim scripts, since help is built-in
+			execute "help " . hkeyword
+
+		elseif curft == "perl"
+
+			" settings (first one should be 0 if using perlhelp (recommended\)
+			let g:using_perldoc=0
+			let l:result = 0
+
+			if g:using_perldoc == 1
+				let cmdline = "!perldoc " . PERLFLAG . " " . hkeyword . " | sed 's/[].//g'"
+				let PERLFLAG = GetPerlFlag(hkeyword)
+				if PERLFLAG == "NONE"
+					let l:result = 0
+				else
+					let l:result = 1
+				endif
+			else
+				let PERLFLAG = "-O"
+				let l:result = v:shell_error
+				let cmdline = "perlhelp " . hkeyword
+			endif
+
+			echo "please wait a few seconds..."
+"			call confirm("command line: " . cmdline)
+			call system(cmdline)
+"			call confirm("code: " . v:shell_error)
+
+			redraw
+			if v:shell_error == 0
+				" remove the CTRL-H and CTRL-G codes from the items
+				"
+
+				if g:using_perldoc != 0
+
+
+					if PERLFLAG == "-f"
+						let PERLDESC = "[Function]"
+					elseif PERLFLAG == "-v"
+						let PERLDESC = "[Variable]"
+					elseif PERLFLAG == "-q"
+						let PERLDESC = "[FAQ-RegEx]"
+					el
+						if stridx(hkeyword,":") > -1
+							let PERLDESC = "[Module]"
+						el
+							let PERLDESC = "[Perl Documentation]"
+						en
+					en
+				else
+					let PERLDESC = "[PerlHelp perldoc(1) Wrapper]"
+				endif
+
+				execute "silent! split Perl Documentation - " . hkeyword . " - " .	PERLDESC
+
+				" Set to enable write to buffer
+				set modifiable
+				set noreadonly
+				" Static buffer settings
+				set autowrite
+				set autoread
+				set noconfirm
+				set hidden
+				set buftype=nofile
+				set filetype=man
+				set nofoldenable
+				" (should get set by ft=man)
+				if &syntax != "man"
+					set syntax="man"
+				endif
+				set bufhidden=hide
+				set number
+				set nohidden
+
+
+				" Set up buffer for new write (delete all text to black hole register)
+				silent! normal ggVG"_x
+
+				" Read in data from perlhelp directly into the buffer (uncached) and
+				" then go to line 1 and remove those first 4 lines, flag it as loaded.
+
+				execute "read !" . cmdline
+				silent! normal gg
+"				silent! normal 4dd
+				let b:help_loaded_already=1
+
+				" re-instate write-protection on buffer
+				" remove modification flag (temporary buffer!)
+				set readonly
+				set nomodifiable
+				set nomodified
+
+
+				" Notes: this is our MAN buffer props from :Man test
+				"--- Options ---
+				"  background=dark     buftype=nofile      filetype=man      nofoldenable          laststatus=2        scroll=8            syntax=man          ttymouse=xterm2     wrapmargin=1
+				"  bufhidden=hide      cscopetag           foldclose=all       foldmethod=expr     number              shiftwidth=4        tabstop=4           updatetime=2000
+				"  nobuflisted           cscopeverbose       foldcolumn=4        helplang=en         ruler             noswapfile            ttyfast           nowrap
+				"  backspace=indent,eol,start
+				"  balloonexpr=SyntasticBalloonsExprNotifier()
+				"  completefunc=youcompleteme#Complete
+				"  completeopt=preview,menuone
+				"  fileencodings=ucs-bom,utf-8,default,latin1
+				"  foldexpr=PerlPodFold(v:lnum)
+				"  foldopen=jump,mark,hor,search,quickfix,tag,undo
+				"  formatprg=perltidy -fnl
+				"  iskeyword=@,48-57,_,192-255,.,-
+				"  omnifunc=GoVimComplete
+				"  printoptions=paper:letter
+				"  runtimepath=~/.vim,~/.vim/bundle/Vundle.vim,~/.vim/bundle/vim-css3-syntax,~/.vim/bundle/syntastic,~/.vim/bundle/vim-plugins,~/.vim/bundle/YouCompleteMe,~/.vim/bundle/unite.vim,/var/lib/vim/addons,/usr/share/vim/vimfiles,/usr/share/vim/vim74,/usr/share/vim/vimfiles/after,/var/lib/vim/addons/after,~/.vim/after,~/.vim/bundle/Vundle.vim,~/.vim/bundle/Vundle.vim/after,~/.vim/bundle/vim-css3-syntax/after,~/.vim/bundle/syntastic/after,~/.vim/bundle/vim-plugins/after,~/.vim/bundle/YouCompleteMe/after,~/.vim/bundle/unite.vim/after
+				"  suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc
+				"
+			el
+				" changed from echo to confirm to make darn sure the user knows what happened!
+				call confirm("Perldoc cannot find any match for " . hkeyword . ", sorry! (command was " . cmdline . ")")
+			en
+		el
+			execute "silent Man 0 " . hkeyword
+			if v:shell_error != 0
+				echo "TODO: do additional checks!"
+			en
+		en
+	en
+endf
+" ...unction
+" === GetPerlFlag(perlkwd)
+fu! GetPerlFlag(perlkwd)
+	let PCMD = "perldoc"
+	let FLAGS = [ "", "-f", "-q", "-v" ]
+	for f in FLAGS
+		if len(f) == 0
+			let CMDLINE = PCMD . " " . a:perlkwd . " &> /dev/null"
+		else
+			let CMDLINE = PCMD . " " . f . " " . a:perlkwd . " &> /dev/null"
+		en
+		silent! let GPFMSG = system(CMDLINE)
+		"execute "silent !" . CMDLINE
+		"execute !cmd -- clears the screen and
+		let RESULT = v:shell_error
+		"redraw not needed when using system()
+		"redraw!
+		if RESULT == 0
+			return f
+		en
+	endfor
+  retu "NOGO"
+endf
+" ...
+" === GetRegisterContents(maxwidth,register)
+fu! GetRegisterContents(maxwidth,register)
+	let l:size = a:maxwidth / 2
+	let l:reglen = strlen(getreg(a:register))
+	let l:elipses = l:reglen > a:maxwidth
+	let l:regtxt = substitute(getreg(a:register),"[\n\t]","!","g")
+	if l:elipses
+	    let l:out=strpart(l:regtxt,0,l:size) . "..." . strpart(l:regtxt,l:reglen-l:size,l:size)
+	else
+		let l:out=l:regtxt . repeat("_", a:maxwidth - l:reglen)
+	endif
+	" return the 'shortened' lout :)
+	return l:out
+endf
+" ...
+" === GoBashComplete(findstart,base)
+let g:bashres = [ "asshole-pudding","abs( {expr})","acos( {expr})","add( {list}, {item})","and( {expr}, {expr})","append( {lnum}, {string})","append( {lnum}, {list})","argc()","argidx()","argv( {nr})","argv( )","asin( {expr})","atan( {expr})","atan2( {expr}, {expr})","browse( {save}, {title}, {initdir}, {default})","browsedir( {title}, {initdir})","bufexists( {expr})","buflisted( {expr})","bufloaded( {expr})","bufname( {expr})","bufnr( {expr})","bufwinnr( {expr})","byte2line( {byte})","byteidx( {expr}, {nr})","byteidxcomp( {expr}, {nr})","call( {func}, {arglist} [, {dict}])","ceil( {expr})","changenr()","char2nr( {expr}[, {utf8}])","cindent( {lnum})","clearmatches()","col( {expr})","complete( {startcol}, {matches})","complete_add( {expr})","complete_check()","confirm( {msg} [, {choices} [, {default} [, {type}]]])","copy( {expr})","cos( {expr})","cosh( {expr})","count( {list}, {expr} [, {start} [, {ic}]])","cscope_connection( [{num} , {dbpath} [, {prepend}]])","cursor( {lnum}, {col} [, {coladd}])","cursor( {list})","deepcopy( {expr} [, {noref}])","delete( {fname})","did_filetype()","diff_filler( {lnum})","diff_hlID( {lnum}, {col})","empty( {expr})","escape( {string}, {chars})","eval( {string})","eventhandler( )","executable( {expr})","exepath( {expr})","exists( {expr})","extend( {expr1}, {expr2} [, {expr3}])","exp( {expr})","expand( {expr} [, {nosuf} [, {list}]])","feedkeys( {string} [, {mode}])","filereadable( {file})","filewritable( {file})","filter( {expr}, {string})","finddir( {name}[, {path}[, {count}]])","findfile( {name}[, {path}[, {count}]])","float2nr( {expr})","floor( {expr})","fmod( {expr1}, {expr2})","fnameescape( {fname})","fnamemodify( {fname}, {mods})","foldclosed( {lnum})","foldclosedend( {lnum})","foldlevel( {lnum})","foldtext( )","foldtextresult( {lnum})","foreground( )","function( {name})","garbagecollect( [{atexit}])","get( {list}, {idx} [, {def}])","get( {dict}, {key} [, {def}])","getbufline( {expr}, {lnum} [, {end}])","getbufvar( {expr}, {varname} [, {def}])","getchar( [expr])","getcharmod( )","getcmdline()","getcmdpos()","getcmdtype()","getcwd()","getfperm( {fname})","getfsize( {fname})","getfontname( [{name}])","getftime( {fname})","getftype( {fname})","getline( {lnum})","getline( {lnum}, {end})","getloclist( {nr})","getmatches()","getpid()","getpos( {expr})","getqflist()","getreg( [{regname} [, 1 [, {list}]]])","getregtype( [{regname}])","gettabvar( {nr}, {varname} [, {def}])","gettabwinvar( {tabnr}, {winnr}, {name} [, {def}])","getwinposx()","getwinposy()","getwinvar( {nr}, {varname} [, {def}])","glob( {expr} [, {nosuf} [, {list}]])","globpath( {path}, {expr} [, {flag}])","has( {feature})","has_key( {dict}, {key})","haslocaldir()","hasmapto( {what} [, {mode} [, {abbr}]])","histadd( {history},{item})","histdel( {history} [, {item}])","histget( {history} [, {index}])","histnr( {history})","hlexists( {name})","hlID( {name})","hostname()","iconv( {expr}, {from}, {to})","indent( {lnum})","index( {list}, {expr} [, {start} [, {ic}]])","input( {prompt} [, {text} [, {completion}]])","inputdialog( {p} [, {t} [, {c}]])","inputlist( {textlist})","inputrestore()","inputsave()","inputsecret( {prompt} [, {text}])","insert( {list}, {item} [, {idx}])","invert( {expr})","isdirectory( {directory})","islocked( {expr})","items( {dict})","join( {list} [, {sep}])","keys( {dict})","len( {expr})","libcall( {lib}, {func}, {arg})","libcallnr( {lib}, {func}, {arg})","line( {expr})","line2byte( {lnum})","lispindent( {lnum})","localtime()","log( {expr})","log10( {expr})","luaeval( {expr}[, {expr}])","map( {expr}, {string})","maparg( {name}[, {mode} [, {abbr} [, {dict}]]])","mapcheck( {name}[, {mode} [, {abbr}]])","match( {expr}, {pat}[, {start}[, {count}]])","matchadd( {group}, {pattern}[, {priority}[, {id}]])","matcharg( {nr})","matchdelete( {id})","matchend( {expr}, {pat}[, {start}[, {count}]])","matchlist( {expr}, {pat}[, {start}[, {count}]])","matchstr( {expr}, {pat}[, {start}[, {count}]])","max( {list})","min( {list})","mkdir( {name} [, {path} [, {prot}]])","mode( [expr])","mzeval( {expr})","nextnonblank( {lnum})","nr2char( {expr}[, {utf8}])","or( {expr}, {expr})","pathshorten( {expr})","pow( {x}, {y})","prevnonblank( {lnum})","printf( {fmt}, {expr1}...)","pumvisible()","pyeval( {expr})","py3eval( {expr})","range( {expr} [, {max} [, {stride}]])","readfile( {fname} [, {binary} [, {max}]])","reltime( [{start} [, {end}]])","reltimestr( {time})","remote_expr( {server}, {string} [, {idvar}])","remote_foreground( {server})","remote_peek( {serverid} [, {retvar}])","remote_read( {serverid})","remote_send( {server}, {string} [, {idvar}])","remove( {list}, {idx} [, {end}])","remove( {dict}, {key})","rename( {from}, {to})","repeat( {expr}, {count})","resolve( {filename})","reverse( {list})","round( {expr})","screenattr( {row}, {col})","screenchar( {row}, {col})","screencol()","screenrow()","search( {pattern} [, {flags} [, {stopline} [, {timeout}]]])","searchdecl( {name} [, {global} [, {thisblock}]])","searchpair( {start}, {middle}, {end} [, {flags} [, {skip} [...]]])","searchpairpos( {start}, {middle}, {end} [, {flags} [, {skip} [...]]])","searchpos( {pattern} [, {flags} [, {stopline} [, {timeout}]]])","server2client( {clientid}, {string})","serverlist()","setbufvar( {expr}, {varname}, {val})","setcmdpos( {pos})","setline( {lnum}, {line})","setloclist( {nr}, {list}[, {action}])","setmatches( {list})","setpos( {expr}, {list})","setqflist( {list}[, {action}])","setreg( {n}, {v}[, {opt}])","settabvar( {nr}, {varname}, {val})","settabwinvar( {tabnr}, {winnr}, {varname}, {val})","setwinvar( {nr}, {varname}, {val})","sha256( {string})","shellescape( {string} [, {special}])","shiftwidth()","simplify( {filename})","sin( {expr})","sinh( {expr})","sort( {list} [, {func} [, {dict}]])","soundfold( {word})","spellbadword()","spellsuggest( {word} [, {max} [, {capital}]])","split( {expr} [, {pat} [, {keepempty}]])","sqrt( {expr})","str2float( {expr})","str2nr( {expr} [, {base}])","strchars( {expr})","strdisplaywidth( {expr} [, {col}])","strftime( {format}[, {time}])","stridx( {haystack}, {needle}[, {start}])","string( {expr})","strlen( {expr})","strpart( {src}, {start}[, {len}])","strridx( {haystack}, {needle} [, {start}])","strtrans( {expr})","strwidth( {expr})","submatch( {nr}[, {list}])","substitute( {expr}, {pat}, {sub}, {flags})","synID( {lnum}, {col}, {trans})","synIDattr( {synID}, {what} [, {mode}])","synIDtrans( {synID})","synconcealed( {lnum}, {col})","synstack( {lnum}, {col})","system( {expr} [, {input}])","systemlist( {expr} [, {input}])","tabpagebuflist( [{arg}])","tabpagenr( [{arg}])","tabpagewinnr( {tabarg}[, {arg}])","taglist( {expr})","tagfiles()","tempname()","tan( {expr})","tanh( {expr})","tolower( {expr})","toupper( {expr})","tr( {src}, {fromstr}, {tostr})","trunc( {expr})","type( {name})","undofile( {name})","undotree()","uniq( {list} [, {func} [, {dict}]])","values( {dict})","virtcol( {expr})","visualmode( [expr])","wildmenumode()","winbufnr( {nr})","wincol()","winheight( {nr})","winline()","winnr( [{expr}])","winrestcmd()","winrestview( {dict})","winsaveview()","winwidth( {nr})","writefile( {list}, {fname} [, {binary}])","xor( {expr}, {expr})" ]
+let g:bashres_w = [ "ass", "abs","acos","add","and","append","append","argc","argidx","argv","argv","asin","atan","atan2","browse","browsedir","bufexists","buflisted","bufloaded","bufname","bufnr","bufwinnr","byte2line","byteidx","byteidxcomp","call","ceil","changenr","char2nr","cindent","clearmatches","col","complete","complete_add","complete_check","confirm","copy","cos","cosh","count","cscope_connection","cursor","cursor","deepcopy","delete","did_filetype","diff_filler","diff_hlID","empty","escape","eval","eventhandler","executable","exepath","exists","extend","exp","expand","feedkeys","filereadable","filewritable","filter","finddir","findfile","float2nr","floor","fmod","fnameescape","fnamemodify","foldclosed","foldclosedend","foldlevel","foldtext","foldtextresult","foreground","function","garbagecollect","get","get","getbufline","getbufvar","getchar","getcharmod","getcmdline","getcmdpos","getcmdtype","getcwd","getfperm","getfsize","getfontname","getftime","getftype","getline","getline","getloclist","getmatches","getpid","getpos","getqflist","getreg","getregtype","gettabvar","gettabwinvar","getwinposx","getwinposy","getwinvar","glob","globpath","has","has_key","haslocaldir","hasmapto","histadd","histdel","histget","histnr","hlexists","hlID","hostname","iconv","indent","index","input","inputdialog","inputlist","inputrestore","inputsave","inputsecret","insert","invert","isdirectory","islocked","items","join","keys","len","libcall","libcallnr","line","line2byte","lispindent","localtime","log","log10","luaeval","map","maparg","mapcheck","match","matchadd","matcharg","matchdelete","matchend","matchlist","matchstr","max","min","mkdir","mode","mzeval","nextnonblank","nr2char","or","pathshorten","pow","prevnonblank","printf","pumvisible","pyeval","py3eval","range","readfile","reltime","reltimestr","remote_expr","remote_foreground","remote_peek","remote_read","remote_send","remove","remove","rename","repeat","resolve","reverse","round","screenattr","screenchar","screencol","screenrow","search","searchdecl","searchpair","searchpairpos","searchpos","server2client","serverlist","setbufvar","setcmdpos","setline","setloclist","setmatches","setpos","setqflist","setreg","settabvar","settabwinvar","setwinvar","sha256","shellescape","shiftwidth","simplify","sin","sinh","sort","soundfold","spellbadword","spellsuggest","split","sqrt","str2float","str2nr","strchars","strdisplaywidth","strftime","stridx","string","strlen","strpart","strridx","strtrans","strwidth","submatch","substitute","synID","synIDattr","synIDtrans","synconcealed","synstack","system","systemlist","tabpagebuflist","tabpagenr","tabpagewinnr","taglist","tagfiles","tempname","tan","tanh","tolower","toupper","tr","trunc","type","undofile","undotree","uniq","values","virtcol","visualmode","wildmenumode","winbufnr","wincol","winheight","winline","winnr","winrestcmd","winrestview","winsaveview","winwidth","writefile","xor"]
+
+let g:bashres_t =
+			\[
+			\	{
+			\		'word': 'alpha',
+			\		'info': 'this is an alphanumeric value!',
+			\		'menu': 'a-l-p-h-a'
+			\	},
+			\	{
+			\		'word': 'beta',
+			\		'info': 'appears to be a fish swimming in the water!',
+			\		'menu': 'b-e-t-a'
+			\	},
+			\	{
+			\		'word': 'gamma',
+			\		'info': 'we are sheilded from these by our planets atmosphere from the sun rays of this type',
+			\		'menu': 'g-a-m-m-a'
+			\	}
+			\]
+
+fu! GoBashComplete(findstart, base)
+
+  if a:findstart
+    " locate the start of the word
+    let line = getline('.')
+    let start = col('.') - 1
+
+    while start > 0 && line[start - 1] =~ '\a'
+      let start -= 1
+    endwhile
+    return start
+  el
+
+
+	let dret = { "words": g:vimres_t, "refresh": "always" }
+
+    return dret
+  en
+
+endf
+
+" ...
+fu! GoBufAddHandler(curfile,newfile)
+	"" Usage: GoBufAddHandler curfile=% newfile
+	"" OnlyForDebug: call confirm("Added buffer ".a:curfile." and ".a:newfile) 
+	"" Synopsis: opens a new tab automatically when using :e 
+	"" Needs: requires  tab feature and g:vimrc_no_tabbed_editing==0
+	"" Works: Yes, with issues
+	"" Enabled: Not Enabled by Default, Must Explicitly Enable It By Setting g:usebuftabhandler
+	"" Issues:1. [N]eed to add checking for when scripts open files, or, when files are re-opened (ie, ':e %') 
+	""            there seems to be a slight problem with that since most of the time we have no way of tracking that
+	""            which is why it is no longer enabled by default!
+	""        2. [W]hen the help system opens pages or when help is requested, strange things can happen!
+	""        3. [U]sing the actual :tabnew command alone causes looping problems!
+	"" (remedies are in the works but not forward because it isnt enabled by default anyway, feel free to fix this!)
+	if a:curfile == ""
+		"" DoNothing: not needed because we are in a uninitialized buffer that is empty!
+		return
+	el
+		if a:newfile != ""
+			tabnew
+		el
+			"" TODO: DO ADDITIONAL CHECKS TO RESOLVE ISSUES LISTED ABOVE
+			echo "the newfile was empty, ignoring, see issues in source"
+		en
+	en	
+endf
+" === GoExecuteThis()
+fu! GoExecuteThis()
+	w
+	let do_exec=1
+	if &filetype == "vim"
+		if bufname("%") == g:vimrc_global_filename
+		silent source %
+		ec "Is VIM (file [re]sourced)"
+		let do_exec=0
+	" note that .h usually comes up 'cpp' not 'h'
+	elsei &filetype =~ "\\(cpp\\|h\\)"
+		ec "Is C++"
+		!make
+		let exec_name=expand("%:r")
+	elsei &filetype == "sh" || &filetype == "bash"
+		ec "Is Shell_Script"
+		let exec_name=expand("%")
+	elsei &filetype == "perl"
+		let exec_name=expand("%")
+	el
+		ec "Is Magic...?"
+		let do_exec=0
+	en
+	if do_exec == 1
+		let exec_cmd=input("Enter additional arguments, if any: ")
+	en
+
+endf
+" ...
+" === GoOmniComplete(filetypestr)
+let g:lrgoc_completers =
+			\	{
+			\		'sh': 'GoBashComplete' ,
+			\		'pl': 'PerlComplete',
+			\		'pm': 'OmniPerl_Complete',
+			\		'vim': 'GoVimComplete'
+			\	}
+fu! GoOmniComplete(filetypestr)
+	if a:filetypestr != "" && &ofu == ""
+		echo "Searching for Last Resort Setting Required..."
+
+	el
+		echo "Skipping LRGOC: already set!"
+	en
+	echo "LRGOC settings | file type => " . a:filetypestr . " | omni completer func => " . &ofu
+
+endf
+" ...
+" === VARS: GoVimComplete Data Variables
+let g:vimres = [ "ass( asshole-pudding )","abs( {expr})","acos( {expr})","add( {list}, {item})","and( {expr}, {expr})","append( {lnum}, {string})","append( {lnum}, {list})","argc()","argidx()","argv( {nr})","argv( )","asin( {expr})","atan( {expr})","atan2( {expr}, {expr})","browse( {save}, {title}, {initdir}, {default})","browsedir( {title}, {initdir})","bufexists( {expr})","buflisted( {expr})","bufloaded( {expr})","bufname( {expr})","bufnr( {expr})","bufwinnr( {expr})","byte2line( {byte})","byteidx( {expr}, {nr})","byteidxcomp( {expr}, {nr})","call( {func}, {arglist} [, {dict}])","ceil( {expr})","changenr()","char2nr( {expr}[, {utf8}])","cindent( {lnum})","clearmatches()","col( {expr})","complete( {startcol}, {matches})","complete_add( {expr})","complete_check()","confirm( {msg} [, {choices} [, {default} [, {type}]]])","copy( {expr})","cos( {expr})","cosh( {expr})","count( {list}, {expr} [, {start} [, {ic}]])","cscope_connection( [{num} , {dbpath} [, {prepend}]])","cursor( {lnum}, {col} [, {coladd}])","cursor( {list})","deepcopy( {expr} [, {noref}])","delete( {fname})","did_filetype()","diff_filler( {lnum})","diff_hlID( {lnum}, {col})","empty( {expr})","escape( {string}, {chars})","eval( {string})","eventhandler( )","executable( {expr})","exepath( {expr})","exists( {expr})","extend( {expr1}, {expr2} [, {expr3}])","exp( {expr})","expand( {expr} [, {nosuf} [, {list}]])","feedkeys( {string} [, {mode}])","filereadable( {file})","filewritable( {file})","filter( {expr}, {string})","finddir( {name}[, {path}[, {count}]])","findfile( {name}[, {path}[, {count}]])","float2nr( {expr})","floor( {expr})","fmod( {expr1}, {expr2})","fnameescape( {fname})","fnamemodify( {fname}, {mods})","foldclosed( {lnum})","foldclosedend( {lnum})","foldlevel( {lnum})","foldtext( )","foldtextresult( {lnum})","foreground( )","function( {name})","garbagecollect( [{atexit}])","get( {list}, {idx} [, {def}])","get( {dict}, {key} [, {def}])","getbufline( {expr}, {lnum} [, {end}])","getbufvar( {expr}, {varname} [, {def}])","getchar( [expr])","getcharmod( )","getcmdline()","getcmdpos()","getcmdtype()","getcwd()","getfperm( {fname})","getfsize( {fname})","getfontname( [{name}])","getftime( {fname})","getftype( {fname})","getline( {lnum})","getline( {lnum}, {end})","getloclist( {nr})","getmatches()","getpid()","getpos( {expr})","getqflist()","getreg( [{regname} [, 1 [, {list}]]])","getregtype( [{regname}])","gettabvar( {nr}, {varname} [, {def}])","gettabwinvar( {tabnr}, {winnr}, {name} [, {def}])","getwinposx()","getwinposy()","getwinvar( {nr}, {varname} [, {def}])","glob( {expr} [, {nosuf} [, {list}]])","globpath( {path}, {expr} [, {flag}])","has( {feature})","has_key( {dict}, {key})","haslocaldir()","hasmapto( {what} [, {mode} [, {abbr}]])","histadd( {history},{item})","histdel( {history} [, {item}])","histget( {history} [, {index}])","histnr( {history})","hlexists( {name})","hlID( {name})","hostname()","iconv( {expr}, {from}, {to})","indent( {lnum})","index( {list}, {expr} [, {start} [, {ic}]])","input( {prompt} [, {text} [, {completion}]])","inputdialog( {p} [, {t} [, {c}]])","inputlist( {textlist})","inputrestore()","inputsave()","inputsecret( {prompt} [, {text}])","insert( {list}, {item} [, {idx}])","invert( {expr})","isdirectory( {directory})","islocked( {expr})","items( {dict})","join( {list} [, {sep}])","keys( {dict})","len( {expr})","libcall( {lib}, {func}, {arg})","libcallnr( {lib}, {func}, {arg})","line( {expr})","line2byte( {lnum})","lispindent( {lnum})","localtime()","log( {expr})","log10( {expr})","luaeval( {expr}[, {expr}])","map( {expr}, {string})","maparg( {name}[, {mode} [, {abbr} [, {dict}]]])","mapcheck( {name}[, {mode} [, {abbr}]])","match( {expr}, {pat}[, {start}[, {count}]])","matchadd( {group}, {pattern}[, {priority}[, {id}]])","matcharg( {nr})","matchdelete( {id})","matchend( {expr}, {pat}[, {start}[, {count}]])","matchlist( {expr}, {pat}[, {start}[, {count}]])","matchstr( {expr}, {pat}[, {start}[, {count}]])","max( {list})","min( {list})","mkdir( {name} [, {path} [, {prot}]])","mode( [expr])","mzeval( {expr})","nextnonblank( {lnum})","nr2char( {expr}[, {utf8}])","or( {expr}, {expr})","pathshorten( {expr})","pow( {x}, {y})","prevnonblank( {lnum})","printf( {fmt}, {expr1}...)","pumvisible()","pyeval( {expr})","py3eval( {expr})","range( {expr} [, {max} [, {stride}]])","readfile( {fname} [, {binary} [, {max}]])","reltime( [{start} [, {end}]])","reltimestr( {time})","remote_expr( {server}, {string} [, {idvar}])","remote_foreground( {server})","remote_peek( {serverid} [, {retvar}])","remote_read( {serverid})","remote_send( {server}, {string} [, {idvar}])","remove( {list}, {idx} [, {end}])","remove( {dict}, {key})","rename( {from}, {to})","repeat( {expr}, {count})","resolve( {filename})","reverse( {list})","round( {expr})","screenattr( {row}, {col})","screenchar( {row}, {col})","screencol()","screenrow()","search( {pattern} [, {flags} [, {stopline} [, {timeout}]]])","searchdecl( {name} [, {global} [, {thisblock}]])","searchpair( {start}, {middle}, {end} [, {flags} [, {skip} [...]]])","searchpairpos( {start}, {middle}, {end} [, {flags} [, {skip} [...]]])","searchpos( {pattern} [, {flags} [, {stopline} [, {timeout}]]])","server2client( {clientid}, {string})","serverlist()","setbufvar( {expr}, {varname}, {val})","setcmdpos( {pos})","setline( {lnum}, {line})","setloclist( {nr}, {list}[, {action}])","setmatches( {list})","setpos( {expr}, {list})","setqflist( {list}[, {action}])","setreg( {n}, {v}[, {opt}])","settabvar( {nr}, {varname}, {val})","settabwinvar( {tabnr}, {winnr}, {varname}, {val})","setwinvar( {nr}, {varname}, {val})","sha256( {string})","shellescape( {string} [, {special}])","shiftwidth()","simplify( {filename})","sin( {expr})","sinh( {expr})","sort( {list} [, {func} [, {dict}]])","soundfold( {word})","spellbadword()","spellsuggest( {word} [, {max} [, {capital}]])","split( {expr} [, {pat} [, {keepempty}]])","sqrt( {expr})","str2float( {expr})","str2nr( {expr} [, {base}])","strchars( {expr})","strdisplaywidth( {expr} [, {col}])","strftime( {format}[, {time}])","stridx( {haystack}, {needle}[, {start}])","string( {expr})","strlen( {expr})","strpart( {src}, {start}[, {len}])","strridx( {haystack}, {needle} [, {start}])","strtrans( {expr})","strwidth( {expr})","submatch( {nr}[, {list}])","substitute( {expr}, {pat}, {sub}, {flags})","synID( {lnum}, {col}, {trans})","synIDattr( {synID}, {what} [, {mode}])","synIDtrans( {synID})","synconcealed( {lnum}, {col})","synstack( {lnum}, {col})","system( {expr} [, {input}])","systemlist( {expr} [, {input}])","tabpagebuflist( [{arg}])","tabpagenr( [{arg}])","tabpagewinnr( {tabarg}[, {arg}])","taglist( {expr})","tagfiles()","tempname()","tan( {expr})","tanh( {expr})","tolower( {expr})","toupper( {expr})","tr( {src}, {fromstr}, {tostr})","trunc( {expr})","type( {name})","undofile( {name})","undotree()","uniq( {list} [, {func} [, {dict}]])","values( {dict})","virtcol( {expr})","visualmode( [expr])","wildmenumode()","winbufnr( {nr})","wincol()","winheight( {nr})","winline()","winnr( [{expr}])","winrestcmd()","winrestview( {dict})","winsaveview()","winwidth( {nr})","writefile( {list}, {fname} [, {binary}])","xor( {expr}, {expr})" ]
+let g:vimres_w = [ "ass", "abs","acos","add","and","append","append","argc","argidx","argv","argv","asin","atan","atan2","browse","browsedir","bufexists","buflisted","bufloaded","bufname","bufnr","bufwinnr","byte2line","byteidx","byteidxcomp","call","ceil","changenr","char2nr","cindent","clearmatches","col","complete","complete_add","complete_check","confirm","copy","cos","cosh","count","cscope_connection","cursor","cursor","deepcopy","delete","did_filetype","diff_filler","diff_hlID","empty","escape","eval","eventhandler","executable","exepath","exists","extend","exp","expand","feedkeys","filereadable","filewritable","filter","finddir","findfile","float2nr","floor","fmod","fnameescape","fnamemodify","foldclosed","foldclosedend","foldlevel","foldtext","foldtextresult","foreground","function","garbagecollect","get","get","getbufline","getbufvar","getchar","getcharmod","getcmdline","getcmdpos","getcmdtype","getcwd","getfperm","getfsize","getfontname","getftime","getftype","getline","getline","getloclist","getmatches","getpid","getpos","getqflist","getreg","getregtype","gettabvar","gettabwinvar","getwinposx","getwinposy","getwinvar","glob","globpath","has","has_key","haslocaldir","hasmapto","histadd","histdel","histget","histnr","hlexists","hlID","hostname","iconv","indent","index","input","inputdialog","inputlist","inputrestore","inputsave","inputsecret","insert","invert","isdirectory","islocked","items","join","keys","len","libcall","libcallnr","line","line2byte","lispindent","localtime","log","log10","luaeval","map","maparg","mapcheck","match","matchadd","matcharg","matchdelete","matchend","matchlist","matchstr","max","min","mkdir","mode","mzeval","nextnonblank","nr2char","or","pathshorten","pow","prevnonblank","printf","pumvisible","pyeval","py3eval","range","readfile","reltime","reltimestr","remote_expr","remote_foreground","remote_peek","remote_read","remote_send","remove","remove","rename","repeat","resolve","reverse","round","screenattr","screenchar","screencol","screenrow","search","searchdecl","searchpair","searchpairpos","searchpos","server2client","serverlist","setbufvar","setcmdpos","setline","setloclist","setmatches","setpos","setqflist","setreg","settabvar","settabwinvar","setwinvar","sha256","shellescape","shiftwidth","simplify","sin","sinh","sort","soundfold","spellbadword","spellsuggest","split","sqrt","str2float","str2nr","strchars","strdisplaywidth","strftime","stridx","string","strlen","strpart","strridx","strtrans","strwidth","submatch","substitute","synID","synIDattr","synIDtrans","synconcealed","synstack","system","systemlist","tabpagebuflist","tabpagenr","tabpagewinnr","taglist","tagfiles","tempname","tan","tanh","tolower","toupper","tr","trunc","type","undofile","undotree","uniq","values","virtcol","visualmode","wildmenumode","winbufnr","wincol","winheight","winline","winnr","winrestcmd","winrestview","winsaveview","winwidth","writefile","xor"]
+let g:vimres_t =
+			\[
+			\	{
+			\		'word': 'alpha',
+			\		'info': 'this is an alphanumeric value!',
+			\		'menu': 'a-l-p-h-a'
+			\	},
+			\	{
+			\		'word': 'beta',
+			\		'info': 'appears to be a fish swimming in the water!',
+			\		'menu': 'b-e-t-a'
+			\	},
+			\	{
+			\		'word': 'gamma',
+			\		'info': 'we are sheilded from these by our planets atmosphere from the sun rays of this type',
+			\		'menu': 'g-a-m-m-a'
+			\	}
+			\]
+" ...
+" === GoVimComplete_MakeVimResTeags()
+fu! GoVimComplete_MakeVimResTags()
+
+	"disable when debugging or set catch to /VimError#NoneEver/
+	"try
+		let l:info_list=[]
+		let l:info=""
+		let l:word=""
+		let l:menu=""
+		let l:help_eval=""
+		let l:i=0
+
+		if exists("g:vimcomplete_vimrestags_created_flagvar") && g:vimcomplete_vimrestags_created_flagvar == 1
+			return
+		en
+		" ---- create vim autocompletion dictionary (takes a bit, so call one time only) ---
+		if exists("g:vimcomplete_help_evaltxt_path") && filereadable(g:vimcomplete_help_evaltxt_path)
+			let l:help_eval = g:vimcomplete_help_evaltxt_path
+		else
+			let l:help_eval = $VIMRUNTIME . '/doc/eval.txt'
+			if filereadable(l:help_eval) == 0
+				call confirm("FAILED: Can't locate help files in VIMRUNTIME, please set your g:vimcomplete_help_evaltxt_path to locate it manually")
+				return
+			en
+		en
+		" TODO: use help file to get symbols instead of hard-coded (do it the same way as the l:info is used)
+		if exists("g:vimres_t")
+			unlet g:vimres_t
+		en
+		" init arrays
+		let g:vimres_t=[]
+		let l:info_list=[]
+		for l:word in g:vimres_w
+			" set up elements
+			let l:i=index(g:vimres_w,l:word)
+			let l:menu=g:vimres[l:i]
+
+			let l:info_list=systemlist("cat " . l:help_eval . " | fgrep -A5 '*" . l:word . "()*'")
+			if v:shell_error > 0
+				let l:info="No Information Automatically Available [(l:help_eval) for doc/eval.txt path detected as: " . l:help_eval . ' - override this by setting	g:vimcomplete_help_evaltxt_path'
+			elsei len(l:info_list) > 0
+				" empty the list first, then add in the element lines
+				let l:info=""
+				" one by one add them in, filtering out lines w/o signifigant text
+				for l:info_element in l:info_list
+					if len(l:info_element) > 0
+						let l:info.=l:info_element."\n"
+					en
+				endfor
+			else
+				let l:info="Help Loaded; however, topic for " . l:word . " does not contain any text."
+			en
+			" set up entry
+			let l:next_entry={}
+			let l:next_entry['word']=l:word
+			let l:next_entry['info']=l:info
+			let l:next_entry['menu']=l:menu
+			" add dictionary element to array
+			let g:vimres_t+=[ l:next_entry ]
+		endfor
+
+		let g:vimcomplete_vimrestags_created_flagvar = 1
+"	finally
+		return
+
+"	catch
+		silent! unlet g:last_vimcomplete_err
+		let g:last_vimcomplete_err={}
+		let d={}
+		let d["word"]=l:word
+		let d["info"]=l:info
+		let d["menu"]=l:menu
+		let d["entry"]=l:next_entry
+		let d["vimres_t"]=g:vimres_t
+		let d["shellerr"]=v:shell_error
+		let d["timesig"]=system('date')
+		let d["actbuf"]=expand('%')
+		let d["idx"]=l:i
+		" copy data to global structure, and release the data
+		let g:last_vimcomplete_err=deepcopy(d,1)
+		unlet d
+		call garbagecollect(1)
+
+		echohl ErrorMsg
+		echo "Caught exception - vital state data inside g:last_vimcomplete_err!"
+		echohl None
+
+
+
+"	endtry
+endf
+" ...
+" === GoVimComplete(findstart, base)
+fu! GoVimComplete(findstart, base)
+
+	" build help menu library if needed
+	call GoVimComplete_MakeVimResTags()
+
+	if a:findstart
+    " locate the start of the word
+	let line = getline('.')
+	let start = col('.') - 1
+
+		while start > 0 && line[start - 1] =~ '\a'
+			let start -= 1
+		endwhile
+		return start
+	el
+		let dret = { "words": g:vimres_t, "refresh": "always" }
+		return dret
+	en
+
+endf
+" ..." === PerlPodFold_Detect()
+fu! PerlPodFold_Detect()
+	" prevent the double use of...
+	if bufname("%") =~ '\(\.pm\|\.pl\|\.pod\|\.PL\)$'
+		return
+	en
+	if getline(1) =~ '^#!/usr/bin/perl' || getline(1) =~ '^package \w\+'
+		call PerlPodFold_Settings()
+	en
+endf
+" ...
+
+" [P]
+" === PerlPodFold(lev)
+fu! PerlPodFold(lev)
+	" find value of line, let the result be not folding, by default
+	let mytext = getline(a:lev)
+	" don't modify the fold level if there is no marker
+	" by default (so we dont have to track foldlevel())
+	let result="=""
+	if mytext =~ '^=item'
+		let result=">3"
+	elsei mytext =~ '^=back'
+		let result="<2"
+	elsei mytext =~ '^=over'
+		let result=">2"
+	elsei mytext =~ '^=cut'
+		let result="<1"
+	elsei mytext =~ '^=head1'
+		let result=">1"
+	elsei mytext =~ '^=head2'
+		let result=">2"
+	elsei mytext =~ '^=head3'
+		let result=">3"
+	elsei mytext =~ '^=\w\+'
+		let result='>1'
+	en
+	return result
+endf
+
+" ...
+" === PerlPodFold_Settings()
+fu! PerlPodFold_Settings()
+	se fen
+	se fdm=expr
+	se fde=PerlPodFold(v:lnum)
+	se fcl=all
+	se fdo=hor
+	se fml=1
+endf
+" ...
+
+" [R]
+" === Redir(expr,cmdline,...)
+fu! Redir(expr,cmdline,...)
+	silent! exec "redir " . a:expr
+	silent! exec a:cmdline
+	if a:0 > 0
+		for l:curcmd in a:000
+			silent! exec l:curcmd
+		endfor
+	en
+	silent! exec "redir END"
+endf
+" ...
+" === ReRedir(cmdline,...)
+fu! ReRedir(cmdline,...)
+	let g:redir_buffer=""
+	call Redir("=>g:redir_buffer",cmdline,a:000)
+	return g:redir_buffer
+endf
+" ...
+
+
+" [S]
+" === SelectRegister(reg)
+fu! SelectRegister(reg)
+	if a:reg =~ '^[+*a-z0-9]$'
+		let g:current_register=a:reg
+	else
+		let g:current_register='+'
+	en
+endf
+" ...
+" === SetHighlighter(mode,...)
+fu! SetHighlighter(mode,...)
+	" need a tighter update because of the hilighting that is done in this function
+	if exists("g:NoHighLighter") && g:NoHighLighter == 1
+	 	return 0
+    en
+	if a:mode == "on"
+
+		" set tighter timeouts when editing
+		" there are two separate values for insert or replace
+		" the first two are for INSERT mode, the next 2 are REPLACE
+		let &timeoutlen=10
+		let &ttimeoutlen=100
+		let timeoutlen_over=100
+		let ttimeoutlen_over=1000
+		" allow the above values to work
+		set ttimeout
+		set timeout
+		hi CursorLine guibg=#222222 ctermbg=234 ctermfg=none cterm=none
+		hi CursorColumn guibg=#222222 ctermbg=233 ctermfg=none cterm=none
+		hi clear Pmenu
+		hi clear PmenuSel
+		hi clear PmenuThumb
+		hi clear PmenuSbar
+		hi link Pmenu Number
+		hi link PmenuSel CursorLineNr
+		hi link PmenuThumb TabLine
+		hi link PmenuSbar TabLineFill
+		hi clear FoldColumn
+		hi clear Folded
+		hi link FoldColumn Number
+	    hi link Folded TabLineSel
+		" this is TEMPORARY, see Static_Options for the constant values
+		hi StatusLine ctermbg=52
+		hi ModeMsg none
+		if len(a:000) == 2 && a:1 == "update"
+			let modetext="Reloaded-" . a:2
+			let g:yesmode="yes mode"
+		elsei v:insertmode == "r"
+			let modetext="OVER-TYPE"
+			let &timeoutlen = timeoutlen_over
+			let &ttimeoutlen = ttimeoutlen_over
+			hi link ModeMsg Comment
+			let g:insert_mode = 1
+		elsei v:insertmode == "i"
+			let modetext="INSERT-INTO"
+			hi link ModeMsg Error
+			let g:insert_mode = 1
+		else
+			let modetext="AUXILARY"
+		en
+		exec 'set statusline=[#%n]\ **'.modetext.'**\ '.substitute(CurrentRegister()," ","","g").'\ %<%f%h%m%r%=%b\ 0x%B\ %l,%c%V\ %P'
+		call Static_Options("")
+	el
+		let g:insert_mode = 0
+		" return to their defaults
+		set timeoutlen=1000
+		set ttimeoutlen=-1
+		set nottimeout
+		set timeout
+		hi CursorLine ctermbg=none ctermfg=none cterm=none
+		hi CursorColumn ctermbg=none ctermfg=none cterm=none
+		hi StatusLine ctermbg=0
+		call Static_Options("")
+		exec 'set statusline=[#%n]['.substitute(CurrentRegister()," ","\\\\ ","g").']\ %<%f%h%m%r[type\ %y]%=%#StatusLineRH#[offset\ %o[0x%O],\ val\ %b\[0x%B]]\ \ %l,%c%V\ %P'
+	en
+	call Static_Options("")
+endf
+" ...
+" === SetStaticMaps()
+fu! SetStaticMaps()
+	MAPC "<M-Left>","foldclose"
+	MAPC "[1;3D","foldclose"
+	MAPC "<M-Right>","foldopen"
+	MAPC "[1;3C","foldopen"
+	MAPC "<M-Up>","<PageUp>"
+	MAPC "[1;3A","normal [5~"
+	MAPC "<M-Down>","<PageDown>"
+	MAPC "[1;3B","normal [6~"
+endf
+" ...
+
+
+" [T]
+" === ToggleHighlighter
+fu! ToggleHighlighter(...)
+    if a:0 > 0 && ( a:1 == 1 || a:1 == 0 )
+		g:NoHighLighter=a:1
+	el
+		let g:NoHighLighter=xor(g:NoHighLighter,1)
+	en
+	if g:NoHighLighter == 1
+		echo "Highlight OFF"
+	el
+		echo "Highlight ON"
+	en
+	return g:NoHighLighter
+endf
+
+" ...
+" ===  TH (append numeric suffix like 1st<- or 5th<---(the 'th' or 'st')
+fu! TH(times)
+	" appends the numeric suffix to numbers
+	" example: 20 -> 20th
+	"          11 -> 11th,  13 -> 13th
+	"          32 -> 32nd,  93 -> 93rd
+	" special cases:
+	" A) the absolute zero rule: 0 -> "zeroth" (Pam wrote her zeroth book)
+	" B) the "1" rule, 1 gets "st" appended: (I am the 1st winner!)
+	" C) the "2" rule, 2 gets "nd" appended: (You came in 2nd place!)
+	" D) the "3" rule, 3 gets "rd" appended: (Behind you, in 3rd place!)
+	" E) The "like" rule, anything (except rule F) that ends in 1/2/3 uses rule A/B/C (23rd, 92nd, 51st, etc)
+	" F) the 'teen' rule (11,12,13) are exception and get 'th' instead
+	" G) the minus rule, negative numbers treated the same
+	" H) the 'comma' rule, commas get stripped from the numbers		
+	" I) the 'last-two' rule: only the last two digits are considered for the above rules
+	let l:original=a:times
+	let l:digitmap=[ "th","st","nd","rd" ]
+	let l:num=substitute(a:times,',','','')
+	let l:digits=str2nr(strpart(l:num,len(l:num)-2))
+	" last two digits exempt between 10-20
+	if l:digits > 10 && l:digits <= 20
+		let l:digits=0
+	en
+	" modulus gives us our last digit always
+	let l:idx=float2nr(fmod(l:digits,10))
+	" final digits between 4-9 are treated like 0
+	if l:idx > 3
+		let l:idx=0
+	en
+	return a:times . l:digitmap[idx]
+endf
+" ...
+
+" [Z]
+" === ZMAPVIMRCGLOBAL_QUICKJUMPMAPS([reset = 1, optional])
+fu! ZMAPVIMRCGLOBAL_QUICKJUMPMAPS(...)
+	" keep this stuff in here, because it only pertains to the __buffer__ axvim-global (this file)
+	" we have the option to do this by force, any other value however is ignored but warned
+	if a:0 > 0 && str2nr(a:1) == 1
+		echo "forced to skip quickjump map reconf checks, doing it again anyways..."
+	elseif a:0 == 0
+		if exists("b:ZMAPVIMRCGLOBAL_QUICKJUMPMAPS_SETUP") && b:ZMAPVIMRCGLOBAL_QUICKJUMPMAPS_SETUP == 1
+			return
+		en
+	elseif a:0 > 0
+		echohl WarningMsg
+		echo "Warning: you called ZMAPVIMRCGLOBAL_QUICKJUMPMAPS_SETUP with an invalid set of arguments!! (ignoring them)"
+		sleep 775ms
+		echohl none
+	en
+
+	let mappings = { 1:"var", 2:"src", 3:"opt", 4:"func", 5:"cmd", 6:"abbr", 7:"au", 8:"map", 9:"opt-startup", 10:"opt-global",
+				\ 11:"global-static"	}
+
+	for j in keys(mappings)
+		exec "map <buffer> <C-S-F".j."> / -".mappings[j]."-<CR>:foldopen<CR>:foldopen<CR>"
+	endfor
+
+	let b:ZMAPVIMRCGLOBAL_QUICKJUMPMAPS_SETUP=1
+endf
+" ...
+
+
+" -func-  insert point
+
+" ...
+" === AUTOCOMMANDS
+
+
+aug BashConfig_Reloader_AutoCommands
+	au!
+	au BufWritePost .bashrc execute "silent! !echo reloadme > ~/.bashrc_reload_required" | redraw!
+	" uncomment to enable (can be unsafe!)
+	"	au BufWritePost .bashrc !for procid in `pgrep bash`; do kill -USR1 $procid; done
+aug END
+
+aug ShellFile_Misc
+	au!
+	au BufWritePost * call DoAutoChmod()
+aug END
+
+aug GxBaseSmartVim_FileTypes
+	au!
+	au BufNewFile,BufRead *.gxlib	setf sh
+	au BufNewFile,BufRead *.gxinc	setf sh
+	au BufNewFile,BufRead *.gxsrc	setf sh
+	au BufNewFile,BufRead *.gx setf sh
+	au BufNewFile,BufRead .bashrc	setf sh
+	au BufNewFile,BufRead bash.bashrc	setf sh
+	au BufNewFile,BufRead .profile setf sh
+	au BufNewFile,BufRead profile	setf sh
+	au BufNewFile,BufRead ~/.bash_logout setf sh
+	au BufNewFile,BufRead ~/.bash_profile	setf sh
+	au BufNewFile,BufRead ~/.bash_* setf sh
+	au BufNewFile,BufRead ~/.config/bashrc/* setf sh
+aug END
+
+"" TODO: fix issues in GoBuffAddHandler()
+"" NOTE: now disabled by default!!! also includes a failsafe:
+if exists("g:usebuftabhandler") && g:usebuftabhandler == 1
+	aug ScriptEditExt
+		au!
+		au BufAdd * call GoBufAddHandler(expand("%"),expand("<afile>"))
+	aug END
+endif
+
+aug PerlPodFold_AutoCommands
+	au!
+	au BufReadPost {*.pl,*.pod,*.pm,*.PL} call PerlPodFold_Settings()
+	au BufReadPost * call PerlPodFold_Detect()
+aug END
+
+aug SetHilighter_AutoCommands
+	au!
+	au InsertEnter	* :call SetHighlighter("on")
+	au InsertLeave 	* :call SetHighlighter("off")
+	" WARNING: These are nicer updates but they are VERY SLOW in console vim
+	" only override them with g:status_tight_updates if you know what you are doing!
+	if ( exists("g:status_tight_updates") && g:status_tight_updates != 0 )
+		au CursorHold 	* :call SetHighlighter("off")
+		au CursorMoved 	* :call SetHighlighter("off")
+		au CursorMovedI * :call SetHighlighter("on")
+		au CursorHoldI 	* :call SetHighlighter("on")
+	en
+	au InsertChange * :call SetHighlighter("on")
+aug END
+
+aug GoOmniCompleters
+	au!
+	au InsertEnter *.vim set omnifunc=GoVimComplete
+	au InsertEnter .*vimrc* set omnifunc=GoVimComplete
+	au InsertEnter *.sh set omnifunc=GoBashComplete
+	au InsertEnter * if &ft=='sh' | set omnifunc=GoBashComplete | en
+	au InsertEnter * call GoOmniComplete(&ft)
+aug END
+
+augroup QuickJumpMapsVimrcGlobal
+	au!
+	au BufEnter axvim-global call ZMAPVIMRCGLOBAL_QUICKJUMPMAPS()
+augroup END
+
+"<--- -au- Insertion point --- for new augroups ---
+
+aug AutoCompile
+	au!
+	au BufWritePost *.c,*.cpp,*.h,Makefile call DoAutoCompile()
+aug END
+
+aug VimConfig_Reloader_AutoCommands
+	au!
+	au BufReadPost * call Static_Options(bufname("%"))
+	au BufWritePost {axvim*} exec "source " . bufname("%")
+aug END
+
+aug VimInitGlobals
+	au!
+	au VimEnter * ENABLESTATICMAPS
+aug END
+
+aug VimStaticSettings_AutoCommands
+	au!
+	au VimEnter * call Static_Options("")
+	au BufEnter * call Static_Options(bufname("%"))
+	au BufReadPost * call Static_Options(bufname("%"))
+
+	au CursorHold *  call Static_Options(bufname("%"))
+	au CursorHoldI *  call Static_Options(bufname("%"))
+
+aug END
+
+" ...
+" === ABBREVIATIONS
+
+abclear
+
+iab g.s. Gabriel Sharp <osirisgothra@hotmail.com>
+iab p.e. Paradisim Enterprises, LLC.
+iab (C)  (C) Copyright 2014-2015 Paradisim Enterprises(tm), LLC. (Gabriel Sharp <osirisgothra@hotmail.com>)
+iab !i !important;
+iab atxul @namespace url('http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul')
+iab athttp @namespace url('http://www.w3.org/1999/xhtml')
+iab atchrome file:///home/gabriel/.mozilla/firefox/lhry73tb.dev-edition-default/chrome
+
+
+
+" ...  -abbr-
+" === COMMMANDS
+
+com! -nargs=+ Redir :call Redir(<args>)
+
+com! GetExtHelp :call GetExtHelp()
+com! -nargs=+ COLORECHO :call DoColorEcho(<args>)
+com! PERLCOMPLETERCYCLE :call CYCLEPERLCOMPLETER()
+com! -nargs=+ MAN :call DoMan("<args>")
+com! -nargs=+ MAP :call DoMap("regular",<args>)
+com! -nargs=+ MAPI :call DoMap("regular_ins",<args>)
+com! -nargs=+ MAPC :call DoMap("command",<args>)
+com! -nargs=+ MAPPA :call DoMap("proca",<args>)
+com! -nargs=+ MAPPV :call DoMap("procv",<args>)
+com! DISABLESTATICMAPS call DisableStaticMaps()
+com! ENABLESTATICMAPS call EnableStaticMaps()
+com! STATICOFF let g:disable_static_options=1
+com! STATICON unlet g:disable_static_options
+
+" ...  -cmd-
+" === MAPS
+
+
+" FunctionalMaps, Regular+Insert (automatic in-out of insert mode)
+
+MAPI "<C-S-]>",":NEXTCOLOR<CR>"
+MAPI "<C-S-[>",":PREVCOLOR<CR>"
+MAPI "<M-C-Left>",":silent! set foldlevel-=1<CR>:set foldlevel?<CR>"
+MAPI "<M-C-Right>",":silent! set foldlevel+=1<CR>:set foldlevel?<CR>"
+
+
+" FunctionalMaps, Multimode
+
+MAP "<M-S-Right>",":foldopen<CR>"
+MAP "<M-S-Left>",":foldclose<CR>"
+MAP "<M-C-S-Right>",":PERLCOMPLETERCYCLE<CR>"
+MAP "<S-Up>","v<Up>"
+MAP "<S-Down>","v<Down>"
+MAP "<S-Left>","v<Left>"
+MAP "<S-Right>","v<Right>"
+MAP "<S-End>","v<End>"
+MAP "<S-Home>","v<Home>"
+MAP "<C-Up>",":move -2<CR>"
+MAP "<C-Down>",":move +1<CR>"
+MAP "<M-Insert>","P"
+MAP "<M-S-Up>","<C-Left>gUw<C-Right>"
+MAP "<M-S-Down>","<C-Left>guw<C-Right>"
+MAP "<F1>",":call GetExtHelp()<CR>"
+MAP "<S-F1>",":call GoFollow()<CR>"
+
+" Regular -map- assignments
+map <C-Tab> :tabnext<CR>
+map! <C-Tab> <Esc>:tabnext<CR>i
+map <C-M-Tab> :tabprevious<CR>
+map! <C-M-Tab> 	<Esc>:tabprevious<CR>i
+
+
+
+" Regular maps
+nmap <S-Tab> <C-Left>
+nmap <Tab> <C-Right>
+imap <S-Tab> <Del>
+
+
+" Cut Helpers
+vmap <S-Right> <Right>
+vmap <S-Left> <Left>
+vmap <S-Up> <Up>
+vmap <S-Down> <Down>
+vmap <S-Home> <Home>
+vmap <S-End> <End>
+vmap <Del> "_x
+map <Del> "_x
+vmap <S-Del> x
+vmap <C-c> y
+vmap <C-v> <S-Insert>
+vmap <C-x> <S-Del>
+vmap <Tab> >>
+vmap <S-Tab> <<
+
+
+
+" RegularNoRemaps
+
+inoremap <C-w> <ESC><C-w>
+noremap c y
+
+
+" ...
+
+" === EPILOGUE
+
+
+call SetHighlighter("on","update",expand("<sfile>"))
+
+
+redraw!
+echohl DiffAdd
+if exists("g:globals_loaded")
+	let g:globals_loaded+=1
+	echo "Globals RELOADED (for the ". TH(g:globals_loaded) ." time now)"
+else
+	" don't show first time, to avoid the ENTER prompt
+	" (and because it is downright obvious)
+	let g:globals_loaded=1
+en
+echohl None
+"set statusline=%!_statuslinefunc()
+
+
+" ...
+
+" BUG -- see BUGS()
+call MLON()
