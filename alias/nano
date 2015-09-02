@@ -1,1 +1,1 @@
-alias nano='sudo nano --syntax=none'
+alias nano='nano'

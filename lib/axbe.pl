@@ -1,17 +1,3 @@
-#!/usr/bin/perl
-
-use warnings;
-use strict;
-use v5.16;
-use Getopt::Long;
-use Pod::Usage;
-use Path::Class;
-use File::Which;
-use Autox::Config;    # lives with axbe.pl's root dir
-use File::Find;
-use File::Listing;
-
-
 =head1 NAME
 
 	axbe - AX Blind Editor
@@ -68,11 +54,23 @@ You must place the aliases under the configuration [axbe_aliases]. If you do not
 
 =cut
 
+use warnings;
+use strict;
+use v5.16;
+use Getopt::Long;
+use Pod::Usage;
+use Path::Class;
+use File::Which;
+use Autox::Config;    # lives with axbe.pl's root dir
+use File::Find;
+use File::Listing;
+
+
 
 
 # VARIABLES
 
-sub absolute_env {
+sub absolute_env
 
 	# parameters
 	# needed for komodo and other ide's calltips
@@ -96,8 +94,7 @@ sub unshift_if_exec {
 
 }
 
-my @hardcoded_editors =
-  ( 'editor', 'vim', 'emacs', 'jed', 'nano', 'pico', 'vi', 'ed', 'edit' );
+my @hardcoded_editors =  ( 'editor', 'vim', 'emacs', 'jed', 'nano', 'pico', 'vi', 'ed', 'edit' );
 unshift_if_exec( "AX_EDITOR", \@hardcoded_editors );
 my $backupsfound = 0;
 my @foundbackups = ();
@@ -200,7 +197,7 @@ my @dirloc =  ( $axbase  );
 
 find(
 	 {
-			wanted =>			
+			wanted =>
 			sub
 			{
 				my $name = $File::Find::name;
@@ -218,7 +215,7 @@ find(
 							{
 								if ( $name =~ /.*(\.save|~)$/ )
 								{
-									$backupsfound = 1;									
+									$backupsfound = 1;
 									print "not editing backup file: $name\n";
 									push @foundbackups, $File::Find::name;
 								}
@@ -246,11 +243,12 @@ if (@foundfiles)
 		{
 			system $ENV{AX_BASE} . "/lib/gentags.pl","--cleanup"
 		}
-		
+
 	}
-	
+
 	sleep 2;
 	system $editorpath,@foundfiles;
+	sys
 
 }
 else

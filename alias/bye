@@ -1,1 +1,1 @@
-alias bye='while true; do suspend; sleep 5; done'
+alias bye='while true; do suspend; sleep 15; echo "PRESS CTRL+C TO ABORT NOW"; while pgrep suspend; do sleep 1; echo "(waiting for suspend to exit)"; done; done'

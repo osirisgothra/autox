@@ -32,12 +32,29 @@ else
 		echo "Error: AX_BASE is not fully acessible in $BASH_SOURCE"
 	fi
 	declare -gi AX_MACROS_LOADED=$$
+	[[ $TTY ]] || TTY=$(tty)
+
 	BOLD="$(tput bold)"
 	OFF="$(tput sgr0)"
 	BUL="${BOLD}*${OFF} "
 	FG="tput setaf" # $($FG code)
-	BG="tput setab" # $($BG code)	
-	RGB() { 
+	BG="tput setab" # $($BG code)
+
+	single_pass_func()
+	{
+		for x; do
+			if [[ $(compgen -A function | grep -Po '^'"$x"'$') == "$x" ]]; then
+				true nop
+			else
+				return 1
+			fi
+		done
+		return 0
+	}
+	f_undef() { single_pass_func "$@"; return $[ $? ^ 1 ]; }
+	f_def() { single_pass_func "$@" ; return $[ $? | 1 ]; }
+
+	RGB() {
 			if [[ $# -lt 3 ]]; then
 				if [[ $(caller) =~ $FUNCNAME ]]; then
 					echo "$FUNCNAME: Fatal: <=2 args for -- stopping at second recursion ($(caller))"
@@ -59,6 +76,16 @@ else
 			esac
 	 }
 	 # usage: $(RGB 12 24 201 b) -- commas virtualized out
+	 assert_exists()
+	 {
+	 	for x; do
+	 		if [[ ! -r "$x" ]]; then
+	 			return 1
+	 		fi
+	 	done
+	 	return 0
+	 }
+
 
 	 # _hrule [marquee(defaults to '-')] [forecolor] [backcolor*]
 	 # * colors range from 0 to 256 colors

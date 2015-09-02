@@ -1,0 +1,1 @@
+alias noisefortune4='clear;echo -e "And now, huhuhuhuhuhuh..., for Your FOUR fortunes, huhuhuhuhuh.....\n\n";sudo modprobe pcspkr;sleep 6; for d in 1 2 3 4; do fortune > /tmp/$d; done;(beep -d 900 -f 1000 -l 100 -r 4 &) &>/dev/null; for d in 1 2 3 4; do echo -e "\n\n\n"; cat /tmp/$d; sleep 1; done; sudo modprobe -r pcspkr'

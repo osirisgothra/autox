@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 
-__author__ = "gabriel sharp"
+__author__ = "Gabriel Thomas Sharp"
 
-#
 # pgoo.py
 #
 # syntax: pgoo [search text]
@@ -84,75 +83,153 @@ __author__ = "gabriel sharp"
 #    under certain conditions; type `show c' for details.
 #
 
-#
 
+# namespace imports
 import os
 import sys
 import argparse
 import time
 import re
+import shutil
+
+# namespace symbol imports
+from logging import log, DEBUG
 from pathlib import Path
-import math
+
+# Function Definitions
 
 
-# Generics
-def separator(char: str='-') -> None:
-	"""
+def separator(char: str='-')->None:
+	""" 
 	:param char:str or Any: simple character(s) to print
 	:return: None
-	The function is protected by division by zero errors when zero-length
-	items are given. It also compensates for more than one char by dividing
-	down. Nonprintable strings are replaced with dashes of equal length. Ie,
-	the string: "\0\0\0" is changed to "---".
-	...
-	The variable 'char' is first converted from it's native type to str if needed
-	This allows for non-str items to be sent (like numbers, lists, etc) though might not be pretty!
-	...
-	No string is printed at all if one of the following is True:
-		- the RESULTING string is empty or zero length
-		- the object type of 'char' is None
-		- an exception is thrown before print is reached (not in our hands!)
+	-Zero length or 'None' is printed as '='
+	-Objects are printed as str(obj)
+	-Non-printable chars are replaced with '-'s
+	-Length is Divided Up To Fill > 1 char strings too
+	-If Length isn't enough, then the remaining chars are filled with as many chars from the string as possibly can fit.
 	"""
-	if char is None or len(char) < 1:
-		return
-	elif char is not str:
+	if char is None or not len(char):
+		char = '='
+	if type(char) is not str:
 		char = str(char)
+	elif not char.isprintable():
+		char = '-' * len(char)
+	cols = shutil.get_terminal_size().columns   # zero based from one based
+	leftover = len(char) % cols
+	print(char * (cols // len(char)))
+	if leftover and len(char) > 1:
+		print(char[:leftover])
+
+
+def show_listing(pd: dict, sd: dict) -> None:
+	"""
+	show_listing(pd,sd)
+	:param pd = dict pf prefix modifiers
+	:param sd = dict of suffix modifiers
+	:return: None
+	Display listing of possible binaries that can either be
+	symlinks to program name, or, used with the -b/--binary
+	flag.
+	"""
+	suffixes = {'': ''}
+	prefixes = {'': ''}    # allow blanks into combination pair to account for absent entries
+	if 'none' in sd:
+		del(sd['none'])
+	if 'none' in pd:
+		del (pd['none'])
+	if len(sd) == 0 or len(pd) == 0:
+		raise ValueError("Must not pass either argument empty. traceback obj set to pd/sd").with_traceback(show_listing)
+	for s in sd.keys():
+		(suffixes if s.startswith('.') else prefixes)[re.sub('[\.\[\]]', '', s)] = sd[s]
+	combinations = [x + ('-' if len(y + z) > 0 else "") + (y[1] if len(y) > 1 else y) + z for x in pd.keys()
+																	for y in prefixes.keys() for z in suffixes.keys()]
+	combinations.sort()
+	combinations.reverse()
+	print('combinations')
+	separator('_')
+	print("%10s | %-20s %-40s %-20s" % ("--binary", "binary", "urlstring", "pos\turl-modifiers"))
+	separator('_')
+	for c in combinations:
+		combos = translate(c)
+		print("%10s | %-20s %-40s %-20s" %
+								(c, combos['binary'], combos['url'],
+									re.sub("[\[\]']", '', str(combos['siteAttributes']).replace('|', '\t'))))
+	separator('_')
+	print("pos meanings: 1 = site-prefix modifier (www,images,etc)  S = suffix modifier (appended)*")
+	print("              NONE = default prefix (www) and suffix (nothing) are used when not specified.")
+	separator('-')
+	print("* to conserve list length, modifiers from different 'pos' indexes can be combined but are not shown here!")
+	separator(' ')
+	return
+
+
+def translate(base: str) -> dict:
+	global sites, binaries, modifiers, defaultSite
+	(program, modifier) = base.split('-', 1) if '-' in base else (base, "none")
+	attributes = [modifiers[k] for k in modifiers.keys() if re.search(k, modifier, regexFlags) is not None]
+	binary = binaries.get(program, binaries['pgoo'])
+	order = [s for s in attributes if s in sites.keys()]
+	site = order[0] if len(order) is not 0 else defaultSite
+	site_attributes = [sites[site][sa] for sa in sites[site].keys() if sa in attributes]
+	return dict(progname=program, modifier=modifier, attribs=attributes, binary=binary, site=site,
+													url=sites[site]['url'], siteAttributes=site_attributes)
+
+
+def get_base_name(args):
+	if type(args.binary) is str and len(args.binary) > 0:
+		if args.binary.lower() == 'list':
+			show_listing(binaries, modifiers)
+			return None
+		else:
+			return args.binary
 	else:
-		pass
-	try:
-		print(char if char.isprintable() else ('-' * len(char)) * (
-			int(math.floor(os.environ.get('COLUMNS', '80')) / len(char))))
-	except Exception as e:
-		print("separator(%s) threw exception (msg=%s)" % (char, str(e)))
-		yield char
-		yield e
+		path = re.match('[^.]+', Path(sys.argv[0]).name)
+		log(DEBUG, "%20s : %-20s" % ("pm", path))
+		if path is None:
+			return binaries.get("default", __name__)
+		else:
+			return path.group(0)
 
 
-# Variables
+def format_url(url: str, site_modifiers: list, search_strings: list) -> str:
+	len(re.search("{[0-9]}",url).group())
+	positionals = [''] * url.count("%s")        # we will need them whether they get used or not
+	for (pos, item) in [str(x).split('|') for x in site_modifiers]:
+		positionals[int(pos) if pos != "S" else 0] = item
+	positionals.insert(1, search_strings)
+	return url.format(*positionals)
 
-reflags = re.IGNORECASE | re.UNICODE
-binaries = dict(
-	pgoo="x-www-browser",
-	goo="x-www-browser",
-	g="x-www-browser",
-	t="www-browser",
-	T="links2 -g",
-	f="firefox",
-	c="chrome",
-	e="elinks",
-)
+
+# Global Variables (Access them with pgoo.variable_name outside this module)
+
+defaultBinary = "g"
+regexFlags = re.IGNORECASE | re.UNICODE
+binaries = {
+	__name__: defaultBinary,
+	'none': defaultBinary,
+	'pgoo': "x-www-browser",
+	'goo': "x-www-browser",
+	'g': "x-www-browser",
+	't': "www-browser",
+	'T': "links2 -g",
+	'f': "firefox",
+	'c': "chrome",
+	'e': "elinks"
+}
 modifiers = {
 	".l": "lucky",
 	".v": "video",
-	".[Dd]": "duckduckgo",
+	"[Dd]": "duckduckgo",
 	"none": "none",
 	".i": "images",
+	"[Gg]": "google",
 }
-defaultsite = "google"
+defaultSite = "google"
 sites = {
 	"google":
 		dict(
-			url="P|http://%s.google.com/search?q=%s",
+			url="P|http://{0}.google.com/search?q={1}",
 			lucky="S|&btnI=l",
 			video="1|video",
 			images="1|images",
@@ -160,7 +237,7 @@ sites = {
 		),
 	"duckduckgo":
 		dict(
-			url="P|http://%s.duckduckgo.com/?q=%s",
+			url="P|http://{0}.duckduckgo.com/?q={1}",
 			lucky="S|+!",
 			video="1|video",
 			images="1|images",
@@ -172,46 +249,63 @@ VERSION_STRING = '%s version %d.%d-%d [%s] (%s)' % (
 	"%(prog)s", ver['major'], ver['minor'], ver['revision'], ver['stage'], ver['date'])
 debugging = True
 parser = argparse.ArgumentParser()
-
-# Intelligent Command Line Processor /w Auto-Help Generation
-
-parser.add_argument('-v', '--version', action='version', version=VERSION_STRING)
-parser.add_argument('-d', '--debug', action='store_true')
-parser.add_argument('searchStrings', nargs='*', action='append')
-args = parser.parse_args()
-debugging = args.debug if debugging is False else debugging
+program_description = "Relay Links to DuckDuckGo, Google and other search engines"
+program_copyright = "(C)2014-2016 Gabriel Thomas Sharp, All Rights Reserve\n" + \
+	"Licensed under the GNU GPL3, see http://gpl.gnu.org/gpl for details."
 
 
-# Setup/Preparations
+def main(argv=sys.argv)->int:
+	"""
+	Main Program - Execution Order, Descriptions, Notes and Other Comments
+	--------------------------------------------------------------------------------------------------
+	Key: *=complete -=incomplete ..=continued from previous line 0=optional
+	--------------------------------------------------------------------------------------------------
+	* assert performs verifications on variables to guarantees defaults work
+	* configure the command line parser switches and names
+	* parse command line arguments and put the results in 'args'
+	* get the base name and pass it to translator to get the 'index'
+	* produce list if '--binary list' present or show '--help' if no search strings present
+	--------------------------------------------------------------------------------
+	0 The following happens only if search strings are present on the command line AND
+	..the '--binary list' command was NOT on the command line:
+	--------------------------------------------------------------------------------
+	* url,modifiers, and search terms are passed to format_url() to create the final_url
+	- the final_url is passed with the program's name to 'execute' and returns the programs' return value
+	- the program's return value is returned as an integer in main, with a mask of 127 to set it apart
+	..from other return codes. A value of '127' means no error happened, but that the execution ran.
+	- values lower than 127 mean some internal error
+	- 1 means that the command line given prevented the executor from ever running
+	- if this is the __main__ module, then the return code is passed back to the calling process
+	..outside of the program, back to python's executor shim, or whoever launched it in the first place.
+	--------------------------------------------------------------------------------------------------
+	Parameter/Return Explanation (Begin Linter Inference, Do Not Edit These Lines!)
+	--------------------------------------------------------------------------------------------------
+	:param argv:list    list of strings to be passed in place of sys.argv
+	:return:int         return code of program (documented in main()'s docstring above this text)
+	"""
+	global debugging
+	global parser
+	assert (__name__ in binaries.keys())
+	assert ('none' in modifiers.keys())
+	assert (defaultSite in sites.keys())
 
-if debugging is False:
-	basename = Path(sys.argv[0]).name.split('.', 1)[0]
+	parser.add_argument('-v', '--version', action='version', version=VERSION_STRING)
+	parser.add_argument('-d', '--debug', action='store_true')
+	parser.add_argument('-b', '--binary', action='store')
+	parser.add_argument('searchStrings', nargs='*', action='append')
+	args = parser.parse_args(argv)
+	index = translate(get_base_name(args))
+	if len(args.searchStrings[0]) < 1 or index is None:
+		if index is not None:
+			parser.print_help()
+		exit(1)
+	log(DEBUG, args, args.searchStrings)
+	log(DEBUG, str(["%20s : %-20s" % (r, index[r]) for r in index.keys()]))
+	url = format_url(index['url'], index['siteAttributes'], args.searchStrings)
+	print(url)
+
+if __name__ == '__main__':
+	exit(main(sys.argv[1:].copy()))     # don't use original in case it is modified later
 else:
-	basename = 't-ddgl'
-	print(args.searchStrings)
-	separator()
-
-(progname, modifier) = basename.split('-', 1) if '-' in basename else (basename, "none")
-attribs = [modifiers[k] for k in modifiers.keys() if re.search(k, modifier, reflags) is not None]
-binary = binaries.get(progname, binaries['pgoo'])
-
-# force a site if none is specified
-# [pseudocode: if not attribs in sites]
-#   if not [a for a in attribs if a in sites.keys()] : attribs.append(defaultsite)
-#
-# step one, get site key and remove it from attributes to prevent confusion
-#
-
-site = [s for s in attribs if s in sites.keys()][0]
-
-# step two, figure out attributes from related site
-
-siteattribs = [sites[site][sa] for sa in sites[site].keys() if sa in attribs]
-
-# step three, print out debug information, if debug is on
-
-print("progname:", progname)
-print("binary:", binary)
-print("attribs:", attribs)
-print("site: ", site)
-print("siteattribs:", siteattribs)
+	if bool(os.environ.get("PGOO_SILENT_LOAD", "0")) is False:
+		print("pgoo", program_description, program_copyright, VERSION_STRING, "use .main(args) to run", sep='\n')

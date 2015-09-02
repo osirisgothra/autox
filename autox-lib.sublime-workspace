@@ -1,0 +1,442 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"AX_CACHE",
+				"AX_CACHE_SITE"
+			],
+			[
+				"func_f",
+				"func_factory_state"
+			],
+			[
+				"PROMPTFAC",
+				"PROMPTFACTORY_HELP_START"
+			],
+			[
+				"PROM",
+				"PROMPTFACTORY_HELP_BAD_EDITOR"
+			],
+			[
+				"PROMPT",
+				"PROMPTFACTORY_HELP_BAD_OPTION"
+			],
+			[
+				"PF_A",
+				"PF_ACTION"
+			],
+			[
+				"PF_ACTIO",
+				"PF_ACTION_ARG"
+			],
+			[
+				"PF_AC",
+				"PF_ACTION_ARG"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"contents": "",
+			"settings":
+			{
+				"buffer_size": 0,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "autox",
+			"settings":
+			{
+				"buffer_size": 28595,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/src/ax/lib/axbe.pl",
+			"settings":
+			{
+				"buffer_size": 5673,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "Packages/Python/Python.sublime-build",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 75.0,
+		"last_filter": "Install Package",
+		"selected_items":
+		[
+			[
+				"Install Package",
+				"Package Control: Install Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"install package",
+				"Package Control: Install Package"
+			],
+			[
+				"install package	",
+				"Package Control: Install Package"
+			],
+			[
+				"install pac",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 449.0
+	},
+	"console":
+	{
+		"height": 685.0,
+		"history":
+		[
+			"import urllib.request",
+			"dir(dir)",
+			"dir",
+			"help()",
+			"help",
+			"import urllib.request,os,hashlib; h = 'eb2297e1a458f27d836c04bb0cbaf282' + 'd0e7a3098092775ccb37ca9d6b2e4b7d'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by) "
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": false,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/src/ax/*.sublime-project",
+		"/ax/autox",
+		"/tmp/tst.py",
+		"/tmp/script.js",
+		"/src/ax/autox",
+		"/home/gabriel/.config/sublime-text-3/Packages/Default/Preferences.sublime-settings",
+		"/home/gabriel/.config/sublime-text-3/Packages/User/Shell-Unix-Generic.sublime-settings",
+		"/home/gabriel/.config/sublime-text-3/Packages/User/Preferences.sublime-settings",
+		"/home/gabriel/.config/sublime-text-3/Packages/User/Python.sublime-settings",
+		"/home/gabriel/.config/sublime-text-3/Packages/User/JSON.sublime-settings",
+		"/c/ch23/chapter-23-quiz.py",
+		"/c/ch24/chapter-24-quiz.py",
+		"/tmp/gtst",
+		"/src/nanorc/moc_theme.nanorc",
+		"/usr/share/moc/themes/nightly_theme",
+		"/usr/share/moc/themes/gabriel_theme",
+		"/usr/share/moc/themes/green_copy_theme",
+		"/home/gabriel/Documents/Archive/text/This happpened on the 22nd saturday, august 2015,",
+		"/tmp/temp.tmp",
+		"/usr/share/moc/themes/example_theme",
+		"/src/course-study-work/python/intermediate/Ch19/ch19-20-21 quiz & unit IV review.py",
+		"/src/course-study-work/python/intermediate/ch17/ch17-quiz.py",
+		"/src/course-study-work/python/intermediate/ch18/ch18-quiz.py",
+		"/src/ax/bootstrap.d/func.ax",
+		"/var/www/newtab.css",
+		"/var/www/newtab.html",
+		"/var/www/secure/nohist.xhtml",
+		"/gxbase/bin/makelic.pl",
+		"/src/course-study-work/python/intermediate/review/file.cpp",
+		"/src/ax/lib/pgoo.py",
+		"/src/course-study-work/python/novice/unitII-test/Python Part II - Novice Chapters 5,6,7,8,9 Unit Review Test.txt",
+		"/src/ax/autox.id",
+		"/src/course-study-work/python/basic/ch10/ch10-quiz.txt",
+		"/src/ax/ax.id",
+		"/src/course-study-work/python/intermediate/ch16/quiz-chapter-16-functions.py",
+		"/src/course-study-work/python/novice/ch9/ch9-2/Python Part II - Novice Chapters 5,6,7,8,9 Unit Review Test.txt",
+		"/src/course-study-work/python/novice/ch9/ch9-2/chapter 9 quiz questions and answers.txt",
+		"/src/course-study-work/python/novice/ch9/ch9-2/unit-test-filewrite.py",
+		"/src/course-study-work/learning-python/ch7/Chapter 7 - String Fundamentals Notes + Quiz (50 pages yikes!)",
+		"/gxbase/tools/mkterminal",
+		"/src/ax/alias/islist",
+		"/src/ax/alias/list",
+		"/src/course-study-work/learning-python/ch5/chapter 5 - number systems - notes and quiz plus corrected.txt",
+		"/src/course-study-work/learning-python/ch6/chapter 6 - dynamic typing interlude notes + quiz.txt",
+		"/src/ax/bootstrap.d/minimal_replacer.ax",
+		"/tmp/upload.sh",
+		"/src/ax/bootstrap.d/promptfactory.ax",
+		"/src/course-study-work/learning-python/ch4/chapter 4 quiz.txt",
+		"/src/ax/bootstrap.d/makeblur.ax",
+		"/src/ax/alias/promptfactory",
+		"/src/gxbase/bin/setfont.save",
+		"/src/gxbase/bin/40",
+		"/src/gxbase/bin/120",
+		"/tmp/a/chrome/toolkit/skin/classic/global/preferences.css",
+		"/opt/chrome/toolkit/skin/classic/global/preferences.css",
+		"/home/gabriel/.config/sublime-text-3/Packages/User/bash.sublime-build",
+		"/src/ax/config/autoxrc",
+		"/home/gabriel/.netrc",
+		"/ax/lib/Autox/Config.pm",
+		"/home/gabriel/.config/sublime-text-3/Packages/SublimeCodeIntel/Default (Linux).sublime-keymap",
+		"/src/course-study-work/learning-python/ex/sec-i/ch3/first.py",
+		"/home/gabriel/.config/sublime-text-3/Packages/SublimeCodeIntel/SublimeCodeIntel.sublime-settings",
+		"/src/ax/alias/autox",
+		"/home/gabriel/.config/sublime-text-3/Packages/User/SublimeCodeIntel.sublime-settings"
+	],
+	"find":
+	{
+		"height": 30.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"Flatland",
+			"OPTARG",
+			"if.*(?<!then)\\s*$",
+			"KDE",
+			"kf",
+			"(^\\w{12,15})\\t",
+			"(^\\w{1,11})\\t",
+			"(^\\w{1,7})\\t",
+			"[\\t ]+",
+			"\\t+",
+			"\\s+",
+			"\\s{2,4}",
+			"\\s{1,4}",
+			"(\\s{1,4}){2,}",
+			"\\s{2,4}",
+			"(color.*,)(white)(.*\\\\s\\+)(default)",
+			"(color (?:\\w+)?,)(default)(\\s+\")((?:\\w+)?\\\\s\\+)(white)(.*)",
+			"(color )(\\w+?,?)(default)(\\s+\".*?)(default)(.*)",
+			"(color )(default)(,?\\w+?\\s+\")(white)(.*)",
+			"color\\s{2}",
+			"color bright,.*\\n",
+			"(\\w+)(,)(bright)",
+			"(color [^ ]+)",
+			"^(color (?:\\w|,)+ )([^\"].*)$",
+			"^(color (\\w|,)+ )([^\"].*)$",
+			"\\s+\\n",
+			"=.*",
+			"scroll",
+			"close",
+			"^",
+			"smooth"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": true,
+		"replace_history":
+		[
+			"\\1\\t\\t",
+			"\\1\\t\\t\\t",
+			"\\1\\t\\t",
+			"\\t",
+			"\\1black\\3\\4",
+			"\\1\\5\\3\\4\\2\\6",
+			"\\1\\4\\3\\2\\5",
+			"",
+			"\\3\\1\\2",
+			"\\1\\t\\t",
+			"\\1\"\\2\"",
+			"|",
+			"",
+			"# "
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 2,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 0,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"auto_name": "",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "autox",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 28595,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/src/ax/lib/axbe.pl",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5673,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Perl/Perl.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1716.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 30.0
+	},
+	"input":
+	{
+		"height": 38.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "Packages/User/bash.sublime-build",
+	"project": "autox-lib.sublime-project",
+	"replace":
+	{
+		"height": 56.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 174.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

@@ -1,1 +1,177 @@
-pgoo.py
+#!/usr/bin/env python3
+
+# ###README.1ST####
+#
+# SEPTEMBER 2015 <--- *
+#
+# NOTE: This program's other files are written into here since it is a very short
+#       code file (without of course, pgoo.py, the ONLY other file in the set).
+#       Each section marker designates the usually external filename, even this
+#       paragraph is tagged!
+#      
+#       If you add new files to this area, be sure to add them to MANIFEST too!
+#
+# #################
+
+# #####DEVELOPERS##
+#
+# THIRD PARTY DEVELOPERS
+# ----------------------
+# Notes for contributing developers
+#
+# Forking
+# -------
+# There are no guidelines for forking except maybe give some credit to me for
+# the original only. Even a e-mail address should be ok. But the lack of guidelines
+# is what forking is all about. If you do fork, be so kind as to let me know -- I
+# would love to see someone else's take on the project.
+#
+# Contributing
+# ------------
+# Contributers (merge requesters) 
+#   You will need to follow some guidelines to ensure consistent readability of the
+#   source. This applies to all my python projects and files ONLY. I have other rules
+#   in place for different languages but that's beyond the scope of this document.
+#
+# The "Golden Rule" 
+# Please Follow PEP Standards, All Of Them
+#   This keeps us from making the code unreadable, contributions will be straight across
+#   if we can do this. Make your PEP8 highlights 'Black on Gold' to remind you if need be!
+#
+# The "Six Laws Of Equality"
+#   0 Deletion of major parts of code needs explanation and shouldn't remove features
+#
+#   1 Avoid Comment blocks, try to stick with docstrings in the main source, pgoo.py.
+#
+#   2 Avoid changes to command line interface (additions are okay)
+#
+#   3 Import must show version and name by default
+#
+#   4 NO OTHER files than pgoo and pgoo.py (outside of installers) is allowed. On the
+#   portable copy, ONLY ONE FILE is allowed, the pgoo. On linux/bsd/osx this is the
+#   pgoo that is a posix shell script. On windows, this is the compiled PE-EXE. They
+#   (the pgoo script or exe) must do one thing, contain and extract the pgoo.py, and
+#   then execute it in the same directory, and then delete it. The deletion must be
+#   done (linux/osx/bsd) right after spawning the process. On Windows machines the
+#   executable must watch for the program to end, and then delete the executable or
+#   cache it in a way it can be deleted later.
+#   
+#   5 MANIFEST and files (these that you are reading now) can be placed in one of three
+#   places:
+#   1 - inside the pgoo executable script (here) 
+#   2 - the pgoo self-contained portable script (linux/bsd/osx only)
+#   2 - within the MANIFEST resource file embedded, each file must be under a valid
+#       XML data tag verified with the XSLT of Microsoft's manifest XML file format.
+#       but not I repeat not in a separate manifest (ie, pgoo.exe.manifest)!! This
+#       would break the fourth rule - (windows XP/Vista/7/8/8.1/etc only).
+# #################
+
+# #####README######
+#
+# pgoo - [p]ython [g]oogle and [o]ther [o]ptional links dispatcher
+#
+# (Please review README.1ST FIRST)
+#
+# The 'pgoo' program's main code is in 'pgoo.py' or after first run, in 'pgoo.pyc'
+# or maybe even __pycache__/pgoo-cpython-3.x.x.pyc (python3) or pgoo.pyo (pypy**)
+# For help on starting, please read INSTALL!! 
+#
+# Written by Gabriel Sharp (C)2015-16 Paradisim LLC <osirisgothra@hotmail.com>
+# http://paradisim.github.io
+# please review: LICENSE for licensing details
+#                HISTORY for release history
+#                /autoxdir/doc/README for more information on AUTOX and related tools
+# Initial Release Date/Time: Not Recorded Yet Here [ATT:Use File Date/Times***]
+# #################
+
+# #####INSTALL#####
+# INSTALL
+# pgoo 
+# (see README for details)
+#
+# Installing
+#
+# If packaged with AUTOX: 
+# -----------------------
+# When using after you installed AUTOX already, you don't need to do anything 
+# except make sure the bootstrapper loads the pgoo.ax component.
+#
+# If using as stand alone:
+# ------------------------
+# Original Method (tgz archive)
+# copy pgoo and pgoo.py (unzipped from pgoo.tgz) and place them in ~/bin, if
+# you have no access to your /usr/bin or /usr/local/bin folders for writing.
+# Otherwise, use those locations. If you ARE using ~/bin, and had to create that
+# directory first, you will need to re-login before changes take place.
+# Please note that ~/bin is not guarenteed to be in PATH on all systems, and
+# is only relevant to linux and BSD-based systems (Mac OSX, Ubuntu, Fedora, etc).
+# WINDOWS USERS: Unpack to whatever directory you want to use. I recommend you 
+# use the C:\WINDOWS\SYSTEM32 directory for home users, and 
+# C:\Documents and Settings\YOURNAME\bin (Windows XP/Vista) or 
+# C:\Users\YOURNAME\bin (Windows 7, 8, and above). You will also need to add
+# your user's directory \bin PATH to the USER environment variable '$PATH'
+# which is in [my computer icon->r-click menu->properties->advanced tab
+# ->"environment..." button]
+# Windows users will also have to re-login or even reboot. Linux users will NOT
+# need to reboot and most times wont even need to re-login.
+#
+# Launching
+#
+# This program can be launched in several ways:
+#
+# 1) this main program file to invoke from outside of the python environment
+#    the module will be imported and it's code will be run here
+# 2) from a python interactive shell (python3 itself, idle3****, ipython3*****, etc)
+#    by importing it and running it simmilar to below (see docstring of pgoo.main)
+# 3) by executing the module 'pgoo.py' directly -- you will need to use the python
+#    interpreter and pass it as the second option 'python3 pgoo.py' if you do not
+#    have the execution flags set (or in windows, the file association must execute
+#    the .py filetype for python3 not python/python2.x)
+# 4) by passing either this file's name or pgoo.py to the 'python3' executable or
+#    a subflavor such as 'pypy'. See #3 for details on that.
+# 5) from a GUI, right-clicking and selecting 'run' or 'execute' (only if supported
+#    by the GUI's file manager). Or from within the GUI's file manager of choice.
+#    WINDOWS USERS: You must ASSOCIATE python files first (should be done if you installed
+#    python with an installer!)
+#
+# #################
+
+# ####HISTORY######
+# HISTORY
+# Release History
+#
+# 1.0 - Initial Release (Undocumented Date)
+#
+# #################
+
+# #####FOOTNOTES###
+# Footnotes (FOOTNOTES)
+# What are the *'s for, this: (*x6)
+#
+#      *  If it's after this month/year, PLEASE contact the author if no release has been updated!!! <osirisgothra@hotmail.com>
+#     **  pypy must be a symbolic link from python3, or, source modified to point to it (first line of pgoo/pgoo.py/etc)
+#  *****  ipython3 is the de facto standard for interactive pythoning (word?) and even better, ipython3 notebook!! :)
+#    ***  file date/times may not communicate across distribution point boundaries and are not guarenteed to be accurate!
+#   ****  idle must be using python3, it is not reccomended to use idle, however
+#    *x6  items with 6 or more stars must be annotated this way (7 stars = *x7 or *7*) 
+# #################
+
+# #####MANIFEST####
+# #MANIFEST
+# # pgoo list of files that are included within pgoo
+# # These Lines Are Not Files:
+# # - lines that start with '#'
+# HISTORY
+# README
+# README.1ST
+# MANIFEST
+# INSTALL
+# pgoo.py
+# pgoo
+# DEVELOPERS
+# #################
+
+from pgoo import main as run
+from sys import argv as args
+exit_code = run(args)
+exit(exit_code)

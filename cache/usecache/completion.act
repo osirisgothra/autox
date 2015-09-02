@@ -1,0 +1,856 @@
+complete -o filenames -F _pbuilder-dist cowbuilder-buzz
+complete -o filenames -F _pbuilder-dist cowbuilder-saucy
+complete -o filenames -F _pbuilder-dist cowbuilder-dapper-amd64
+complete -F _minimal 
+complete -F _filedir_xspec freeamp
+complete -F _service /etc/init.d/rc
+complete -o filenames -F _pbuilder-dist pbuilder-unstable-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-slink-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-utopic
+complete -F _service /etc/init.d/sendsigs
+complete -F _service service
+complete -o filenames -F _pbuilder-dist pbuilder-stretch-armhf
+complete -o filenames -d -X '.[^./]*' -F _loexp_ unopkg
+complete -F _filedir_xspec bibtex
+complete -F _longopt strip
+complete -o default -X '@(*/.svn|*/.svn/|.svn|.svn/)' -F _svn svn
+complete -o filenames -F _pbuilder-dist cowbuilder-sarge
+complete -o filenames -F _pbuilder-dist pbuilder-potato
+complete -o filenames -F _pbuilder-dist cowbuilder-oneiric-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-jaunty-i386
+complete -o filenames -F _pbuilder-dist pbuilder-jaunty-armel
+complete -F _filedir_xspec chromium-browser
+complete -F _filedir_xspec tex
+complete -F _filedir_xspec zathura
+complete -F _command time
+complete -F _command do
+complete -F _service /etc/init.d/cryptdisks
+complete -c which
+complete -o filenames -F _pbuilder-dist cowbuilder-hamm
+complete -o filenames -F _pbuilder-dist pbuilder-hamm-i386
+complete -o filenames -F _pbuilder-dist pbuilder-buzz-i386
+complete -F _service /etc/init.d/kmod
+complete -o nospace -F _valgrind valgrind
+complete -o filenames -F _pbuilder-dist pbuilder-squeeze-armhf
+complete -o filenames -F _grub_mkconfig grub-mkconfig
+complete -F _root_command gksudo
+complete -o filenames -F _pbuilder-dist pbuilder-hamm-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-buzz-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-hoary
+complete -o default -F _bzr_lazy bzr
+complete -F _longopt tail
+complete -F _service /etc/init.d/lvm2
+complete -o filenames -F _pbuilder-dist cowbuilder-oneiric-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-jaunty-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-intrepid-i386
+complete -F _pacat pacat
+complete -F _service /etc/init.d/hwclock.sh
+complete -o filenames -F _pbuilder-dist cowbuilder-trusty
+complete -o filenames -F _pbuilder-dist cowbuilder-breezy-armel
+complete -o filenames -F _pbuilder-dist pbuilder-breezy-armhf
+complete -F _filedir_xspec lrunzip
+complete -o filenames -F _pbuilder-dist cowbuilder-squeeze
+complete -o filenames -F _pbuilder-dist pbuilder-slink
+complete -o filenames -F _pbuilder-dist pbuilder-vivid-i386
+complete -o filenames -F _pbuilder-dist pbuilder-maverick-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-lucid-armhf
+complete -F _filedir_xspec amaya
+complete -F _service /etc/init.d/autofs
+complete -o filenames -F _pbuilder-dist cowbuilder-utopic-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-natty
+complete -o filenames -F _pbuilder-dist cowbuilder-maverick-i386
+complete -o filenames -F _pbuilder-dist pbuilder-jaunty-amd64
+complete -F _filedir_xspec hbpp
+complete -F _longopt df
+complete -F _service /etc/init.d/mountnfs.sh
+complete -o filenames -F _pbuilder-dist pbuilder-sarge-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-intrepid-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-feisty-i386
+complete -F _command nice
+complete -F _command else
+complete -o filenames -F _pbuilder-dist pbuilder-experimental
+complete -o filenames -F _pbuilder-dist cowbuilder-wily-armel
+complete -o filenames -F _pbuilder-dist pbuilder-quantal
+complete -F _longopt enscript
+complete -F _known_hosts traceroute6
+complete -F _service /etc/init.d/bootmisc.sh
+complete -o filenames -F _pbuilder-dist cowbuilder-stretch-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-precise-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-feisty
+complete -o filenames -F _pbuilder-dist pbuilder-dapper-armhf
+complete -A binding bind
+complete -o filenames -F _pbuilder-dist cowbuilder-vivid-amd64
+complete -F _filedir_xspec lzgrep
+complete -F _known_hosts fping
+complete -F _service /etc/init.d/checkroot.sh
+complete -o filenames -F _pbuilder-dist pbuilder-sarge-i386
+complete -o filenames -F _pbuilder-dist pbuilder-feisty-amd64
+complete -F _service /etc/init.d/unattended-upgrades
+complete -o filenames -F _pbuilder-dist cowbuilder-natty-i386
+complete -o dirnames -o filenames -F _apport-bug ubuntu-bug
+complete -F _filedir_xspec ggv
+complete -F _command nohup
+complete -u groups
+complete -o dirnames -X '*.svn*' -F _svnversion svnversion
+complete -o filenames -F _pbuilder-dist pbuilder-hamm
+complete -o filenames -F _pbuilder-dist pbuilder-buzz
+complete -o filenames -F _pbuilder-dist pbuilder-oneiric-armel
+complete -F _filedir_xspec lzless
+complete -F _longopt bison
+complete -o default -F _svnsync svnsync
+complete -F _schroot schroot
+complete -o filenames -F _pbuilder-dist cowbuilder-sarge-i386
+complete -o filenames -F _pbuilder-dist pbuilder-potato-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-vivid-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-trusty-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-gutsy
+complete -o filenames -d -X '.[^./]*' -F _loexp_ loimpress
+complete -F _filedir_xspec kdvi
+complete -F _longopt indent
+complete -F _command eval
+complete -F _service /etc/init.d/alsa-utils
+complete -o filenames -F _pbuilder-dist cowbuilder-buster-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-lenny-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-utopic-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-karmic-armhf
+complete -F _longopt vdir
+complete -o filenames -F _pbuilder-dist cowbuilder-wheezy-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-bo-armel
+complete -o filenames -F _pbuilder-dist pbuilder-saucy-armhf
+complete -o filenames -d -X '.[^./]*' -F _loexp_ lobase
+complete -F _filedir_xspec lbzcat
+complete -F _service /etc/init.d/uuidd
+complete -o filenames -F _pbuilder-dist pbuilder-natty-armhf
+complete -o filenames -F _grub_mkpasswd_pbkdf2 grub-mkpasswd-pbkdf2
+complete -F _filedir_xspec lilypond
+complete -F _command then
+complete -F _service /etc/init.d/cron
+complete -o filenames -F _pbuilder-dist cowbuilder-rex-armel
+complete -o filenames -F _pbuilder-dist pbuilder-hardy
+complete -F _filedir_xspec sxemacs
+complete -F _filedir_xspec epdfview
+complete -F _longopt head
+complete -F _command aoss
+complete -o filenames -F _pbuilder-dist cowbuilder-jessie-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-precise-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-edgy-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-dist
+complete -F _pulseaudio pulseaudio
+complete -F _adb adb
+complete -F _service /etc/init.d/whoopsie
+complete -o filenames -F _pbuilder-dist cowbuilder-potato-armel
+complete -o filenames -F _pbuilder-dist pbuilder-jaunty-i386
+complete -o filenames -d -X '.[^./]*' -F _loexp_ localc
+complete -F _longopt sha1sum
+complete -o filenames -F _pbuilder-dist cowbuilder-raring-i386
+complete -o filenames -F _pbuilder-dist pbuilder-hardy-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-warty-i386
+complete -F _filedir_xspec texi2dvi
+complete -F _longopt fmt
+complete -F _longopt du
+complete -F _service /etc/init.d/single
+complete -o filenames -F _pbuilder-dist cowbuilder-experimental-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-squeeze
+complete -o filenames -F _pbuilder-dist pbuilder-sarge-armel
+complete -F _filedir_xspec ps2pdf12
+complete -F _filedir_xspec ee
+complete -F _filedir_xspec lbunzip2
+complete -o filenames -F _pbuilder-dist cowbuilder-maverick
+complete -o filenames -F _pbuilder-dist pbuilder-intrepid-armel
+complete -F _filedir_xspec ps2pdf13
+complete -F _longopt rm
+complete -F _service /etc/init.d/gdomap
+complete -F _service /etc/init.d/binfmt-support
+complete -F _ufw ufw
+complete -o filenames -F _pbuilder-dist cowbuilder-rex
+complete -o filenames -F _grub_mkrescue grub-mkrescue
+complete -o filenames -F _grub_set_entry grub-reboot
+complete -F _filedir_xspec ps2pdf14
+complete -F _filedir_xspec lzfgrep
+complete -F _service /etc/init.d/mountkernfs.sh
+complete -o filenames -F _pbuilder-dist pbuilder-sid-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-wheezy-armhf
+complete -F _filedir_xspec hbrun
+complete -F _filedir_xspec kbabel
+complete -F _filedir_xspec rview
+complete -F _filedir_xspec kaffeine
+complete -F _longopt touch
+complete -o filenames -F _pbuilder-dist pbuilder-stretch-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-feisty-armel
+complete -F _filedir_xspec xv
+complete -F _longopt tee
+complete -F _known_hosts traceroute
+complete -F _service /etc/init.d/rsyslog
+complete -F _service /etc/init.d/dns-clean
+complete -F _rake rake
+complete -o filenames -F _pbuilder-dist cowbuilder-sid-armel
+complete -o filenames -F _pbuilder-dist pbuilder-buster-armel
+complete -o filenames -F _pbuilder-dist pbuilder-etch-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-gutsy-armel
+complete -o filenames -F _pbuilder-dist pbuilder-hoary-armel
+complete -o filenames -F _pbuilder-dist pbuilder-warty-armel
+complete -F _filedir_xspec rgvim
+complete -F _service /etc/init.d/urandom
+complete -F _service /etc/init.d/networking
+complete -o filenames -F _pbuilder-dist cowbuilder-dapper-armhf
+complete -F _filedir_xspec oodraw
+complete -F _filedir_xspec elinks
+complete -F _longopt split
+complete -F _service /etc/init.d/mountall-bootclean.sh
+complete -F _service /etc/init.d/halt
+complete -j -P '"%' -S '"' jobs
+complete -o filenames -F _pbuilder-dist cowbuilder-potato-amd64
+complete -F _axi_cache axi-cache
+complete -F _filedir_xspec playmidi
+complete -F _service /etc/init.d/pyro-nsd
+complete -A helptopic help
+complete -A stopped -P '"%' -S '"' bg
+complete -o filenames -F _pbuilder-dist cowbuilder-sid-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-buster-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-wheezy
+complete -o filenames -F _pbuilder-dist cowbuilder-trusty-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-natty-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-gutsy-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-hoary-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-warty-armhf
+complete -o filenames -d -X '.[^./]*' -F _loexp_ libreoffice
+complete -F _filedir_xspec xine
+complete -F _filedir_xspec xpdf
+complete -F _longopt pr
+complete -F _unp unp
+complete -o filenames -F _pbuilder-dist pbuilder-experimental-i386
+complete -o filenames -F _pbuilder-dist pbuilder-quantal-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-feisty-armel
+complete -F _pacat paplay
+complete -F _longopt m4
+complete -F _service /etc/init.d/lvm2-lvmpolld
+complete -F _service /etc/init.d/grub-common
+complete -o filenames -F _pbuilder-dist cowbuilder-unstable-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-unstable-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-lenny-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-lenny-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-edgy-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-hoary-armel
+complete -F _filedir_xspec aviplay
+complete -F _filedir_xspec latex
+complete -F _longopt uname
+complete -F _longopt tac
+complete -o filenames -F _pbuilder-dist pbuilder-unstable-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-squeeze-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-slink-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-natty
+complete -o filenames -F _pbuilder-dist cowbuilder-hoary-amd64
+complete -o filenames -d -X '.[^./]*' -F _loexp_ lodraw
+complete -F _longopt bc
+complete -o filenames -F _pbuilder-dist pbuilder-etch-armel
+complete -o filenames -F _pbuilder-dist pbuilder-maverick
+complete -o filenames -F _pbuilder-dist cowbuilder-lucid
+complete -o filenames -F _pbuilder-dist pbuilder-edgy-amd64
+complete -F _desktop_file_validate desktop-file-validate
+complete -F _filedir_xspec rvim
+complete -F _known_hosts tracepath
+complete -o filenames -F _pbuilder-dist pbuilder-experimental-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-utopic-armel
+complete -o filenames -F _pbuilder-dist pbuilder-quantal-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-breezy
+complete -F _filedir_xspec ogg123
+complete -o filenames -F _pbuilder-dist pbuilder-lenny
+complete -o filenames -F _pbuilder-dist pbuilder-wily-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-utopic
+complete -o filenames -F _pbuilder-dist pbuilder-natty-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-karmic
+complete -F _filedir_xspec ps2pdfwr
+complete -o filenames -F _pbuilder-dist pbuilder-stretch
+complete -o filenames -F _pbuilder-dist cowbuilder-raring-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-hardy-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-warty-armhf
+complete -o filenames -d -X '.[^./]*' -F _loexp_ lomath
+complete -F _completion_loader -D
+complete -F _filedir_xspec harbour
+complete -F _filedir_xspec xemacs
+complete -F _filedir_xspec unlzma
+complete -F _longopt paste
+complete -F _longopt mkdir
+complete -F _longopt cp
+complete -F _root_command really
+complete -F _root_command kdesudo
+complete -o filenames -F _pbuilder-dist cowbuilder-buzz-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-saucy-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-feisty-amd64
+complete -o filenames -d -X '.[^./]*' -F _loexp_ lowriter
+complete -F _longopt a2ps
+complete -F _apport-collect apport-collect
+complete -F _filedir_xspec vi
+complete -F _known_hosts mtr
+complete -F _service /etc/init.d/pppd-dns
+complete -v unset
+complete -o filenames -F _pbuilder-dist pbuilder-sid-armel
+complete -F _service /etc/init.d/liquidsoap
+complete -o filenames -F _pbuilder-dist pbuilder-wheezy-i386
+complete -F _filedir_xspec gvim
+complete -F _longopt dir
+complete -F _lsar lsar
+complete -o filenames -F _pbuilder-dist pbuilder-jessie-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-etch-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-hamm-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-hardy-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-breezy-i386
+complete -o filenames -F _pbuilder-dist pbuilder-oneiric
+complete -F _filedir_xspec kid3-qt
+complete -F _filedir_xspec xanim
+complete -F _service /etc/init.d/rpcbind
+complete -o filenames -F _pbuilder-dist cowbuilder-buster
+complete -F _pactl pactl
+complete -F _filedir_xspec portecle
+complete -F _longopt cut
+complete -F _service /etc/init.d/mountall.sh
+complete -o filenames -F _pbuilder-dist cowbuilder-wily-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-wily-i386
+complete -o filenames -F _pbuilder-dist pbuilder-edgy
+complete -o filenames -F _pbuilder-dist cowbuilder-breezy-amd64
+complete -F _filedir_xspec oocalc
+complete -F _filedir_xspec emacs
+complete -F _service /etc/init.d/x11-common
+complete -F _service /etc/init.d/cryptdisks-early
+complete -F _service /etc/init.d/checkfs.sh
+complete -o filenames -F _pbuilder-dist cowbuilder-stretch
+complete -o filenames -F _pbuilder-dist cowbuilder-etch-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-precise
+complete -o filenames -F _pbuilder-dist pbuilder-intrepid-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-hardy-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-dapper
+complete -F _filedir_xspec fbxine
+complete -F _longopt sha384sum
+complete -F _service /etc/init.d/reboot
+complete -o filenames -F _quilt_completion quilt
+complete -o filenames -F _pbuilder-dist pbuilder-sarge-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-rex-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-intrepid-armhf
+complete -F _pacmd pacmd
+complete -F _filedir_xspec kpdf
+complete -F _longopt less
+complete -F _service /etc/init.d/kerneloops
+complete -F _command command
+complete -o filenames -F _pbuilder-dist cowbuilder-wheezy-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-bo-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-vivid-armel
+complete -o filenames -F _pbuilder-dist pbuilder-saucy-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-raring-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-lucid-i386
+complete -o filenames -F _pbuilder-dist pbuilder-karmic-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-edgy
+complete -F _filedir_xspec oomath
+complete -F _filedir_xspec compress
+complete -o filenames -F _pbuilder-dist cowbuilder-sarge-armel
+complete -o filenames -F _pbuilder-dist pbuilder-potato-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-bo-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-breezy-i386
+complete -F _longopt texindex
+complete -F _longopt env
+complete -F _longopt csplit
+complete -F _service /etc/init.d/umountroot
+complete -F _service /etc/init.d/schroot
+complete -o filenames -F _pbuilder-dist cowbuilder-jessie-armel
+complete -o filenames -F _pbuilder-dist pbuilder-oneiric-i386
+complete -o filenames -F _pbuilder-dist pbuilder-lucid-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-karmic-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-dist
+complete -F _filedir_xspec iceweasel
+complete -F _filedir_xspec zcat
+complete -F _filedir_xspec unzip
+complete -F _longopt wc
+complete -F _longopt sha256sum
+complete -F _service /etc/init.d/xfstt
+complete -o filenames -F _pbuilder-dist cowbuilder-experimental-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-quantal
+complete -o filenames -F _pbuilder-dist pbuilder-feisty-armhf
+complete -F _longopt mknod
+complete -F _known_hosts rsh
+complete -o filenames -F _pbuilder-dist cowbuilder-quantal-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-feisty-i386
+complete -o filenames -F _pbuilder-dist pbuilder-breezy-amd64
+complete -F _filedir_xspec modplug123
+complete -F _filedir_xspec dvipdfm
+complete -F _known_hosts dig
+complete -F _service /etc/init.d/acpid
+complete -F _cryptdisks cryptdisks_stop
+complete -F _filedir_xspec oobase
+complete -F _filedir_xspec zipinfo
+complete -o filenames -F _pbuilder-dist cowbuilder-unstable-i386
+complete -o filenames -F _pbuilder-dist pbuilder-unstable
+complete -o filenames -F _pbuilder-dist cowbuilder-lenny-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-slink
+complete -o filenames -F _pbuilder-dist pbuilder-hamm-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-buzz-armhf
+complete -F _filedir_xspec epiphany
+complete -v readonly
+complete -F _root_command fakeroot
+complete -o filenames -F _pbuilder-dist pbuilder-stable-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-jessie
+complete -o filenames -F _pbuilder-dist cowbuilder-squeeze-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-sarge-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-potato-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-slink-i386
+complete -o filenames -F _grub_editenv grub-editenv
+complete -F _known_hosts fping6
+complete -F _service /etc/init.d/rsync
+complete -o filenames -F _pbuilder-dist cowbuilder-wheezy-armel
+complete -o filenames -F _pbuilder-dist pbuilder-woody-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-saucy-armel
+complete -F _longopt units
+complete -F _longopt md5sum
+complete -F _longopt base64
+complete -o nospace -F _cd cd
+complete -F _service /etc/init.d/anacron
+complete -o filenames -F _pbuilder-dist cowbuilder-testing-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-sid-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-buster-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-woody-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-wily
+complete -o filenames -F _pbuilder-dist cowbuilder-gutsy-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-hoary-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-warty-amd64
+complete -F _filedir_xspec galeon
+complete -F _filedir_xspec bzme
+complete -F _filedir_xspec xfig
+complete -F _longopt mkfifo
+complete -o default -F _complete_vim_addons vim-addon-manager
+complete -o filenames -F _pbuilder-dist cowbuilder-hamm-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-oneiric-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-jaunty-armhf
+complete -F _filedir_xspec xdvi
+complete -F _longopt uniq
+complete -o filenames -F _pbuilder-dist pbuilder-trusty-i386
+complete -o filenames -F _pbuilder-dist pbuilder-oneiric-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-gutsy-armel
+complete -F _longopt grep
+complete -d pushd
+complete -o filenames -F _pbuilder-dist pbuilder-testing-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-stable-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-lucid
+complete -o filenames -F _pbuilder-dist pbuilder-karmic
+complete -o filenames -F _grub_set_entry grub-set-default
+complete -F _known_hosts rlogin
+complete -F _service /etc/init.d/hostname.sh
+complete -o filenames -F _pbuilder-dist pbuilder-lenny-armel
+complete -o filenames -F _pbuilder-dist pbuilder-utopic-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-karmic-armel
+complete -F _filedir_xspec cdiff
+complete -F _filedir_xspec rgview
+complete -F _pon pon
+complete -F _filedir_xspec oowriter
+complete -F _command exec
+complete -o nospace -F _user_at_host finger
+complete -u slay
+complete -F _unar unar
+complete -o filenames -F _pbuilder-dist pbuilder-rex-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-rex-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-precise-i386
+complete -o filenames -F _pbuilder-dist pbuilder-maverick-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-lucid-armel
+complete -F _longopt ldd
+complete -o filenames -F _pbuilder-dist pbuilder-unstable-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-potato-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-slink-i386
+complete -o filenames -F _pbuilder-dist pbuilder-maverick-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-lucid-amd64
+complete -F _filedir_xspec netscape
+complete -F _filedir_xspec acroread
+complete -F _service /etc/init.d/sddm
+complete -o filenames -F _pbuilder-dist pbuilder-trusty-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-raring
+complete -o filenames -F _pbuilder-dist pbuilder-precise-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-oneiric-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-jaunty-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-warty
+complete -F _pacat parecord
+complete -o filenames -F _grub_mkimage grub-mkimage
+complete -F _filedir_xspec makeinfo
+complete -F _longopt nl
+complete -o filenames -F _pbuilder-dist cowbuilder-hamm-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-wily
+complete -o filenames -F _pbuilder-dist cowbuilder-trusty-i386
+complete -o filenames -o plusdirs -F _dput dput
+complete -F _longopt nm
+complete -F _command xargs
+complete -F _service /etc/init.d/apparmor
+complete -o filenames -F _pbuilder-dist cowbuilder-quantal-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-intrepid
+complete -F _filedir_xspec kwrite
+complete -F _filedir_xspec gview
+complete -F _filedir_xspec qiv
+complete -F _filedir_xspec bzcat
+complete -F _longopt expand
+complete -o filenames -F _pbuilder-dist cowbuilder-sid
+complete -o filenames -F _pbuilder-dist pbuilder-buster
+complete -o filenames -F _pbuilder-dist cowbuilder-quantal-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-gutsy
+complete -o filenames -F _pbuilder-dist pbuilder-hoary
+complete -o filenames -F _pbuilder-dist pbuilder-warty
+complete -F _filedir_xspec pdftex
+complete -o filenames -F _pbuilder-dist cowbuilder-wheezy-i386
+complete -o filenames -F _pbuilder-dist pbuilder-saucy-i386
+complete -o filenames -F _pbuilder-dist pbuilder-lucid-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-karmic-armhf
+complete -F _filedir_xspec rpm2cpio
+complete -F _longopt bash
+complete -o filenames -F _pbuilder-dist cowbuilder-unstable
+complete -o filenames -F _pbuilder-dist cowbuilder-lenny
+complete -o filenames -F _pbuilder-dist cowbuilder-trusty-amd64
+complete -F _dkms dkms
+complete -F _debconf_show debconf-show
+complete -F _filedir_xspec view
+complete -F _filedir_xspec unxz
+complete -F _longopt sha512sum
+complete -o filenames -F _pbuilder-dist pbuilder-stable-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-etch
+complete -o filenames -F _pbuilder-dist cowbuilder-sarge-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-woody-armel
+complete -o filenames -F _pbuilder-dist pbuilder-potato-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-vivid-i386
+complete -F _filedir_xspec ly2dvi
+complete -F _filedir_xspec mozilla
+complete -F _longopt objcopy
+complete -u sux
+complete -o filenames -F _pbuilder-dist cowbuilder-unstable-armel
+complete -o filenames -F _pbuilder-dist pbuilder-jessie
+complete -o filenames -F _pbuilder-dist cowbuilder-lenny-armel
+complete -o filenames -F _pbuilder-dist pbuilder-wily-i386
+complete -o filenames -F _pbuilder-dist pbuilder-jaunty-armhf
+complete -F _pasuspender pasuspender
+complete -F _fastboot fastboot
+complete -F _filedir_xspec modplugplay
+complete -F _root_command gksu
+complete -o filenames -F _pbuilder-dist cowbuilder-rex-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-vivid-armel
+complete -F _filedir_xspec pyflakes
+complete -F _service /etc/init.d/irqbalance
+complete -o filenames -F _pbuilder-dist pbuilder-sarge
+complete -F _filedir_xspec dillo
+complete -F _filedir_xspec aaxine
+complete -F _filedir_xspec dvipdfmx
+complete -F _filedir_xspec advi
+complete -F _longopt rmdir
+complete -F _service /etc/init.d/console-setup
+complete -o filenames -F _pbuilder-dist pbuilder-sid-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-sid-i386
+complete -o filenames -F _pbuilder-dist pbuilder-precise
+complete -o filenames -F _pbuilder-dist pbuilder-natty-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-dapper-armel
+complete -F _filedir_xspec lzmore
+complete -F _service /etc/init.d/virtualbox
+complete -F _service /etc/init.d/openbsd-inetd
+complete -F _service /etc/init.d/bluetooth
+complete -o filenames -F _grub_setup grub-bios-setup
+complete -F _service /etc/init.d/procps
+complete -F _service /etc/init.d/atd
+complete -o filenames -F _pbuilder-dist pbuilder-stable
+complete -o filenames -F _pbuilder-dist cowbuilder-jessie-i386
+complete -F _filedir_xspec poedit
+complete -F _filedir_xspec firefox
+complete -F _filedir_xspec gv
+complete -F _longopt shasum
+complete -F _service /etc/init.d/umountnfs.sh
+complete -F _service /etc/init.d/rcS
+complete -F _service /etc/init.d/network-manager
+complete -F _service /etc/init.d/cups-browsed
+complete -o filenames -F _pbuilder-dist pbuilder-bo-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-raring-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-maverick-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-hardy-armel
+complete -o filenames -F _pbuilder-dist pbuilder-feisty
+complete -F _filedir_xspec madplay
+complete -F _longopt sort
+complete -F _longopt ptx
+complete -F _longopt colordiff
+complete -o filenames -F _pbuilder-dist pbuilder-vivid-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-trusty
+complete -o filenames -F _pbuilder-dist pbuilder-natty-i386
+complete -o filenames -d -X '.[^./]*' -F _loexp_ lofromtemplate
+complete -F _filedir_xspec gtranslator
+complete -F _filedir_xspec jadetex
+complete -F _longopt fold
+complete -u write
+complete -o filenames -F _pbuilder-dist cowbuilder-bo
+complete -F _service /etc/init.d/lvm2-lvmetad
+complete -o filenames -F _pbuilder-dist pbuilder-hamm-armel
+complete -o filenames -F _pbuilder-dist pbuilder-buzz-armel
+complete -o filenames -d -X '.[^./]*' -F _loexp_ loweb
+complete -o dirnames -o filenames -F _apport-bug apport-bug
+complete -F _filedir_xspec gpdf
+complete -F _filedir_xspec kghostview
+complete -F _command ltrace
+complete -F _service /etc/init.d/speech-dispatcher
+complete -o filenames -F _pbuilder-dist pbuilder-squeeze-armel
+complete -o filenames -F _pbuilder-dist pbuilder-wily-amd64
+complete -F _filedir_xspec pbzcat
+complete -F _known_hosts telnet
+complete -A shopt shopt
+complete -o filenames -F _pbuilder-dist cowbuilder-bo-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-vivid
+complete -o filenames -F _pbuilder-dist pbuilder-gutsy-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-breezy-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-hoary-i386
+complete -o filenames -F _grub_script_check grub-script-check
+complete -F _longopt sum
+complete -F _longopt od
+complete -F _longopt irb
+complete -o filenames -F _pbuilder-dist cowbuilder-testing-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-woody-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-potato
+complete -o filenames -F _pbuilder-dist pbuilder-rex-i386
+complete -o filenames -F _pbuilder-dist pbuilder-edgy-armhf
+complete -F _filedir_xspec lzcat
+complete -F _known_hosts showmount
+complete -o nospace -F _user_at_host talk
+complete -F _service /etc/init.d/thermald
+complete -F _service /etc/init.d/lm-sensors
+complete -o filenames -F _pbuilder-dist cowbuilder-wheezy
+complete -o filenames -F _pbuilder-dist cowbuilder-buzz-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-saucy-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-saucy
+complete -F _cryptdisks cryptdisks_start
+complete -F _longopt readelf
+complete -F _longopt netstat
+complete -F _service /etc/init.d/ufw
+complete -F _service /etc/init.d/fancontrol
+complete -o filenames -F _pbuilder-dist pbuilder-testing-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-stable-armel
+complete -o filenames -F _pbuilder-dist pbuilder-stretch-i386
+complete -F _filedir_xspec vim
+complete -F _filedir_xspec dvips
+complete -F _longopt date
+complete -F _longopt cat
+complete -j -P '"%' -S '"' disown
+complete -o filenames -F _pbuilder-dist pbuilder-bo-armel
+complete -o filenames -F _pbuilder-dist pbuilder-raring-armel
+complete -o filenames -F _pbuilder-dist pbuilder-gutsy-i386
+complete -F _longopt objdump
+complete -F _longopt diff
+complete -o filenames -F _pbuilder-dist pbuilder-sid
+complete -F _service /etc/init.d/cups
+complete -o default -F _svndumpfilter svndumpfilter
+complete -o filenames -F _pbuilder-dist pbuilder-experimental-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-squeeze-armel
+complete -o filenames -F _pbuilder-dist pbuilder-slink-armel
+complete -o filenames -F _pbuilder-dist pbuilder-quantal-armhf
+complete -o bashdefault -o default -o nospace -F _hg hg
+complete -F _filedir_xspec dvitype
+complete -a unalias
+complete -o filenames -F _pbuilder-dist cowbuilder-stretch-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-precise-armel
+complete -o filenames -F _pbuilder-dist pbuilder-oneiric-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-intrepid-i386
+complete -o filenames -F _pbuilder-dist pbuilder-dapper-armel
+complete -F _longopt sed
+complete -F _longopt ld
+complete -o filenames -F _pbuilder-dist pbuilder-testing-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-stable-i386
+complete -o filenames -F _pbuilder-dist pbuilder-squeeze-amd64
+complete -F _cmake cmake
+complete -o dirnames -o filenames -F _apport-unpack apport-unpack
+complete -F _longopt mv
+complete -o filenames -F _pbuilder-dist pbuilder-stable-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-squeeze-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-slink-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-intrepid-armel
+complete -F _filedir_xspec realplay
+complete -F _longopt grub
+complete -F _longopt gperf
+complete -F _known_hosts ftp
+complete -F _service /etc/init.d/osspd
+complete -F _foo ubuntu-emulator
+complete -o filenames -F _pbuilder-dist pbuilder-jessie-armel
+complete -o filenames -F _pbuilder-dist pbuilder-etch-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-buzz-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-saucy-amd64
+complete -F _filedir_xspec gqmpeg
+complete -F _filedir_xspec lzegrep
+complete -o nospace -F _user_at_host ytalk
+complete -F _service /etc/init.d/udev
+complete -F _service /etc/init.d/dbus
+complete -o filenames -F _pbuilder-dist cowbuilder-experimental-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-raring-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-warty-armel
+complete -F _longopt shar
+complete -F _known_hosts tracepath6
+complete -o filenames -F _pbuilder-dist pbuilder-stable-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-potato-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-raring-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-warty-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-experimental-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-experimental-armel
+complete -o filenames -F _pbuilder-dist pbuilder-quantal-armel
+complete -o filenames -F _pbuilder-dist pbuilder-intrepid-armhf
+complete -F _filedir_xspec bunzip2
+complete -o filenames -F _pbuilder-dist pbuilder-lenny-i386
+complete -o filenames -F _pbuilder-dist pbuilder-etch-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-utopic-i386
+complete -o filenames -F _pbuilder-dist pbuilder-lucid-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-karmic-i386
+complete -o filenames -F _pbuilder-dist pbuilder-karmic-armel
+complete -o filenames -F _grub_probe grub-probe
+complete -F _longopt sha224sum
+complete -F _longopt awk
+complete -o default -F _svnadmin svnadmin
+complete -o filenames -F _pbuilder-dist cowbuilder-testing-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-woody-i386
+complete -o filenames -F _grub_mkfont grub-mkfont
+complete -F _filedir_xspec znew
+complete -F _longopt who
+complete -o filenames -F _pbuilder-dist pbuilder-wheezy-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-bo-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-hoary-armhf
+complete -F _filedir_xspec lokalize
+complete -F _filedir_xspec kate
+complete -F _filedir_xspec dragon
+complete -F _service /etc/init.d/udev-finish
+complete -F _service /etc/init.d/hddtemp
+complete -o filenames -F _pbuilder-dist pbuilder-jessie-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-bo-i386
+complete -o filenames -F _pbuilder-dist pbuilder-raring-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-breezy
+complete -F _gem191 gem1.9.1
+complete -F _filedir_xspec pdflatex
+complete -F _longopt ln
+complete -o filenames -F _pbuilder-dist cowbuilder-buster-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-lenny-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-rex
+complete -o filenames -F _pbuilder-dist pbuilder-utopic-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-natty-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-karmic-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-edgy-i386
+complete -F _ctest ctest
+complete -o filenames -F _pbuilder-dist cowbuilder-etch-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-oneiric
+complete -o filenames -F _pbuilder-dist cowbuilder-jaunty
+complete -o filenames -F _pbuilder-dist cowbuilder-hardy-i386
+complete -F _ninja_target ninja
+complete -o filenames -F _grub_install grub-install
+complete -F _cpack cpack
+complete -F _filedir_xspec mozilla-firefox
+complete -o filenames -F _pbuilder-dist pbuilder-testing-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-stable-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-rex-armel
+complete -o filenames -F _pbuilder-dist pbuilder-jaunty
+complete -o filenames -F _pbuilder-dist pbuilder-gutsy-armhf
+complete -F _filedir_xspec ooimpress
+complete -F _filedir_xspec uncompress
+complete -o default -F _pygmentize pygmentize
+complete -o filenames -F _pbuilder-dist pbuilder-testing
+complete -o filenames -F _pbuilder-dist cowbuilder-stable
+complete -o filenames -F _pbuilder-dist cowbuilder-feisty-armhf
+complete -F _longopt tr
+complete -F _service /etc/init.d/mountnfs-bootclean.sh
+complete -o filenames -F _pbuilder-dist cowbuilder-buster-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-jessie-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-etch-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-hardy-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-edgy-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-dapper
+complete -F _filedir_xspec unpigz
+complete -o filenames -F _pbuilder-dist pbuilder-wheezy-armel
+complete -F _service /etc/init.d/resolvconf
+complete -A setopt set
+complete -o filenames -F _pbuilder-dist cowbuilder-experimental
+complete -o filenames -F _pbuilder-dist pbuilder-woody-armhf
+complete -o filenames -F _pbuilder-dist pbuilder-woody-i386
+complete -F _pacat parec
+complete -F _service /etc/init.d/ps-watcher
+complete -u chfn
+complete -F _padsp padsp
+complete -F _service /etc/init.d/saned
+complete -o filenames -F _pbuilder-dist cowbuilder-testing-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-woody-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-trusty-armhf
+complete -o dirnames -o filenames -F _apport-cli apport-cli
+complete -F _filedir_xspec lynx
+complete -F _filedir_xspec ps2pdf
+complete -F _command vsound
+complete -F _service /etc/init.d/mountdevsubfs.sh
+complete -o default -F _complete_vim_addons vam
+complete -o default -F _complete_vim_addons vim-addons
+complete -o filenames -F _pbuilder-dist cowbuilder-utopic-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-maverick-amd64
+complete -F _known_hosts ssh-installkeys
+complete -o filenames -F _pbuilder-dist pbuilder-intrepid
+complete -o filenames -F _pbuilder-dist pbuilder-hardy-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-breezy-armhf
+complete -F _longopt seq
+complete -b builtin
+complete -j -P '"%' -S '"' fg
+complete -o default -F _svnlook svnlook
+complete -o filenames -F _pbuilder-dist pbuilder-vivid
+complete -o filenames -F _pbuilder-dist cowbuilder-utopic-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-natty-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-dapper-i386
+complete -F _filedir_xspec mpg321
+complete -F _filedir_xspec mpg123
+complete -F _filedir_xspec pbunzip2
+complete -u runuser
+complete -F _poff poff
+complete -o filenames -F _pbuilder-dist cowbuilder-rex-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-edgy-armel
+complete -F _filedir_xspec kid3
+complete -F _filedir_xspec pdfjadetex
+complete -F _filedir_xspec dvipdf
+complete -F _longopt ls
+complete -F _service /etc/init.d/ondemand
+complete -u w
+complete -o filenames -F _pbuilder-dist pbuilder-unstable-armel
+complete -o filenames -F _pbuilder-dist pbuilder-jessie-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-slink-armel
+complete -F _filedir_xspec gharbour
+complete -F _service /etc/init.d/killprocs
+complete -c type
+complete -o filenames -F _pbuilder-dist cowbuilder-stretch-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-etch
+complete -o filenames -F _pbuilder-dist pbuilder-wily-armel
+complete -o filenames -F _pbuilder-dist pbuilder-vivid-armhf
+complete -o filenames -F _pbuilder-dist cowbuilder-precise-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-maverick-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-lucid-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-hardy
+complete -o filenames -F _pbuilder-dist pbuilder-dapper-amd64
+complete -F _filedir_xspec texi2html
+complete -F _longopt unexpand
+complete -o filenames -F _pbuilder-dist cowbuilder-buster-armel
+complete -o filenames -F _pbuilder-dist pbuilder-precise-armhf
+complete -F _service /etc/init.d/checkroot-bootclean.sh
+complete -o filenames -F _pbuilder-dist cowbuilder-hamm-i386
+complete -o filenames -F _pbuilder-dist pbuilder-bo
+complete -o filenames -F _pbuilder-dist pbuilder-trusty-armel
+complete -o filenames -F _pbuilder-dist pbuilder-raring
+complete -F _update_initramfs update-initramfs
+complete -F _filedir_xspec gunzip
+complete -F _service /etc/init.d/rc.local
+complete -o filenames -F _pbuilder-dist cowbuilder-sid-i386
+complete -o filenames -F _pbuilder-dist pbuilder-buster-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-gutsy-i386
+complete -o filenames -F _pbuilder-dist pbuilder-hoary-i386
+complete -o filenames -F _pbuilder-dist pbuilder-warty-i386
+complete -o filenames -d -X '.[^./]*' -F _loexp_ loffice
+complete -F _filedir_xspec google-chrome
+complete -F _filedir_xspec okular
+complete -F _service /etc/init.d/umountfs
+complete -o filenames -F _pbuilder-dist cowbuilder-testing
+complete -o filenames -F _pbuilder-dist cowbuilder-stretch-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-woody
+complete -o filenames -F _pbuilder-dist cowbuilder-wily-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-precise-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-maverick-armel
+complete -o filenames -F _pbuilder-dist pbuilder-dapper-i386
+complete -F _filedir_xspec slitex
+complete -o filenames -F _pbuilder-dist cowbuilder-squeeze-amd64
+complete -o filenames -F _pbuilder-dist pbuilder-woody
+complete -o filenames -F _pbuilder-dist pbuilder-slink-amd64
+complete -o filenames -F _pbuilder-dist cowbuilder-quantal-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-edgy-armel
+complete -F _filedir_xspec xzcat
+complete -o filenames -F _pbuilder-dist pbuilder-stretch-armel
+complete -o filenames -F _pbuilder-dist cowbuilder-buzz-i386
+complete -o filenames -F _pbuilder-dist cowbuilder-saucy-i386
+complete -F _filedir_xspec timidity
+complete -F _filedir_xspec dviselect
+complete -F _command tsocks
+complete -F _service /etc/init.d/apport
