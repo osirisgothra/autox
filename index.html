@@ -52,31 +52,54 @@
         <h3>
 <a id="welcome-to-autox" class="anchor" href="#welcome-to-autox" aria-hidden="true"><span class="octicon octicon-link"></span></a>Welcome to AutoX</h3>
 
-<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+<p>AutoX is intended to be a hands free bash shell. In it's current state, the features can be boiled down to:
+1) alias and func persistence
+2) separation of global and local aliases
+3) bootstraps (startup plug-ins for extending the environment)
+4) "live" functions (functions whose changes are available as soon as save it's source file)
+5) slightly enhanced completions - combines the features of _minimal and _longopt giving any genral commands completion suggestions when --help is available.
+6) macro library usable by all scripts within the environment, or, loadable/copyable to completely different environments
+7) many pre-written presets, loaders, aliases, etc (hereafter known as 'presets'), after all I, the project developer, use it every day!
+8) licensed under the GNU GPL 3, except the presets and macros, which are public domain :)
+9) easy to install, just link the main 'autox' script to '~/.bash_completion' and you are done (relatively unintrusive!)
+
+Many of these features are already in place either partially or fully. This is an ongoing sort of thing. I have, just today for example, separated the project
+into a 'master' and 'dev' branch so there will always be 'knock on wood' a working version. I will keep my latest work posted to 'dev' network permitting.
 
 <h3>
 <a id="autox-is-automatic-for-the-shell-people" class="anchor" href="#autox-is-automatic-for-the-shell-people" aria-hidden="true"><span class="octicon octicon-link"></span></a>AutoX is Automatic for the (Shell) People</h3>
 
-<p>Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum 
-dolor sit amet, consectetur adipisicing elit, sed do eiusmod imp wjospa noviriam
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-consequat. </p>
+<p>Okay, so there is this other project of mine, very simmilar, called GXBASE, which went through many stages
+of R&D testing with real people. The project does still exist but it is esoteric because the coupling of the features
+as wound pretty tightly around /etc/bash* and its /etc/bash.completion. The end result is that nobody wanted it to
+have a complicated setup, or be intrusive. Also, it was to be just as easily uninstalled without any side effects.
+
+Now, we have autox which was born from (and continues to borrow from) source of gxbase, which is also made available here for at GitHub.
+This project, like it's sister is a personal project that I do on my own without any other team helping me (except for real-world
+people that give me feedback on it's use). But, unlike GXBASE, it is not esoteric nor is it polymorphic in purpose. Now that
+that purpose has gained solid footing, I pulled what was needed into the newly created AutoX branch.
+
+The source repository could be cleaner, and there are several IDE's that I have used on and off:
+- KomodoEdit is used for all the Perl code
+- PyCharm CE for the Python stuff
+- QtCreator/Designer,etc for any binaries that are either in C or C++ (usually C++)
+- Sublime Text 3 is used for the days when I must edit more than 3 languages at a time because running 3 IDEs hogs too much memory
+- Nano >=2.4.2 + my zone4 nanopatch if I am in a BIG hurry (it uses a customized set of patches to allow some extended settings and colors to be used (see my nanopatch in /etc/offline-testing/zone4)
+- VIM >= 7.4 self-compiled (i make some esoteric changes to VIM that I would not think useful to anyone else) for whenever I am on a non-graphical terminal for ALL these above (the complete setup I use is included in the /etc/axvim section)
+</p>
 
 <h3>
 <a id="automatic-installation" class="anchor" href="#automatic-installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Automatic Installation</h3>
 
-<p>If you apsai dalor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-consequat. </p>
+<p>Auto install is planned, but not yet available. I feel at this time the link to bash_completion is good enough. Now
+if you actually already use that file, just rename it to .bash_completion.ax and the loader will pick it up (first) for you.
+This pickup will be done exactly ONE TIME as bash does as well.
+
+  If you do not use bash completion at all for some reason, you can just add the line:
+  
+  'source ~/.bash_completion'
+  
+  To your ~/.bashrc script (or create an empty '~/.bashrc' first if you dont already have one). </p>
 
 <h3>
 <a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
