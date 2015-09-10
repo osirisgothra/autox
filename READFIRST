@@ -1,0 +1,31 @@
+READFIRST
+
+Autox is in it's extreme early phases of development. Much like it's sister, gxbase, it is
+a personal project. I actually am half serious with autox more than gxbase but at this time
+I do not recommend using it in everyday life. If you must try it, you will need to do one
+thing after cloning this repo:
+
+	ln -s /[ax_clone_location]/autox ~/.bash_completion
+	
+
+Of course, if you have that file, just rename it to:
+
+	mv ~/.bash_completion ~/.bash_completion.ax
+	
+To ensure it is run at the proper time!
+
+
+That's it, it should just work, however lots of the presets are me-specific so you may
+want to remove everything from the presets in: (ax is the [ax_clone_loc])
+
+	/ax/func
+	/ax/alias
+
+As for the vim configuration thing (/ax/etc/axvim) that is another side project that
+goes with developing this monster, to use that just link /ax/etc/axvim/axvim to
+replace the original '~/.vimrc' and make sure you rename your .vimrc to .vimrc.ax
+so it gets ran too (it could conflict however).
+
+
+
+ 

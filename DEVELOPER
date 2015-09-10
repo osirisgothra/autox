@@ -1,4 +1,7 @@
 # vim:ft=rest
+# DEVELOPER
+# at least most of this is just scratchpad/r&d crap
+
 # AX_PHASE variable takes on this form:
 
 # type: integer

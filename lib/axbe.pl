@@ -65,12 +65,14 @@ use Autox::Config;    # lives with axbe.pl's root dir
 use File::Find;
 use File::Listing;
 
-
+use Term::UI;
+use Term::ReadLine;
+my $term = Term::ReadLine->new($ENV{TERM} // "linux");
 
 
 # VARIABLES
 
-sub absolute_env
+sub absolute_env {
 
 	# parameters
 	# needed for komodo and other ide's calltips
@@ -170,6 +172,8 @@ die "This program is mislocated, please reinstall"
 # CONFIGURATION HANDLERS
 
 my $axconfig = Autox::Config->new($axconf);
+# add your own extensions or prefix names here
+my $unwantedfiles = qr!((?<dot>[.])(?<extensions>id|dat|act)\z|\A(?<prefixes>apt|make))!; 
 
 unless ( -r -f -x ($editorpath) || -r -f -x ($editorpath = $axconfig->read_config_value("axbe","editor","")))
 {
@@ -219,6 +223,10 @@ find(
 									print "not editing backup file: $name\n";
 									push @foundbackups, $File::Find::name;
 								}
+								elsif ( $name =~ $unwantedfiles )
+								{
+									print "skipping unwanted file '$name' (pattern = $unwantedfiles)\n"; 
+								}
 								else
 								{
 									push @foundfiles, $File::Find::name;
@@ -235,20 +243,46 @@ find(
 if (@foundfiles)
 {
 	print "Found files in tree, processing...\n";
-	print "$_\n" for @foundfile
-	if ($backupsfound) {
-		print "Found $#foundbackups in tree, remove them now?";
-		my $response = <STDIN>;
-		if ($response =~ /yes/ )
+	print "$_\n" for @foundfiles;
+	my $response;	# NOTE: used by the next two prompt parts (but are not related)
+
+	if ($backupsfound) 
+	{
+		while(1) 
 		{
-			system $ENV{AX_BASE} . "/lib/gentags.pl","--cleanup"
+			print "Found $#foundbackups in tree, remove them now? [type 'y' or 'n']: ";
+			chomp ( $response = <STDIN> );
+			if ($response eq 'y')
+			{
+				system $ENV{AX_BASE} . "/lib/gentags.pl","--cleanup";
+				last;
+			}
+			elsif ($response eq 'n')
+			{
+				print "NOT deleting backup, continuing...\n";
+				last;
+			}
+			else
+			{
+				print "Invalid choice!\n";
+			}
 		}
-
 	}
-
-	sleep 2;
-	system $editorpath,@foundfiles;
-	sys
+	
+	if (@foundfiles > 1)
+	{
+		$response = $term->get_reply(
+			prompt => "Found more than one file matching that criteria, please pick one:",
+			choices => [ @foundfiles ],
+			default => $foundfiles[0],
+		);
+	}
+	else
+	{
+		$response = $foundfiles[0];
+	}
+	
+	system $editorpath,$response;	
 
 }
 else

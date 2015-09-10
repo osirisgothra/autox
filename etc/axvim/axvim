@@ -66,8 +66,12 @@
 "  execution, except what we just talked about. For more on this see the *{no-eval-feature}* tag in 
 "  the vim documentation!
 
-" vim.tiny filter trick (see above explanation)
+" vim.tiny filter trick (see above explanation, and end of file)
 if "vim.tiny" != "running"
+	" firstly, run the user's ~/.vimrc.ax if they have it (this is the filename the installer renames user files to)
+	if file_exists("~/.vimrc.ax")
+		so ~/.vimrc.ax
+	en
 		
 	if !exists("g:axvim_master_mode")
 		let g:axvim_master_mode="full"
@@ -448,12 +452,13 @@ if "vim.tiny" != "running"
 
 	" <end of file -- .vimrc>
 else
+	" ^-- if "vim.tiny" != "running"
 	" this should NEVER happen, since +eval would never select this
 	" and without eval, they are skipped, you might report this as a bug
 	" to the developer if you actually do get this but its probably due to
 	" a file length change during load/execution loop, retry at least once before
 	" reporting as a bug!
-	let g:urlcode="reached un-reachable code!!"
-	echo g:urlcode
-	throw g:urlcode
+	let g:urcode="reached un-reachable code!!"
+	echo g:urcode
+	throw g:urcode
 endif

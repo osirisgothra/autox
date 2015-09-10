@@ -197,7 +197,10 @@ def format_url(url: str, site_modifiers: list, search_strings: list) -> str:
 	positionals = [''] * url.count("%s")        # we will need them whether they get used or not
 	for (pos, item) in [str(x).split('|') for x in site_modifiers]:
 		positionals[int(pos) if pos != "S" else 0] = item
-	positionals.insert(1, search_strings)
+	search_string = ""
+	for (item) in search_strings:
+		search_string += ('+' if len(search_strings) > 0 else '') + item
+	positionals.insert(1, search_string)
 	return url.format(*positionals)
 
 

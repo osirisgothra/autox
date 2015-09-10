@@ -1,1 +1,35 @@
-]2;%s]1;%s
+#!/bin/bash
+# vim: ft=sh
+
+# EXPERIMENTAL (not standard in ISO, RFC, etc...)
+case $- in
+	*i*)	echo "running interactively is useless (wrapping script for you)..."
+		"$BASH_SOURCE" "$@"
+		return $?
+	*x*)	
+case $# in
+	0)	echo "usage: $BASH_SOURCE title [ico] [[title [ico]...]"
+		echo "   or: $BASH_SOURCE titleicotext"
+		echo "   or: $BASH_SOURCE [-?h|--help|--?|<nothing>]"
+		echo "NOTES: [1] additional title/ico pairs are appended"
+		echo "       to the first ones until all are consumed."
+		echo "       [2] using --help does not show any extra help."
+		echo "       [3] this is experimental (codename \"zone3\")"
+		;;
+	1)	declare -g FIRST="$1" SECOND="$1"
+		;;
+	*)
+		declare -g FIRST="$1"
+		declare -g SECOND="$2"
+		while shift 2; do
+			FIRST+=' '"$1"
+			SECOND+=' '"$2"
+		done
+		;;
+esac
+if [[ "$DISPLAY" ]]; then
+	printf "]2;%s]1;%s" "$FIRST" "$SECOND"
+else
+	echo "error: cannot open DISPLAY because there isn't one!"
+fi
+

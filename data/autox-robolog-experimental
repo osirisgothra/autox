@@ -1,0 +1,87 @@
+#!/bin/bash -r -c false! don't run me, im a login script!
+#{
+# the above line is for syntax highlighters only!
+# vim: ft=sh:noet:sw=4:ts=4:fen:fdm=marker:fmr=#{,#}
+#}
+
+#{
+#   ROBUST LOGIN SCRIPTS
+#   (do not need to be there, but if they are...)
+#   FORMAT:
+#      /usr/share/login <-root
+#             /sh
+#                /dev
+#                   /tty
+#                     all.sh <- this name gets used in other dirs too for same reason!
+#                               in this case, anyone on a tty (but not on a pty, etc!)
+#                     1.sh <- (/usr/share/login/sh/dev/tty/1.sh = login on tty1
+#                     S0.sh <- or '/dev/ttyS0'
+#                   /pty
+#                     1.sh <- for login on "/dev/pty1"
+#                   /pts
+#                     .use_separator <- flagfile defines whether device is also in a subdir or just concat
+#                     1.sh <- for login on "/dev/pts/1"
+#                     NOTE: pts/ptys 'all.sh' covers only those device ranges!
+#                /user
+#					root.sh <- anywhere 'root' logs in
+#					captainhook.sh <- when user 'captainhook' logs in
+#                /uid
+#                   0.sh <- also is for 'root' login
+#                   1000,2000.sh <- any id between 1000 and 2000
+#                   all.sh <- remember all? for all users!
+#                /gid
+#                /group <- gid and group work the same too
+#                          except that 'all.sh' only applies to users with
+#                          a group assigned to them
+#				 /time  <- login that happens at a certain date/time
+#					/day       (all these should be self explanitory)
+#					/month, year, minute, second, hour, nanosecond, dayofweek
+#                   /uptime <- can have any subdir from above (ie, /uptime/day)
+#                              except 'dayofweek' since that makes no sense!
+#                              Also, month/day/year is relative (1/1/1 = one year, one month, and one day since last reboot)
+#				/pid	<- process id (not sure if that would be useful)
+#               /proc	<- by process name (not shell program, process name that owns the shell)
+#					/xterm
+#                   /konsole <-- these are fully dereferenced to avoid /etc/alternative interference!
+#                   /getty   <-- for most console terminal sessions
+#               /host
+#                   /localhost <-- logged in locally
+#                   /127.0.0.1 <--- ditto, DNS same but still separate
+#                   /external.com <-- from another server
+#                         /21  <- port (telnet, for example)
+#                         /rlogin <- service type
+#                   /@255.255.0.0 <- netmasked grouping
+#                        /0.0.0.1 <- matches with '192.168.0.1' or '10.0.0.1'
+#                /advanced <- via advanced condition
+#                   /condition-name
+#                       .conditionrc  <-required
+#                       --------------------------
+#                        see format below!!!
+#  --- END OF layout TEXT ---
+
+# layout of .conditionrc
+# #
+# # example test criteria and condition structure text file
+# # must be in root directory of conditional branch
+# #
+# # This example provides use for items that must not only have
+# # the user match the name of the directory, but that user must
+# # be able to run 'groups' without an error:
+# #
+# [testcriteria]
+# namesrx="[a-z]+" <- regex defines what dirs to match and ignore
+# allname="all.sh,every.sh" <- script(s) to always run
+# depth=2 <- number of path elements
+# separator="." <- used to combine multiple paths together
+#                  (ie, item '/condition/subname/final' = 'condition.subname.final')
+# testcount=2
+# test0.type="bracketed"
+# test0="%NAME% -eq $USER" <- test for matching user's name to subdir name
+# test1.type="expected.rtv"
+# test1="groups"
+# test1.expectedrv=0
+
+
+
+
+#}
