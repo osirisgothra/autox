@@ -267,8 +267,9 @@ if false && [[ -r $AX_BASE/cache/usecache ]]; then
 else
 	if [[ -z ${AX_ONE_TIME_MESSAGES[NOCACHE]} ]]; then
 		declare -gA AX_ONE_TIME_MESSAGES
-		AX_ONE_TIME_MESSAGES[NOCACHE]=1
-		echo "hint: no cache available, use ax.cache.create if you want faster load times!"
+		# AX_ONE_TIME_MESSAGES[NOCACHE]=1
+		# TODO: uncomment once cache support is completely done
+		# #echo "hint: no cache available, use ax.cache.create if you want faster load times!"
 	fi
 fi
 
