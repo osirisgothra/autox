@@ -1,1 +1,1 @@
-alias top='sudo nice -n -10 htop -d 2 --sort-key=CPU -u gabriel'
+alias top='sudo nice -n -10 htop -d 2 --sort-key=CPU -u $(id -un)'

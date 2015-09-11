@@ -1679,13 +1679,14 @@ aug END
 
 abclear
 
+" change/add your own (these are examples)
+
 iab g.s. Gabriel Sharp <osirisgothra@hotmail.com>
 iab p.e. Paradisim Enterprises, LLC.
 iab (C)  (C) Copyright 2014-2015 Paradisim Enterprises(tm), LLC. (Gabriel Sharp <osirisgothra@hotmail.com>)
 iab !i !important;
 iab atxul @namespace url('http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul')
 iab athttp @namespace url('http://www.w3.org/1999/xhtml')
-iab atchrome file:///home/gabriel/.mozilla/firefox/lhry73tb.dev-edition-default/chrome
 
 
 

@@ -79,19 +79,12 @@ fi
 # live functions (reloaded from disk without restarting autox, see end in experimental(909))
 # these are useful and mainly used when developing new features
 
-livefunc__unicode.tùrist.ùnder.úmbrellas()
-{
-	printf "the unicode UTF-8 subsystem is working correctly\n"
-	printf "if you called me without typing livefunc__ then you\n"
-	printf "have verified that the function works in live mode (and returns 28)!\n"
-	return 28
-}
 
 livefunc__ax.cache.exists()
 {
 	if [[ -r "$AX_BASE/cache/use" ]]; then		
 		return 0
-	else		
+	else
 		return 1
 	fi
 }
@@ -943,9 +936,9 @@ function echo_livefuncnames() 	{	perl -wne 'print("$1\n") if /(?<=^livefunc__)(\
 function update_livefunctiontables()
 {
 	[[ -v IFS ]] && OLDIFS=$IFS
-	IFS=$'\n'	
+	IFS=$'\n'
 	for LIVE_FUNC_NAME in $(echo_livefuncnames); do
-		echo "Making live function $LIVE_FUNC_NAME"
+		[[ $- =~ x ]] && echo "Making live function $LIVE_FUNC_NAME"
 		eval "
 		function ${LIVE_FUNC_NAME}()
 		{
