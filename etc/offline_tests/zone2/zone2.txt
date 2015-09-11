@@ -1,5 +1,1 @@
-
-CMake Testing Area
-
-
-hard hat required!
+CMake Testing Area - small mouse required...
