@@ -1,0 +1,4 @@
+gamma () 
+{ 
+    [[ -n $* ]] && xgamma -gamma $* || xgamma
+}
