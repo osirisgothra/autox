@@ -82,7 +82,7 @@ fi
 
 livefunc__ax.cache.exists()
 {
-	if [[ -r "$AX_BASE/cache/use" ]]; then		
+	if [[ -r "$AX_BASE/cache/use" ]]; then
 		return 0
 	else
 		return 1
@@ -96,6 +96,7 @@ livefunc__ax.cache.create()
 		while true; do
 			# getopts opstring name [arg]
 			getopts dh AXOPT
+
 			case $AXOPT in
 				d)	DELETE_CACHE=1
 					echo "-- entering cache removal mode --"
@@ -307,7 +308,7 @@ if [[ $AX_STARTUP_FILE_NAME == ~/.bash_completion ]] && [[ $# -eq 0 ]]; then
 	# set some defaults -- because we might have been picked up
 	# from an unknown or empty environment
 	# ...speaking of empty, make sure we fix up the path if that is so
-	[[ -z $PATH ]] && export PATH="$([[ -d ~/bin ]] && echo $HOME/bin):/bin:/sbin:/usr/bin:/usr/sbin"	
+	[[ -z $PATH ]] && export PATH="$([[ -d ~/bin ]] && echo $HOME/bin):/bin:/sbin:/usr/bin:/usr/sbin"
 	set +o nounset;		set +xv
 	set +o histexpand;	set +ET
 	shopt -s extglob
@@ -633,7 +634,7 @@ if [[ $AX_PHASE == 1 ]]; then
 			return 0
 		else
 			return 1
-		fi		
+		fi
 
 	}
 	ax.load()
@@ -878,7 +879,7 @@ if [[ $AX_PHASE == 1 ]]; then
 	# detect and set the
 	# AX_TERMINAL and AX_TERMINAL_PID variables
 	if command xprop -root 2> /dev/null | grep _NET_ACTIVE_WINDOW -q; then
-		eval $(ps -p $(xprop -id $(xprop -root -notype | grep -Po '(?<=_NET_ACTIVE_WINDOW: window id # )[[:xdigit:]x]+') | grep PID | grep '[[:digit:]]*' -o) --no-header -o "AX_TERMINAL=\"%c\" AX_TERMINAL_PID=\"%p\"" | sed -r 's/(")( *)([^ ]+)( *)(")/\1\3\5/g')		
+		eval $(ps -p $(xprop -id $(xprop -root -notype | grep -Po '(?<=_NET_ACTIVE_WINDOW: window id # )[[:xdigit:]x]+') | grep PID | grep '[[:digit:]]*' -o) --no-header -o "AX_TERMINAL=\"%c\" AX_TERMINAL_PID=\"%p\"" | sed -r 's/(")( *)([^ ]+)( *)(")/\1\3\5/g')
 	else
 		# TODO: further checking for hardware/ssh
 		# when via a real tty or over-the-line connections (remote or otherwise),
@@ -898,7 +899,7 @@ if [[ $AX_PHASE == 1 ]]; then
 		# will end the "session" ultimately and it's parent (usually getty)
 		# that can identify who will be starting the next round (might be
 		# useful)
-		AX_TERMINAL_PID=$$		
+		AX_TERMINAL_PID=$$
 	fi
 	AX_TERMINAL_PPID=$PPID
 	# ax main loader
