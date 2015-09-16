@@ -1,0 +1,33 @@
+executable tests, put in your path (i use /etc/environment on my system)
+
+
+Reasoning
+=========
+
+* also, using .bashrc, adding it to that path as well
+
+* when I say path, i mean "PATH=$PATH:<ABSOLUTE_PATH_TO_zone4_DIR>" gets executed somewhere!!
+
+* on my system, i use /etc/environment, which is just lazy -- if you use it use ~/.bashrc
+
+The following extras
+====================
+
+For the sake of R&D, i also extended this behavior for pure testing purposes, cause and
+effect, etc etc.. it's setup is very different depending on where you are
+executing your shell from:
+
+zone4/first is situated as the VERY FIRST path in the 'PATH' variable
+zone4/last is situated as the VERY LAST path in the 'PATH' variable
+zone4/ is situated AFTER the non-local paths, but BEFORE the local paths (/usr/local/*)
+
+
+NOTE: it is not a good idea to make this system-wide (like I did) because it WILL cause problems
+      the only reason I do it is because this entire machine is a development server that only
+      is used for that purpose, complete with fake user accounts, software that I don't actually use,
+      ssh accounts, local mail, a bunch of standard computer stuff that is for a multiuser environment
+      even though I don't actually use it in that way or have other users on it for real.
+
+      reminder: zone testing is not meant for any real application, anything useful here MUST be first
+                into the actual autox non-zone directories, read the README.md in offline_tests for more
+                info on that (or the main README.md)
