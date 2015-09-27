@@ -1,1 +1,0 @@
-alias _comp_sf='complete -W "$(for i in /usr/share/consolefonts/*; do basename ${i/.psf.gz/}; done | tr '\''\n'\'' '\'' '\'')" sf'

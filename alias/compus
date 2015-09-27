@@ -1,0 +1,1 @@
+alias compus='commit "misc updates $(date +%c)"; push'

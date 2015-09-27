@@ -1,1 +1,0 @@
-alias b='_b() { unset -f $0; echo "arg1=$1"; }; _b'

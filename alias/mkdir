@@ -1,1 +1,1 @@
-alias mkdir='mkdir -pv'
+alias mkdir='_m() { mkdir "$@" || { echo "mkdir: attempting to use sudo..." >> /dev/stderr;sudo mkdir "$@"; unset -f _m; }; };_m'

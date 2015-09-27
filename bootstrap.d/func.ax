@@ -10,18 +10,18 @@ source "$AX_BASE/bootstrap.d/axmacros.ax"
 isfunc()
 {
 	FUNC_ISFUNC_CMP_MODE=${AX_FUNC_CMPMODE}
-	[[ $FUNC_ISFUNC_CMP_MODE =~ ^(and|or)$ ]] || { 
+	[[ $FUNC_ISFUNC_CMP_MODE =~ ^(and|or)$ ]] || {
 		FUNC_ISFUNC_CMP_MODE=or
 		echo "warn: AX_FUNC_CMPMODE setting is not supported: $AX_FUNC_CMPMODE"
 	}
-	
+
 	case $# in
 		0) 	echo "syntax: isfunc [-and|-or] names"; false;;
 		1) 	declare -pF "$1" &> /dev/null;;
 		*)  eval {unset,local}\ EVALSTR\;
 			for z in unset local; do $z EVALSTR; done
 			unset EVALSTR;local EVALSTR
-			for x; do 
+			for x; do
 				case $x in
 					-or)	FUNC_ISFUNC_CMP_MODE=or;;
 					-and)	FUNC_ISFUNC_CMP_MODE=and;;
@@ -30,7 +30,7 @@ isfunc()
 							case $FUNC_ISFUNC_CMP_MODE in
 								or)	EVALSTR+=" | ";;
 								and) EVALSTR+=" & ";;
-							esac								
+							esac
 						}
 						EVALSTR+="$?"
 				esac
@@ -39,7 +39,7 @@ isfunc()
 			eval "(( $EVALSTR )) && R=1 || R=0"
 			echo "R = $R"
 			;;
-	esac		
+	esac
 }
 
 func()
@@ -60,15 +60,15 @@ unfunc()
 		*) for x; do __unfunc "$x"; done;;
 	esac
 }
-		
+
 __unfunc()
-{		
+{
 	if [[ -z ${AX_FUNCS[$1]} ]]; then
 		if isfunc $1; then
 			echo "$1 is a function, not a func!"
 			echo "hint: use unset -f to delete functions."
 		else
-			echo "$1: unknown func name"			
+			echo "$1: unknown func name"
 		fi
 		false
 	else
@@ -77,14 +77,14 @@ __unfunc()
 			unset AX_FUNCS[$1]
 			echo "func $1 deleted"
 			true
-		else			
+		else
 			echo "failed to delete $1, check your permissions of ${AX_FUNCS[$1]} and try again"
 			echo "$1 will not be removed from memory unless you are allowed to delete the file."
 			echo "hint: You may delete the file yourself, and then re-run this command to force a delete."
 			false
 		fi
 	fi
-		
+
 }
 __func()
 {

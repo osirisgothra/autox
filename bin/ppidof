@@ -1,0 +1,40 @@
+#!/bin/bash
+
+if [[ $# -gt 1 ]]; then
+	for ppid do ppidof $ppid; done
+	exit $?
+elif [[ $# -lt 1 ]]; then
+	ppid $PPID
+else
+	# decipher format of PID (Process IDentifier) and GEN (parent GENeration Count)
+	  if [[ $1 =~ ^[0-9]+:[-0-9]+$ ]]; then # PID:GEN
+		true
+	elif [[ $1 =~ ^[0-9]+$ ]]; then        # PID (GEN=1)
+		true
+	elif [[ $1 =~ ^:[-0-9]+$ ]]; then       # :GEN (PID=$PPID)
+		true
+	elif [[ $1 == "--help" || $1 == "-?" || $1 == "-h" ]]; then
+		echo "Returns the PARENT Process ID, in relative generations"
+		echo
+		echo "syntax: $0 [pid][:ancestor] | [--help | -h | -?]"
+		echo
+		echo "[pid]         Process ID. If omitted, then your current PID will be used."
+		echo "[:ancestor]   Colon not optional: The number of parents to climb UP into"
+		echo "              the process's ancestor branch (generations) the default when"
+		echo "              omitted is 0, which gives the immediate parent process's ID."
+		echo
+		echo "[--help|-h/?] Obviously, the text you are reading now. Also you can use the"
+		echo "              'man $0' if you have autox-doc installed as well."
+		echo
+		cat <<-EOF
+
+
+
+		EOF
+	elif [[ ! -z $1 ]]; then               # Notify about misuse
+		echo "Invalid format: $1"
+		echo "Use --help to get command line help"
+	else
+
+
+

@@ -1,4 +1,4 @@
-#!/bin/bash -c false ax.priority=0
+#!/bin/bash -nc false ax.priority=0
 
 #======================================================================================================================
 #
@@ -60,19 +60,19 @@ else
 					echo "$FUNCNAME: Fatal: <=2 args for -- stopping at second recursion ($(caller))"
 					return 2;
 				fi
-				case $# in 
-					2) RGB ${1//,/ } ${@: 2};; 1) RGB ${1//,/ };; 
+				case $# in
+					2) RGB ${1//,/ } ${@: 2};; 1) RGB ${1//,/ };;
 					*) echo "Error in SGR Call: RGB Codes Must Be Separated by Commas(,) or Spaces( )"; return 1;;
 				esac
 				return
 			fi
-			local -i R=$1;G=$2;B=$3;F=${4-f};			
+			local -i R=$1;G=$2;B=$3;F=${4-f};
 			local -i RSL;
-			# SGR RGB: bit 7 > BBGGRR < bit 0 (bits 2 & 3 are in the midst)			
+			# SGR RGB: bit 7 > BBGGRR < bit 0 (bits 2 & 3 are in the midst)
 			let 'RSL = R | (G<<3) | (B<<7)';
 			case ${F} in f|b) tput seta${F} ${RSL} ;; # singular (usual way to s.g. rendition)
 				a) for x in f b; do tput seta${x} ${RSL}; done ;;  # both (only shows in bold or dim renditions)
-				*) tput ${F} ${RSL} ;; # literalize the rendition (for nonstandard devices)			
+				*) tput ${F} ${RSL} ;; # literalize the rendition (for nonstandard devices)
 			esac
 	 }
 	 # usage: $(RGB 12 24 201 b) -- commas virtualized out
