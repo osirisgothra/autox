@@ -1,0 +1,6 @@
+function ax.desktop.wallpaper()
+{
+    C=$1
+    shift
+    hsetroot "$@" -extend $C
+}

@@ -1,4 +1,4 @@
-lyric () 
+function lyric () 
 { 
     GET http://www.azlyrics.com/lyrics/${1// /}/${2// /}.html | perl -wne 'print if /Sorry about that/ ... / MxM/' | head -n-2 | tail -n+2 | html2text
 }

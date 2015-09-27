@@ -1,4 +1,4 @@
-chmog () 
+function chmog () 
 { 
     0 ]] && $FUNCNAME --help
 }

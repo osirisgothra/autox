@@ -1,4 +1,4 @@
-silent () 
+function silent () 
 { 
     "$@" &> /dev/null
 }

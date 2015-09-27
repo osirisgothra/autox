@@ -1,0 +1,40 @@
+function var () 
+{ 
+	if [[ $# -gt 0 ]]; then
+	echo
+	for pass do
+    for mod in "" f; do
+    	attrs=`eval declare -p${mod} $pass 2> /dev/null | grep -Po "(?<=^declare )\S+"`
+    	for ((attr=0;attr<${#attrs};attr++)); do
+    		ATTR=${attrs: $attr:1}
+    		echo -n "$pass [33G"
+    		true debug echo "pass=[$pass], attr=[$attr], attrs=[$attrs] count=$# mod=[$mod]"
+    		case $ATTR in
+    			f)	echo -n "func ";;
+    				## TODO: func, show body clipped to elipses: name='begin() { ech...urn 1 }'
+    		#   F)  -- this is not an attribute shown by declare so it is left blank --
+    			g)  echo -n "omni ";;
+    			a)  echo -n "integer ";;
+    			A)  echo -n "hash ";;
+    			i)  echo -n "numeric ";;
+    			l)  echo -n "lowcase ";;
+    			n)  echo -n "pointer ";;
+    			r)  echo -n "locked ";;
+    			t)  echo -n "tracable ";;
+    			u)  echo -n "capcase ";;
+    			x)  echo -n "contagous ";;
+    			-)  echo -n "simple ";;
+    			*)  echo -n "ERROR"; return 1;;	# bad, bad, BAD!
+    		esac
+    	done
+    echo '[K'
+    done # mod (space,f)
+    done # pass (cmdline args)    
+    else # if (cmdlineargcount) 
+    	echo "syntax: var name1 [name2 [...]]"
+    	echo "        var [-fL] [[name=[value] | name@"{function-body"] [...]]"
+    	echo "        var help | help var (autohex=on only!)"
+		return 127  # good but not proper  
+    fi # (cmdlineargcount)
+    return 0  # good
+}
