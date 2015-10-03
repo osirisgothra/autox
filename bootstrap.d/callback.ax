@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+#======================================================================================================================
+#
+#          FILE: callback.ax
+#
+#         USAGE: callback [arguments]
+#
+#   DESCRIPTION:
+#
+#       OPTIONS: ---
+#  REQUIREMENTS: ---
+#          BUGS: ---
+#         NOTES: ---
+#        AUTHOR: Gabriel Thomas Sharp (gts), osirisgothra@hotmail.com
+#  ORGANIZATION: Paradisim Enterprises, LLC, PA, USA
+#       CREATED: 05/03/2015 07:20
+#      REVISION:  ---
+#					This script (C) Copyright 2014-2015 Paradisim Enterprises, LLC, PA, USA, Licensed under GNU GPL v3
+#					You may get a copy of this LICENSE at the website: http://gpl.gnu.org
+#					For more info, contact the author Gabriel Thomas Sharp osirisgothra@hotmail.com
+#======================================================================================================================
+
+__callback()
+{
+	# TODO: remove 3 lines when done development phase
+	if ! config.has development.phase; then
+		echo "please configure for development use before enabling callbacks"
+		return 1
+	fi
+
+	# TODO --- main section starts here --- remove this line when dev is done
+	# set operating environment
+	# debug support used from config
+	if config.has bootstrap.callback_debug_enable; then
+		set -x -v
+	fi
+	shopt -s interactive_comments
+	set +o nounset                              			# Treat unset variables as normal
+	declare -i HELP_TRIMLEADINGCHARCOUNT=6					# Change if you reformat above (in-header) content!
+	local TMPFILE=$(mktemp)									# general use tempfile
+
+	# TODO: callback hook
+
+	# clean up
+	[[ -r $TMPFILE ]] && rm -f $TMPFILE
+
+	# TODO --- main section ends here -- remove this line when dev is done
+}
+
+__callback_loader()
+{
+	# TODO: Change to dynamic when development is done
+	echo "* Callback Hooking: Not Enabled (in development!)"
+	# TODO: enable this line when development is finished
+	# __callback ENABLE_CALLBACK_HOOK
+	unset -f $FUNCNAME
+}
+
+# entry point
+__callback_loader
+
+
+
+
+
+

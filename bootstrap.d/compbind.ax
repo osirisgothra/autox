@@ -152,25 +152,37 @@ function _reload_bindings() {
 			shopt -u nullglob
 			unset IFS
 			echo -ne "completion..."
-			source /etc/bash_completion
-			source /usr/share/bash-completion/bash_completion
+			command source /etc/bash_completion
+			command source /usr/share/bash-completion/bash_completion
+			# for the extreme case of a present 'have' variable
+			# this is also done via the completion loader
+			have_BACKUP=$have
+			# connect have to _have (what completers expect)
+			have()
+			{
+				unset -v have
+				_have "$@"
+			}
 			echo -ne "completion loaders..."
 			for i in /usr/share/bash-completion/completions/*; do
 				echo -ne "[2K[scompletion loaders...$i[u"
-				. "$i"
+				command source "$i"
 			done
 			echo -ne "completion loaders... bindings"
 			bind '"	": complete'
+			# remove function and restore
+			# have to former state if it had one
+			unset -f have
+			[[ -n $have_BACKUP ]] && have=$have_BACKUP
 			echo -ne "finished."
 		}
 		function _b_commit()
 		{
-			echo -ne "Committing..."
-			builtin alias > ~/.bash_aliases
-			builtin bind -v > ~/.inputrc
-			builtin bind -s >> ~/.inputrc
-			builtin bind -p >> ~/.inputrc
-			echo "done!"
+			# TODO: remove in wake of live environment changes, the _b_commit() function and chained keystroke(s)
+			echo "*** live environment changes:"
+			echo "*** commit no longer is used and this function will soon be removed"
+			echo "*** please make needed adjustments so you no longer see this message!"
+			# end of TODO scope next line below
 		}
 		function _b_flushme()
 		{
@@ -187,21 +199,22 @@ function _reload_bindings() {
 		}
 		function _b_poweroff()
 		{
-			echo -e "\n\n*** Powering Down ***\n\n"
-			echo "sending other processing the term signal, logging off, harmfully... (in 2 seconds) [X=abort]"
-			export TMOUT=2
-			read -sn 1
-			export TMOUT=0
-			if [[ ${REPLY,,} == x ]]; then
-				echo "ABORT"
-			else
-				if sudo pm-hibernate; then
-					echo "Returning from hibernation...ok"
-				else
-					echo "Hibernation failed, doing a true power-off..."
-					exec shutdown -P now
-					echo -e "$bad"
-				fi
+			echo "really power down? [y/[n]]"
+			if [[ $(read -sn1; echo $REPLY) == y ]]; then
+				echo "please pick method (these are supported by your system):"
+				for supported in hibernate suspend suspend-hybrid; do
+					if pm-supported $supported; then
+						others+=( pm-$supported )
+					fi
+				done
+				select method in powerdown ${others[@]}; do
+					if [[ $method == powerdown ]]; then
+						shutdown -P now
+					else
+						$method
+					fi
+				done
+
 			fi
 		}
 
@@ -305,9 +318,17 @@ stty sane
 #reload_bindings# no longer used
 _b_showhlp_page SETUP
 
+# Agressive Minimal Function -> LongOpt Function
 # use longopt insetad of minimal for unknown completions
-
-function _minimal() { _longopt "$@"; }
+# this is done by default in autox but we do it here too
+# as a countermeasure of other offending programs. You
+# can disable it by adding the line 'no_aggressive_minimal=anyvalue'
+# to your ../etc/autoxrc
+if ! ax.config.has no_aggressive_minimal; then
+	if ! ax.isreadonlyfunc _minimal; then
+		function _minimal() { _longopt "$@"; }
+	fi
+fi
 
 # standard ax parts, followed by the stubs (put extra code in those)
 declare -Ag AX_DESCRIPTION[$BASH_SOURCE]="$(head $BASH_SOURCE | grep -Po '(?<=Description: ).*')"

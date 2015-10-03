@@ -87,14 +87,18 @@ else
 	 }
 
 
-	 # _hrule [marquee(defaults to '-')] [forecolor] [backcolor*]
+	 # _hrule [marquee(defaults to '-')] [forecolor] [backcolor*] [cap(s)]
 	 # * colors range from 0 to 256 colors
 	 _hrule()   # note: immutable, nondestrutable
 	 {
+	    local CAPS=$4
 		local R=$?
 		local COLORBG=${3:-0}
 		local COLORFG=${2:-NONE}
 		local CHARITEM=${1:--}
+		if (( (CAPS < 1) + (CAPS % 2) == 0 )); then
+            # caps are valid (a nonzero even positive integer)
+
 		which resize &> /dev/null && eval `resize`
 		declare -i COLUMNS=${COLUMNS:-80}
 		[[ $COLORFG == NONE ]] || echo -ne "[38;5;$[COLORFG];48;5;$[COLORBG]m"
