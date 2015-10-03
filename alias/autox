@@ -1,1 +1,1 @@
-alias autox='_autox_temp() { cd ~/.autox && source ./autox "$@"; R=$?;unset -f $FUNCNAME; return $R;}; _autox_temp'
+alias autox='_autox_temp() { cd "$AX_BASE" && { echo "sourcing autox with [$@]"; builtin source autox "$@"; R=$?; } || { echo "AX_BASE is not set, this alias applies only when running autox"; }; unset -f $FUNCNAME; return $R;}; _autox_temp'
