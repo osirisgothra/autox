@@ -1,0 +1,1 @@
+alias monmem1='watch -n 1 -d "bash -c '\''echo -e \"\n\$(cat /proc/meminfo | column)\n\"'\''"'
