@@ -1,45 +1,40 @@
 #!/bin/bash -c false -- "cannot run this file"
-
 # vim: ft=sh:fen:fdm=syntax:fcl=all:fdo=hor:tw=0:sw=2:ts=2
 
-	#RELOAD_BINDINGS_INCLUDE
-
-		function _b_edit_loc 		{
-			[[ ! -v $EDITOR ]] && EDITOR=vim
-			$EDITOR ~/.bashrc
-		}
-		function _b_edit_glo {
-			[[ ! -v $EDITOR ]] && EDITOR=vim
-			if [[ $UID -ne 0 ]]; then
-				if sudo -l $EDITOR &> /dev/null; then
-					sudo $EDITOR /etc/bash.bashrc
-				else
-					echo "sudo access denied, read only privs..."
-					$EDITOR /etc/bash.bashrc
-				fi
-			else
-				$EDITOR /etc/bash.bashrc
-			fi
-		}
-
-		function _setup_bvars() {
-			if [[ $UID -lt 1000 ]]; then
-				GLOF2="F2"
-				LOCF2="Ctrl+F2"
-				GLOF2_k="kf2"
-				LOCF2_k="kf14"
-			else
-				GLOF2="Ctrl+F2"
-				LOCF2="F2"
-				GLOF2_k="kf14"
-				LOCF2_k="kf2"
-			fi
-		}
-
+function _b_edit_loc 		{
+	[[ ! -v $EDITOR ]] && EDITOR=vim
+	$EDITOR ~/.bashrc
+}
+function _b_edit_glo {
+	[[ ! -v $EDITOR ]] && EDITOR=vim
+	if [[ $UID -ne 0 ]]; then
+		if sudo -l $EDITOR &> /dev/null; then
+			sudo $EDITOR /etc/bash.bashrc
+		else
+			echo "sudo access denied, read only privs..."
+			$EDITOR /etc/bash.bashrc
+		fi
+	else
+		$EDITOR /etc/bash.bashrc
+	fi
+}
+function _setup_bvars() {
+	if [[ $UID -lt 1000 ]]; then
+		GLOF2="F2"
+		LOCF2="Ctrl+F2"
+		GLOF2_k="kf2"
+		LOCF2_k="kf14"
+	else
+		GLOF2="Ctrl+F2"
+		LOCF2="F2"
+		GLOF2_k="kf14"
+		LOCF2_k="kf2"
+	fi
+}
 function _detect_terminal()
 {
 	echo -n "* Terminal Detection "
-	# in this day and age, its pretty easy to guess a user's term
+    # in this day and age, its pretty easy to guess a user's term
 	# if this is not right for you, please add your own into the config
 	if ax.config.has custom_terminal; then
 		local NEWTERM="$(ax.config.get custom_terminal)"
@@ -96,86 +91,98 @@ function _reload_bindings() {
 		bind -x '"\C-k": { clear; /gxbase/tools/filters/dirs-short; }'
 		bind -x '"[1;3A": cd ..'
 }
+function _b_perltoggle()
+{
+	if [[ $1 == SETUP ]] && [[ ! -v PERLMODEPATH && ! -v PERLLIBPATH ]]; then
+		true debug echo "Setting Defaults for Perl Modes (Just Two: AP On/Off)"
+		true debug echo "Set your own by creating an array of PERLMODEPATHs and PERLLIBPATHs"
+		if ax.config.has perl_mode_paths; then
+			eval declare -ga PERLMODEPATH=( `ax.config perl_mode_paths` )
+			eval declare -ga PERLMODELIB=( `ax.config perl_mode_libs` )
+		fi
+		if [[ ${#PERLMODEPATH[@]} -lt 2 ]] || [[ ${#PERLMODELIB[@]} -lt 2 ]]; then
+			declare -ga PERLMODEPATH=( "$PATH" "/opt/activeperl/bin:$PATH" )
+			declare -ga PERLMODELIB=( "" "/opt/activeperl/lib" )
+			PERLTOGGLEMODE="(${#PERLMODEPATH[@]} alternatives configured!)"
+		else
+			PERLTOGGLEMODE="(unconfigured sample settings mode)"
+		fi
+		if [[ $1 == SETUP ]]; then
+			# force into mode 0 by setting to > max index
+			ACTIVEPERL_MODE=${#PERLMODEPATH[@]}
+			_b_perltoggle SETUP_MSG
+			# print debug message and finish
+			#[[ -r ~/.debugmsg ]] && echo "setup complete."
+			return
+		fi
+	elif [[ $1 == SETUP ]]; then
+		echo "PERLTOGGLE: already set up"
+    	return
+	fi
+	local -a MODES=( '[32;1mSystem (Perl 5.18.2)[0m' '[35;1mActivePerl+Perl 5.20.1[0m' )
+	[[ -v ACTIVEPERL_MODE ]] || declare -gi ACTIVEPERL_MODE
+	let ACTIVEPERL_MODE++
+	if [[ $ACTIVEPERL_MODE -ge ${#PERLMODEPATH[@]} ]]; then
+		ACTIVEPERL_MODE=0
+	fi
+	if [[ $1 == SETUP_MSG ]]; then
+		echo "* Perl Mode Switcher Created (Starting with ${MODES[$ACTIVEPERL_MODE]})"
+	else
+		echo "Perl Mode Now: ${MODES[$ACTIVEPERL_MODE]}"
+	fi
+	export PATH="${PERLMODEPATH[$ACTIVEPERL_MODE]}"
+	export PERL5LIB="${PERLMODELIB[$ACTIVEPERL_MODE]}"
+	if [[ -z $PERL5LIB ]]; then
+		unset PERL5LIB
+	fi
+}; [[ ! -v ACTIVEPERL_MODE ]] && _b_perltoggle SETUP
+function _b_reresource()
+{
+	echo -ne "Re-Resourcing..."
+	echo "setting defaults..."
+	set +o nounset
+	shopt -s progcomp
+	shopt -u nullglob
+	unset IFS
+	echo -ne "completion..."
+	command source /etc/bash_completion
+	command source /usr/share/bash-completion/bash_completion
+	# for the extreme case of a present 'have' variable
+	# this is also done via the usual completion loader (/usr/share/bash-completion/bash_completion)
+	# but we don't run that because we do not want it to run
+	# ~/.bash_completion which is (to autox) a symbolic
+	# link back to autox.
 
-		function _b_perltoggle()
-		{
-			if [[ $1 == SETUP ]] && [[ ! -v PERLMODEPATH && ! -v PERLLIBPATH ]]; then
-				true debug echo "Setting Defaults for Perl Modes (Just Two: AP On/Off)"
-				true debug echo "Set your own by creating an array of PERLMODEPATHs and PERLLIBPATHs"
-				if ax.config.has perl_mode_paths; then
-					eval declare -ga PERLMODEPATH=( `ax.config perl_mode_paths` )
-					eval declare -ga PERLMODELIB=( `ax.config perl_mode_libs` )
-				fi
-				if [[ ${#PERLMODEPATH[@]} -lt 2 ]] || [[ ${#PERLMODELIB[@]} -lt 2 ]]; then
-					declare -ga PERLMODEPATH=( "$PATH" "/opt/activeperl/bin:$PATH" )
-					declare -ga PERLMODELIB=( "" "/opt/activeperl/lib" )
-					PERLTOGGLEMODE="(${#PERLMODEPATH[@]} alternatives configured!)"
-				else
-					PERLTOGGLEMODE="(unconfigured sample settings mode)"
-				fi
-				if [[ $1 == SETUP ]]; then
-					# force into mode 0 by setting to > max index
-					ACTIVEPERL_MODE=${#PERLMODEPATH[@]}
-					_b_perltoggle SETUP_MSG
-					# print debug message and finish
-					#[[ -r ~/.debugmsg ]] && echo "setup complete."
-					return
-				fi
-			elif [[ $1 == SETUP ]]; then
-				echo "PERLTOGGLE: already set up"
-				return
-			fi
-			local -a MODES=( '[32;1mSystem (Perl 5.18.2)[0m' '[35;1mActivePerl+Perl 5.20.1[0m' )
-			[[ -v ACTIVEPERL_MODE ]] || declare -gi ACTIVEPERL_MODE
-			let ACTIVEPERL_MODE++
-			if [[ $ACTIVEPERL_MODE -ge ${#PERLMODEPATH[@]} ]]; then
-				ACTIVEPERL_MODE=0
-			fi
-			if [[ $1 == SETUP_MSG ]]; then
-				echo "* Perl Mode Switcher Created (Starting with ${MODES[$ACTIVEPERL_MODE]})"
-			else
-				echo "Perl Mode Now: ${MODES[$ACTIVEPERL_MODE]}"
-			fi
-			export PATH="${PERLMODEPATH[$ACTIVEPERL_MODE]}"
-			export PERL5LIB="${PERLMODELIB[$ACTIVEPERL_MODE]}"
-			if [[ -z $PERL5LIB ]]; then
-				unset PERL5LIB
-			fi
-		}; [[ ! -v ACTIVEPERL_MODE ]] && _b_perltoggle SETUP
+	# TODO: compare execution times (in no less than 1ms)
+	# of using the function have() vs. sed-remove
+	# ~/.bash_completion from /usr/share/bash-completion/bash_completion
+	# if there is more than a ~250ms+ difference, swap them out
+	# if the difference is large and machine dependant then create
+	# both features and map it into configuration, use the avergage
+	# high performer on popular setups as the default setting.
 
-		function _b_reresource()
-		{
-			echo -ne "Re-Resourcing..."
-			echo "setting defaults..."
-			set +o nounset
-			shopt -s progcomp
-			shopt -u nullglob
-			unset IFS
-			echo -ne "completion..."
-			command source /etc/bash_completion
-			command source /usr/share/bash-completion/bash_completion
-			# for the extreme case of a present 'have' variable
-			# this is also done via the completion loader
-			have_BACKUP=$have
-			# connect have to _have (what completers expect)
-			have()
-			{
-				unset -v have
-				_have "$@"
-			}
-			echo -ne "completion loaders..."
-			for i in /usr/share/bash-completion/completions/*; do
-				echo -ne "[2K[scompletion loaders...$i[u"
-				command source "$i"
-			done
-			echo -ne "completion loaders... bindings"
-			bind '"	": complete'
-			# remove function and restore
-			# have to former state if it had one
-			unset -f have
-			[[ -n $have_BACKUP ]] && have=$have_BACKUP
-			echo -ne "finished."
-		}
+    # TODO: remove TODOs from this file when all tasks are completed
+
+	have_BACKUP=$have
+	# connect have to _have (what completers expect)
+	have()
+	{
+		unset -v have
+		_have "$@"
+	}
+	echo -ne "completion loaders..."
+	for i in /usr/share/bash-completion/completions/*; do
+		echo -ne "[2K[scompletion loaders...$i[u"
+		command source "$i"
+	done
+	echo -ne "completion loaders... bindings"
+	bind '"	": complete'
+	# remove function and restore
+	# have to former state if it had one
+	unset -f have
+	[[ -n $have_BACKUP ]] && have=$have_BACKUP
+	echo -ne "finished."
+}
 		function _b_commit()
 		{
 			# TODO: remove in wake of live environment changes, the _b_commit() function and chained keystroke(s)
