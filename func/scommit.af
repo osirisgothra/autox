@@ -1,0 +1,6 @@
+scommit () 
+{ 
+    git add $1;
+    shift;
+    git commit -m "$*"
+}

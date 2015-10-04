@@ -59,7 +59,9 @@
 #      REVISION: 09/04/2015 10:54
 #===============================================================================
 
-
+# shim for axtool/config so no output
+builtin alias axtool='true axtool not ready'
+builtin alias axconfig='true axconfig not ready'
 
 # first and foremost, run that ~/.bash_completion.ax if it exists!
 if [[ -r ~/.bash_completion.ax ]]; then
@@ -72,7 +74,7 @@ fi
 
 # comment out these if you are not developing autox and want it strictly off always (otherwise ignore it)
 if [[ $- =~ x ]]; then
-	set -x
+	set -x	
 	trap 'echo -n $BASH_SOURCE:$LINENO: ' DEBUG
 fi
 
@@ -249,6 +251,22 @@ ax.updatecache()
 	true
 }
 
+ax.isreadonlyfunc()
+{
+	declare -i final=0
+	while [[ -n "$1" ]]; do
+		if declare -pFr | grep -wqn "$1"; then
+			let final++
+		fi
+		shift
+	done
+	if [[ $final -gt 0 ]]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
 if false && [[ -r $AX_BASE/cache/usecache ]]; then
 	AX_CACHE_SITE=$AX_BASE/cache/usecache
 	SHAPRINT_THIS="$(eval shasum $(find -type f -not -iname 'shasumprint' -not -type l -iname '*[^~]' -printf '"'$PWD'/%P"\n') | shasum)"
@@ -348,7 +366,10 @@ if [[ "${AX_PHASES[defined]}" != "yes" ]]; then
 fi
 
 
-declare -i AX_PHASE="${AX_PHASES[$1]}"
+# defaults to zero if AX_PHASE not set and no command phase given on command line
+# the alias autox starts with the phase given via the variable AX_PHASE prologue(1)
+# the default zero is the none(0) phase.
+[[ $# -gt 0 || -z $AX_PHASE ]] && declare -i AX_PHASE="${AX_PHASES[$1]}"
 
 [[ $AX_PHASE -eq 0 ]] && { echo "Error: phase was unknown ($1)"; ax.usage; return 1; }
 shift
@@ -709,6 +730,10 @@ if [[ $AX_PHASE == 1 ]]; then
 		fi
 	}
 
+	# TODO: we need to separate runtime stuff from configuration
+	#       stuff, this will be on the RPC Schedule
+	#
+	
 	ax.config()
 	{
 		# this is the heart of the ax.config getter, however, it has some funky
@@ -917,6 +942,21 @@ elif [[ $AX_PHASE == 2 ]]; then
 		fi
 		true extdebug echo "----------- END BOOTSTRAPPER $i ----------- "
 	done
+	function _comperr() { A=$1;B=$2;shift 2;echo "Completer Error(Error# $A, File $B): $*"; return 1; }
+	# TODO: begin devel area for DLCE
+	for i in $AX_BASE/completers/*.ac; do
+		if [[ -s "$i" ]]; then
+			mapfile COMPDATA < "$i"
+			#  completer files must have at least 5 lines (see COMPLETER_FORMAT in /doc)
+			case "${#COMPDATA[*]}" in
+				[0-4])	_comperr 1 "$i" "Insufficient Data In File";;
+				*)	echo "warning: completer $i not loaded (dynamic live completion engine is still in development!)"
+					true;;
+			esac
+		fi
+	done
+	# TODO: end devel area for DLCE
+	unset -f _comperr
 elif [[ $AX_PHASE -le 4 ]]; then
 	echo "runtime and exit phases are not yet supported, doing nothing successfully (0)..."
 	return 0

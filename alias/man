@@ -1,1 +1,1 @@
-alias man='/usr/bin/man'
+alias man='/usr/bin/man --section 1,8'

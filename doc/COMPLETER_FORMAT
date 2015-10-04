@@ -1,0 +1,81 @@
+%markdown%
+
+COMPLETER_FORMAT 
+====================
+
+*TODO: Notice on completion format for developers only in /dev*
+
+
+
+The completer format for the AX_DLCE (autox dynamic live completion engine) is still under development
+and relies on the currently in-development and experimental 'live environment' support. The format has
+not been set in stone and is not in any way used just yet (as of 9/30/15) and may have changed, be sure
+you get the most up to date version and commit of this repository (and make sure it is in /dev, not /master
+if you want absolute latest). This feature will not be in /master until it is fully stable, meaning that
+this notice will not be here anymore when committed to master, which is the reason for the 'TODO:' because
+my editor notifies me of my todo list in this manner and this doc is part of it:
+
+This document is in MARKDOWN format, please use a markdown viewer to edit it!
+
+*TODO: Remove completion format devel notice before going to /master on  next cycle*
+
+**COMPLETER_FORMAT BEGINS HERE**
+
+
+COMPLETER_FORMAT
+===========================
+
+A. SUMMARY
+----------------
+
+  Format Specification for AutoX's DLCE (dynamic live completion engine)
+This file displays only the file format of the DLCE, not the specification
+itself. For that, there may not be actual documentation yet, but it is in
+the main source file (autox) and is dealt with just after the bootstrapper
+loads it's sources.
+
+
+B. DESCRIPTION
+--------------------
+
+  The file format is a UTF-8 compliant text document, with no BOM (byte order mark).
+Usually the file is handled by bash4.3+, perl5.16+, and/or python3.4+ but may be
+compatible with older versions. I recommend you use pypy and perlbrew. This is because
+you will get faster execution with pypy most of the time (but of course, C-python is ok
+too!), and perlbrew will help you ensure that YOU are using the correct version without
+having to shake down the entire system which can and will cause breakage if you do too much
+mucking around with modules, etc.
+
+ AutoX is a github project. However, the PERL module tree may be found on CPAN, so please
+keep in mind if you found this documentation there it could be out of date.
+
+ The file itself is a hybrid of a couple formats. The file itself is contained as a JSON, however
+the contents of the JSON variable tree contains (naturally) bash code, since that is what we are
+dealing with. This file could be cached if you are using cache mode with autox (not currently
+available with newer versions but with old ones you can still do it, ie gxbase).
+
+C. THE PSEUDO TREE
+------------------
+
+I will use a pseudo-tree to explain the layout of the document tree.
+
+`` 	Root Document
+``  +---------------Version Branch
+``  |                      +---------Version Numbers
+``  |                      |               |
+``  |                      |               +----------Major.Minor.Build*
+``  |                      |                             |
+``  |                      |                             +----------dev (/dev) or release (/master)
+``  |                      +---------Author Information
+``  |                                      |
+``  |                                      +----------Name.Email.Contact
+``  |
+``  +---------------Language Information
+``                         |
+``                         +---------Language Name, CTAGS Style (usually 'sh')
+``                         |
+``                         +---------Spoken Language, Region, and/or Local (usually 'en_US')
+``                         
+``
+
+**POINT OF EDIT: this is where the author left off, sorry!!**

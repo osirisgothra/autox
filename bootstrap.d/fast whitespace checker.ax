@@ -1,1 +1,18 @@
-echo "* Whitespace Handling OK"
+
+# NOTE: 'function' required, POSIX does not allow dots (.) in function names!!
+function ax.tests.whitespace()
+{ 
+    if [[ -z "" ]] && [[ -n " " ]] && [[ ! -r "/dev/not a filename" ]]; then
+        if [[ -n "$AX_WHITESPACE" ]]; then
+            echo "* Whitespace Handling OK"
+            unset AX_WHITESPACE
+        fi
+        return 0
+    else
+        axtool warn $BASH_SOURCE "Whitespace apparently failed test, please use vanilla shopt settings in your main environment"
+        axtool hint $BASH_SOURCE "You might consider using ax.env.push/pop for your operations!"
+        return 1
+    fi
+}
+AX_WHITESPACE=1
+ax.tests.whitespace

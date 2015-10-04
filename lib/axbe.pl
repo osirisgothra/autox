@@ -173,7 +173,7 @@ die "This program is mislocated, please reinstall"
 
 my $axconfig = Autox::Config->new($axconf);
 # add your own extensions or prefix names here
-my $unwantedfiles = qr!((?<dot>[.])(?<extensions>id|dat|act)\z|\A(?<prefixes>apt|make))!; 
+my $unwantedfiles = qr!((?<dot>[.])(?<extensions>id|dat|act)\z|\A(?<prefixes>apt|make))!;
 
 unless ( -r -f -x ($editorpath) || -r -f -x ($editorpath = $axconfig->read_config_value("axbe","editor","")))
 {
@@ -225,7 +225,7 @@ find(
 								}
 								elsif ( $name =~ $unwantedfiles )
 								{
-									print "skipping unwanted file '$name' (pattern = $unwantedfiles)\n"; 
+									print "skipping unwanted file '$name' (pattern = $unwantedfiles)\n";
 								}
 								else
 								{
@@ -246,9 +246,9 @@ if (@foundfiles)
 	print "$_\n" for @foundfiles;
 	my $response;	# NOTE: used by the next two prompt parts (but are not related)
 
-	if ($backupsfound) 
+	if ($backupsfound)
 	{
-		while(1) 
+		while(1)
 		{
 			print "Found $#foundbackups in tree, remove them now? [type 'y' or 'n']: ";
 			chomp ( $response = <STDIN> );
@@ -268,7 +268,7 @@ if (@foundfiles)
 			}
 		}
 	}
-	
+
 	if (@foundfiles > 1)
 	{
 		$response = $term->get_reply(
@@ -281,8 +281,8 @@ if (@foundfiles)
 	{
 		$response = $foundfiles[0];
 	}
-	
-	system $editorpath,$response;	
+
+	system $editorpath,$response;
 
 }
 else

@@ -1,0 +1,1 @@
+alias ax.kde.kcmshells='(for x in /usr/bin/kcmshell[45]; do $x --list | sed '\''s!^!'\''\""$(basename $x) "'\''!g'\''; done) | tail -n+2 | perl -wpe '\''s/(\S+)(?:\s+-\s+)(\S+.*)/$1\" \"$2\"/g'"'"
