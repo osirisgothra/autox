@@ -18,7 +18,7 @@ function _b_edit_glo {
 		$EDITOR /etc/bash.bashrc
 	fi
 }
-function _setup_bvars() {
+function _b_setupvars() {
 	if [[ $UID -lt 1000 ]]; then
 		GLOF2="F2"
 		LOCF2="Ctrl+F2"
@@ -71,7 +71,7 @@ function _detect_terminal()
 	fi
 
 }
-function _reload_bindings() {
+function _b_reload() {
 
 		GLOF2_B="$(tput $GLOF2_k)"
 		LOCF2_B="$(tput $LOCF2_k)"
@@ -301,9 +301,9 @@ function _b_reresource()
 	{
 		if [[ $1 == SETUP ]]; then
 			_detect_terminal
-			_setup_bvars
-			_reload_bindings
-			_reload_bindings_f1
+			_b_setupvars
+			_b_reload
+			_b_reload_f1
 		fi
 		echo "* Keyboard Bindings and Display Help (F1=Help F2=Readline Bindings)"
 		#
@@ -311,7 +311,7 @@ function _b_reresource()
 	}
 	#RELOAD_BINDINGS_DISCLUDE
 
-	function _reload_bindings_f1() {
+	function _b_reload_f1() {
 		# do not put in reload_bindings because
 		# it will cause errors if rebound during
 		# it's processing itself:

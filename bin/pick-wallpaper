@@ -1,0 +1,163 @@
+#!/bin/bash
+# vim:ft=sh
+# CHANGELOG
+#
+# - 9.22.2015 - update identify.im6 to identify-im6 and supplied workaround and backward compatible solution
+#
+
+# shell settings
+
+shopt -s globstar
+shopt -s nullglob
+shopt -s extglob
+  set +o nounset
+  set +o histexpand
+# the color values are given in #, so we cant have interactive comments!
+shopt -u interactive_comments
+
+# set up local variables (3 arrays, 1 integer)
+declare -a PICK_WALLPAPER_FLAGS=( "$@" )
+# HACK: program changed name from identify.im6 to identify-im6 as of 8/2015
+# declare -a PICK_WALLPAPER_REQUIREMENTS=( hsetroot sed perl identify.im6 grep )
+# this hack allows for either (but the - version takes precedence)
+if ! which identify-im6; then
+	declare -g IDENTIFY_IM6='identify.im6'
+else
+	declare -g IDENTIFY_IM6='identify-im6'
+fi
+declare -a PICK_WALLPAPER_REQUIREMENTS=( hsetroot sed perl $IDENTIFY_IM6 grep )
+declare -a PICK_WALLPAPER_MISSING
+declare -i PICK_WALLPAPER_NODEPS=0
+declare -i PICK_WALLPAPER_IMAGE_CMD_RUNNING=0
+# ADD/FIX: converted to a multiple directory array and moved here from inline (below)
+declare -a WALLPAPER_DIRS=( ~/Pictures/Wallpaper )
+
+# preliminary checks
+
+
+for i in ${PICK_WALLPAPER_REQUIREMENTS[@]}; do
+	if [[ ! -x `which $i` ]]; then
+		PICK_WALLPAPER_MISSING+=( $i )
+		PICK_WALLPAPER_NODEPS+=1
+	fi
+done
+
+if [[ $PICK_WALLPAPER_NODEPS == 0 ]]; then
+
+	# functions
+	function addwph()
+	{
+		echo "$1" >> ~/.wallpaper_history
+		echo "$1" > ~/.wallpaper	
+		if [[ $PICK_WALLPAPER_IMAGE_CMD_RUNNING != 1 ]]; then
+			# use this line to modify per-sync commands (like adding sudo or env to the beginning, if needed)
+			PICK_WALLPAPER_IMAGE_CMD=( "${PICK_WALLPAPER_IMAGE_CMD[@]}" )
+			echo hsetroot $(for W in "${PICK_WALLPAPER_IMAGE_CMD[@]}"; do [[ $W =~ ^- ]] && echo "$W" || echo \""$W"\"; done) | tr '\n' ' ' > ~/.wallpaper_sync
+			# add the newline (all newlines were stripped from the previous line by tr)
+			echo >> ~/.wallpaper_sync
+			# the image name ALWAYS comes last in image setting
+			# this identify command is not for checking purposes, but soley for output display
+			echo identify \"${PICK_WALLPAPER_IMAGE_CMD[-1]}\" >> ~/.wallpaper_sync
+		fi
+	}
+	function setwp()
+	{
+		local WP="$1"; shift
+		PICK_WALLPAPER_IMAGE_CMD=( -cover "$WP" "$@" )
+		( "$IDENTIFY_IM6" "$WP" && echo "Command Line: hsetroot ${PICK_WALLPAPER_IMAGE_CMD[@]}" && hsetroot "${PICK_WALLPAPER_IMAGE_CMD[@]}" && return 1 ) || return 0
+	}
+	if [[ $* =~ '-help' ]]; then
+		# combine help text together
+		# making sure to let the hsetroot guy get credit (most of it)
+		hsetroot -help | sed 's/hsetroot/pick-wallpaper (via hsetroot)/g;s/<image>//g;s/^Send/Send pick-wallpaper bug reports to: osirisgothra@hotmail.com\nSend hsetroot/g'
+		exit 1
+	elif [[ $1 == '-hist' && $# == 1 ]]; then
+		echo "syncing with ~/.wallpaper..."
+		PICK_WALLPAPER_IMAGE_CMD_RUNNING=1
+		if source ~/.wallpaper_sync; then
+			echo "Status: sync succeeded! (code 0)"
+			exit 0
+		else
+			echo "Status: failed to sync -- you must run $0 normally at least once!! (code 4)"
+			exit 4
+		fi				
+	elif [[ $1 == '-last' && $# == 1 ]]; then
+		cat ~/.wallpaper
+		shift 
+		# this space is reserved for future use
+		exit 0
+	elif [[ $1 == '-last' && $# == 2 ]]; then
+		perl -wne 'print if $. == int("'$2'")' ~/.wallpaper_history 	
+		shift 2	
+		# this space is reserved for future use
+		exit 0
+	fi
+
+	# DEFAULTS
+	# any variable here can be overriden by exporting prior to running this script
+	# set up defaults, if not defined by user:
+	#
+	# PICK_WALLPAPER_FAILSAFE_EFFECT	effect used if no fallback image is found
+	# PICK_WALLPAPER_FAILSAFE_IMAGE		image to fall back to if other images are missing
+	# PICK_WALLPAPER_BINARY				the 'hsetroot' binary, if named differently
+	# PICK_WALLPAPER_DEFAULT_FLAGS		flags used BEFORE the filename (one of -cover, -extend, etc must be used LAST)
+	# PICK_WALLPAPER_WALLPAPER_IMAGES*	array of full path+filenames of wallpaper(s) to use, _overrides_scans_!
+	# PICK_WALLPAPER_FLAGS				extra flags to pass to hsetroot**
+	# PICK_WALLPAPER_WALLPAPER_COUNT	explicit cap for images to cycle in collection (max length of the image list)
+	#
+	# * instead of specifying them on the command line, they are set here and at the start via the WALLPAPER_DIRS variable
+	#   which should be set in your profile if need by. The builtin defaults are usually what you want if you use standard
+	#   filesystem rules.
+	#
+	# ** the extra flags variable (PICK_WALLPAPER_FLAGS) is only useful if you need to automate the setup elsewhere like
+	#    in your bashrc or eqivalent profile/environment script. For on-the-fly extra flags, just pass them with the
+	#    'pick-wallpaper' command
+	#
+
+	[[ -r $PICK_WALLPAPER_FAILSAFE_EFFECT ]]	||	PICK_WALLPAPER_FAILSAFE_EFFECT=( "-add" "#808080" "-add" "#404040" "-gradient" "45" )
+	[[ -r $PICK_WALLPAPER_FAILSAFE_IMAGE ]]		||	PICK_WALLPAPER_FAILSAFE_IMAGE="/opt/tilebg.jpg"
+	[[ -x $PICK_WALLPAPER_BINARY ]] 			||	PICK_WALLPAPER_BINARY=hsetroot
+	[[ -n $PICK_WALLPAPER_DEFAULT_FLAGS ]] 		||	PICK_WALLPAPER_DEFAULT_FLAGS=( "-cover" )
+	# ADD/FIX
+	# added support for declare -a W=( ${w[@]}/**/*.{png,jpg,jpeg,gif} )
+	# fixed support for extra dirs and using standard locations fit for all
+	[[ -n $PICK_WALLPAPER_WALLPAPER_IMAGES ]]	||	PICK_WALLPAPER_WALLPAPER_IMAGES=( ${WALLPAPER_DIRS[@]}/**/*.{png,gif,jpg,jpeg,bmp,xpm} )
+	[[ -n $PICK_WALLPAPER_FLAGS ]]              ||  PICK_WALLPAPER_FLAGS=( "${PICK_WALLPAPER_DEFAULT_FLAGS[@]}" )
+	[[ -n $PICK_WALLPAPER_WALLPAPER_COUNT ]]    ||  PICK_WALLPAPER_WALLPAPER_COUNT=${#PICK_WALLPAPER_WALLPAPER_IMAGES[@]}
+	echo "WALLPAPER COUNT: $PICK_WALLPAPER_WALLPAPER_COUNT"
+
+	# --- main program ---
+
+	# pick the wallpaper image
+	if [[ $PICK_WALLPAPER_WALLPAPER_COUNT > 0 ]]; then
+		PICK_WALLPAPER_INDEX=`perl -e 'srand('$RANDOM$SECONDS'); print int(rand('$PICK_WALLPAPER_WALLPAPER_COUNT'*10)/10)'`
+		PICK_WALLPAPER_IMAGE="${PICK_WALLPAPER_WALLPAPER_IMAGES[$PICK_WALLPAPER_INDEX]}"
+	fi
+
+	# set the image, or die trying...
+
+	if setwp "$PICK_WALLPAPER_IMAGE" "${PICK_WALLPAPER_FLAGS[@]}"; then
+		addwph "$PICK_WALLPAPER_IMAGE"
+	elif setwp "$PICK_WALLPAPER_FAILSAFE_IMAGE" "${PICK_WALLPAPER_FLAGS[@]}"; then
+		addwph "$PICK_WALLPAPER_FAILSAFE_IMAGE"
+	else
+		echo "failing back to internal non-image background ($PICK_WALLPAPER_FAILSAFE_EFFECT)"
+		if ! hsetroot "${PICK_WALLPAPER_FAILSAFE_EFFECT[@]}"; then
+			echo -e "Fatal: giving up, nothing is working, check that hsetroot is working and your DISPLAY variable is valid!\nWhen that fails to work, check your permissions, disk conditions, etc."
+			echo "Status: Ran but cannot pass image parser anything it likes (code 2)"
+			exit 2
+		fi
+	fi
+	echo "Status: No Errors! (code 0)"	
+	(exit 0)
+	
+else		
+	echo "*** Fatal: dependency failure ***"	
+	echo -e "\nThe following binaries are not accessible/executable: \n"
+	for D in ${PICK_WALLPAPER_MISSING[@]}; do echo -e "\t* $D"; done
+	echo -e "\nThis program requires packages: ${PICK_WALLPAPER_REQUIREMENTS[@]}"
+	echo "Please make certain that you have these and they are available for you to use. Contact your administrator or"
+	echo "visit your software management program to install these packages!"
+	echo -e "Status: Not Able To Run (Missing $PICK_WALLPAPER_NODEPS Components(code 3))\n"
+	(exit 3)
+fi

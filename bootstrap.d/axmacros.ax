@@ -89,7 +89,7 @@ else
 	 	done
 	 	return 0
 	 }
-
+    ax.term.hrule() { _hrule "$@"; }
 
 	 # _hrule [marquee(defaults to '-')] [forecolor] [backcolor*] [cap(s)]
 	 # * colors range from 0 to 256 colors

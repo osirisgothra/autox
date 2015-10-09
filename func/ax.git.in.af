@@ -1,0 +1,4 @@
+ax.git.in () 
+{ 
+    git pull --all
+}

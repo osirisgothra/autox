@@ -1,0 +1,15 @@
+#!/usr/bin/python3
+
+# simplex program to watch a movie
+
+import sys
+import os
+import pathlib
+
+videodir='/home/osiris/Videos'
+epidir='/home/osiris/Videos/Episodes'
+
+
+lf (length(sys.argv) > 0):
+    for (f in sys.argv):
+       

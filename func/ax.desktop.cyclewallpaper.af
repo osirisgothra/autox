@@ -1,0 +1,8 @@
+ax.desktop.cyclewallpaper () 
+{ 
+    while true; do
+        pick-wallpaper &> /dev/null;
+        cat ~/.wallpaper;
+        read;
+    done
+}

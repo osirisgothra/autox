@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=2030
 # [SublimeLinter: exclude="2031,2086"]
 # vim: tw=0:noet:hls:nospell:sw=4:ts=4:fdc=2:fcl=all:fdo=hor:fen:vbs=0:cf:aw
 #===============================================================================
@@ -59,31 +60,174 @@
 #      REVISION: 09/04/2015 10:54
 #===============================================================================
 
-# shim for axtool/config so no output
-builtin alias axtool='true axtool not ready'
-builtin alias axconfig='true axconfig not ready'
+## PRIMARY INIT KEEP FIRST!!##
+# establish AX_BASE first
+if [[ ! $- =~ i ]]; then
+	echo "You must SOURCE this file, not run it!"
+	exit 1
+fi
 
-# first and foremost, run that ~/.bash_completion.ax if it exists!
-if [[ -r ~/.bash_completion.ax ]]; then
-	if [[ ! -v AX_BASHCOMPLETION_RAN ]]; then
-		builtin source ~/.bash_completion.ax "$@"
-		# do not export this or the next shell instance down won't execute it!
-		AX_BASHCOMPLETION_RAN=1
+export AX_BASHSOURCE_REAL=$(readlink -e "$BASH_SOURCE" 2> /dev/null || echo none)
+export AX_BASHSOURCE_LINK="$BASH_SOURCE"
+export AX_BASE=$(dirname "$AX_BASHSOURCE_REAL" 2> /dev/null || echo none)
+export AX_SYS_CONF="$AX_BASE/config"
+export AX_USER_CONF="$HOME/config/autox"
+declare -gixa AX_RUN_COUNT[$$]=$(( ${AX_RUN_COUNT[$$]} + 1))
+# and verify we are autox proper
+if [[ ! $(cat "$AX_BASE/autox.id" | tr -d '\n') == "3bdc9ba4-2429-11e5-8ae2-00196605e97c" ]]; then
+	echo "AUTOX Not installed properly, make sure you unpacked it with it's directories and ran any installers first!"
+	return 1
+else
+	true debug echo "[AutoX verified via GUID ok]"
+fi
+# make available (TEMPORARY! SEE TODO) the primary configuration:
+ax.config()
+{
+	# this is the heart of the ax.config getter, however, it has some funky
+	# internalist workings, so you should probably want 'ax.config.get' and
+	# /or 'ax.config.has'. The first one echos the value if it is set, the second
+	# one does not, both return 0 or 1 if they exist or not, respectively.
+	# ax.config.set is only for adding values that do not already exist, at this time.
+	#declare -p CONFIG_CACHE
+	CACHELOAD=0
+	if [[ ! -v "CONFIG_CACHE[initialized]" ]]; then
+		declare -gA CONFIG_CACHE=( [initialized]="true" )
 	fi
-fi
+	unset RETV
+	if [[ $1 == cacheok ]]; then
+		shift
+		if [[ ${CONFIG_CACHE[$*]} ]]; then
+			RETV=${CONFIG_CACHE[$*]}
+			CACHELOAD=1
+		fi
+	fi
+	declare -gix ax_config_error=0
+	if [[ -v RETV ]] || [[ -r $AX_BASE/config/autoxrc ]]; then
+	# config file read OK:
+		if [[ -v RETV ]] || RETV=$(grep "(?<=^${*}=).*$" -Po $AX_BASE/config/autoxrc); then
+			# store in cache (for later use of 'cacheok')
+			# only if not loaded from cache on this run
+			[[ $CACHELOAD == 0 ]] && CONFIG_CACHE[$*]="$RETV"
+			# decide on numeric or string return method
+			# numeric may need to use config.has to get a true boolean due
+			# to booleans reflecting of 1 and 0 can be returns as well
+			if [[ $RETV =~ ^[0-9]+$ ]]; then
+				return $RETV
+			else
+				echo $RETV
+				return 1
+			fi
+		else
+			CONFIG_CACHE[$*]="1"
+			ax_config_error=1
+			return 1
+		fi
+	else
+	# config file unreadable, one will be created if not existing
+		mkdir --parents $AX_BASE/config
+		touch $AX_BASE/config/autoxrc
+		cat <<-EOF > $AX_BASE/config/autoxrc
+		#
+		# autoxrc
+		# autox configuration
+		#
+		configuration_created=1
+		EOF
+		if (($?)); then
+			echo "WARNING: could not create configuration file!"
+			tty -s && sleep 2 # dont wait if no point
+		else
+			echo "Configuration File Was Created: $AX_BASE/config/autoxrc"
+		fi
+	fi
+}
 
-# comment out these if you are not developing autox and want it strictly off always (otherwise ignore it)
-if [[ $- =~ x ]]; then
-	set -x	
-	trap 'echo -n $BASH_SOURCE:$LINENO: ' DEBUG
-fi
+ax.config.get()
+{
+	# [name]
+	# returns 1 if bad value or 0 if good value, echos the value
+	if ax.config.has $1; then
+		VALUE="$(ax.config $1)"
+		echo ${VALUE:-$?}
+		return 0
+	else
+		return 1
+	fi
+}
 
-[[ -d "$AX_BASE" ]] && cd "${AX_BASE}"
+ax.config.has()
+{
+	# [name]
+	ax.config "$1" &> /dev/null
+	return $ax_config_error;
+}
+
+ax.config.set()
+{
+	# [name] [newvalue]
+	cfgfile="$AX_BASE/config/autoxrc"
+	if ax.config.has "$1"; then
+		# set config myself
+		echo "replacing value: $1=$2"
+		tmpfile="$(mktemp)"
+		grep -Pv "^\s*$1\s*=" "$cfgfile"; echo "$1=$2" >> "$tmpfile"
+		mv -f "$cfgfile" "${cfgfile}.bak"
+		mv -f "$tmpfile" "$cfgfile"
+	else
+		# add config str
+		echo "$1=$2" >> "$cfgfile"
+	fi
+}
+ax.helperalias()
+{ # [alias helper (reserved for internal use) ]
+
+	#SHIM FOR INTERNAL USE: echo "$FUNCNAME $*"
+	if [[ ! -v AX_HELPER_ALIASES ]]; then
+		# make sure no internal function or alias from ax gets aliased over either
+		# because we would lose function over the entire library!
+		declare -gxa AX_HELPER_ALIASES=( $(grep '^ax\.[^\( ]+' -Po "$BASH_SOURCE") )
+	fi
+	if [[ $# -gt 1 ]]; then
+		for item in "$@"; do ax.helperalias "$item"; done
+	elif [[ $# -eq 1 ]]; then
+		# do it
+		NAME="${*%%=*}"
+		OVERWRITE=NO
+		for i in "${AX_HELPER_ALIASES[@]}"; do
+			if [[ "$i" == "$NAME" ]]; then
+				echo "Warning, This ax.helper alias is being overwritten: $i"
+				OVERWRITE=YES
+			else
+				if ax.config cacheok debug_helperalias; then
+					echo "debug: ax.helper $i being set for first time ok"
+				fi
+			fi
+		done
+		builtin alias "$@"
+
+		[[ $OVERWRITE == NO ]] && AX_HELPER_ALIASES+=( $NAME )
+		# end
+	else # zero
+		echo -e "builtin helper aliases:\n"
+		if [[ -v AX_HELPER_ALIASES ]]; then
+			local -i n=0
+			for i in "${AX_HELPER_ALIASES[@]}"; do
+				echo -e "\t$i"
+				let n++
+			done
+			echo -e "\n$n alias(es).\n"
+		else
+			echo -e "\t<<NONE>>\n\nZero alias(es).\n"
+		fi
+	fi
+
+}
+
+## END PRIMARY INIT
+
 
 # live functions (reloaded from disk without restarting autox, see end in experimental(909))
 # these are useful and mainly used when developing new features
-
-
 livefunc__ax.cache.exists()
 {
 	if [[ -r "$AX_BASE/cache/use" ]]; then
@@ -93,6 +237,7 @@ livefunc__ax.cache.exists()
 	fi
 }
 
+# TODO: split ax.cache.create into smaller parts, due to screen-spanning (screen meaning 80x25 text cells)
 livefunc__ax.cache.create()
 {
 	unset OPTIND OPTERR OPTARG
@@ -100,6 +245,8 @@ livefunc__ax.cache.create()
 		while true; do
 			# getopts opstring name [arg]
 			getopts dh AXOPT
+
+    # *** NB: part of FUNCTION ax.cache.create (LIVE) ***
 
 			case $AXOPT in
 				d)	DELETE_CACHE=1
@@ -133,6 +280,9 @@ livefunc__ax.cache.create()
 	# - shell options from 'shopt {-p,-po}'
 	# hash.act
 	# - hash executable names (from using 'hash -l')
+
+    # *** NB: part of FUNCTION ax.cache.create (LIVE) ***
+
 	# trap.act
 	# - traps (by using trap -l)
 	# shasum.act
@@ -158,6 +308,8 @@ livefunc__ax.cache.create()
 		return 1
 	fi
 
+    # *** NB: part of FUNCTION ax.cache.create (LIVE) ***
+
 	AX_CACHE_SITE=$AX_BASE/cache/usecache
 	((DELETE_CACHE)) && echo "Removing cache site..." || echo "Creating cache site..."
 	if [[ -d $AX_CACHE_SITE ]]; then
@@ -179,6 +331,8 @@ livefunc__ax.cache.create()
 		echo "All That Can Be Done Has Been Done."
 		return 0
 	fi
+
+    # *** NB: part of FUNCTION ax.cache.create (LIVE) ***
 
 	if ! mkdir -p "$AX_CACHE_SITE" || ! touch "$AX_CACHE_SITE/.site_validation"; then
 		echo "Failed to create/write-to new cache site, please check your permissions!"
@@ -221,6 +375,8 @@ livefunc__ax.cache.create()
 
 	# note: using a generator-style implementation to save on execution code size
 
+    # *** NB: part of FUNCTION ax.cache.create (LIVE) ***
+
 	declare -i AX_CACHE_SHA_SIZE=512
 	function _ax__generate_values() { eval "${PROCS[${STEPS[$2]}]}" > "$1" &&	(($2==$3)) && unset -f $FUNCNAME; }
 	declare -A PROCS=( [value]='builtin declare'
@@ -241,8 +397,7 @@ livefunc__ax.cache.create()
 		eval $incrementer
 		_ax__generate_values "$STEPF" $STEP $LAST
 	done
-
-
+    # NB: part of FUNCTION ax.cache.create (LIVE) -- ENDS HERE
 }
 
 ax.updatecache()
@@ -267,7 +422,42 @@ ax.isreadonlyfunc()
 	fi
 }
 
-if false && [[ -r $AX_BASE/cache/usecache ]]; then
+
+## MAIN EXECUTION SECTION
+
+# TODO: remove this shim for axtool/config once testing done
+builtin alias axtool='true axtool not ready'
+builtin alias axconfig='true axconfig not ready'
+
+# run the completion original, if it was renamed
+if [[ -r ~/.bash_completion.ax ]]; then
+	if [[ ! -v AX_BASHCOMPLETION_RAN ]]; then
+		builtin source ~/.bash_completion.ax "$@"
+		# do not export this or the next shell instance down won't execute it!
+		AX_BASHCOMPLETION_RAN=1
+	fi
+fi
+
+# debug support
+if [[ $- =~ x ]]; then	
+	echo "DEBUG MODE IS ACTIVE, ENABLING DEBUG FOR ALL SHELL FUNCTIONS!"
+	# turns on inherit debug/trace information,
+	# and execution echoing
+	set -ETxv
+	# setup extra debug hook
+	trap 'echo -n $BASH_SOURCE:$LINENO: ' DEBUG
+	trap 'echo -n --PROCESS ENDED (SIGCHLD)--' SIGCHLD
+fi
+if [[ $(ps --format=%c $PPID) =~ bash ]]; then
+    if [[ -d "$AX_BASSE" ]] && cd "${AX_BASE}"; then
+    	if ! ax.config.has no_axdir_change_with_subshell; then
+    		echo "Subshell Started, Starting in ${AX_BASE}"
+    	fi
+    fi
+fi
+
+if ax.config.has enable_experimental_harmful_features && [[ -r $AX_BASE/cache/usecache ]]; then
+
 	AX_CACHE_SITE=$AX_BASE/cache/usecache
 	SHAPRINT_THIS="$(eval shasum $(find -type f -not -iname 'shasumprint' -not -type l -iname '*[^~]' -printf '"'$PWD'/%P"\n') | shasum)"
 	[[ -r $AX_BASE/shasumprint ]] && SHAPRINT_PREV="$(cat $AX_BASE/shasumprint)" || SHAPRINT_PREV=NONE
@@ -338,8 +528,8 @@ if [[ $AX_STARTUP_FILE_NAME == ~/.bash_completion ]] && [[ $# -eq 0 ]]; then
 	shopt -s promptvars
 	# adjust AX_BASE to read from link target not link source
 	true debug echo -n "adjusting AX_BASE reference to..."
-
-	export AX_BASE="$(dirname $(readlink -e $BASH_SOURCE))"
+#shellcheck disable=2155
+	export AX_BASE="$(dirname "$(readlink -e "$BASH_SOURCE")")"
 
 	true debug echo -n $AX_BASE
 	if [[ -w $AX_BASE && -d $AX_BASE ]]; then
@@ -641,7 +831,8 @@ if [[ $AX_PHASE == 1 ]]; then
 				return 1; # already loaded, skip
 			else
 				if [[ $BRACED == 1 ]]; then
-					ITEMS=( $(find -L $AX_BASE -iname '$i') )
+					ITEMS=( $(
+					find -L $AX_BASE -iname '$i') )
 					ITEM="${ITEMS[0]}"
 				else
 					ITEM="$x"
@@ -734,147 +925,6 @@ if [[ $AX_PHASE == 1 ]]; then
 	#       stuff, this will be on the RPC Schedule
 	#
 	
-	ax.config()
-	{
-		# this is the heart of the ax.config getter, however, it has some funky
-		# internalist workings, so you should probably want 'ax.config.get' and
-		# /or 'ax.config.has'. The first one echos the value if it is set, the second
-		# one does not, both return 0 or 1 if they exist or not, respectively.
-		# ax.config.set is only for adding values that do not already exist, at this time.
-		#declare -p CONFIG_CACHE
-		CACHELOAD=0
-		if [[ ! -v "CONFIG_CACHE[initialized]" ]]; then
-			declare -gA CONFIG_CACHE=( [initialized]="true" )
-		fi
-		unset RETV
-		if [[ $1 == cacheok ]]; then
-			shift
-			if [[ ${CONFIG_CACHE[$*]} ]]; then
-				RETV=${CONFIG_CACHE[$*]}
-				CACHELOAD=1
-			fi
-		fi
-		declare -gix ax_config_error=0
-		if [[ -v RETV ]] || [[ -r $AX_BASE/config/autoxrc ]]; then
-		# config file read OK:
-			if [[ -v RETV ]] || RETV=$(grep "(?<=^${*}=).*$" -Po $AX_BASE/config/autoxrc); then
-				# store in cache (for later use of 'cacheok')
-				# only if not loaded from cache on this run
-				[[ $CACHELOAD == 0 ]] && CONFIG_CACHE[$*]="$RETV"
-				# decide on numeric or string return method
-				# numeric may need to use config.has to get a true boolean due
-				# to booleans reflecting of 1 and 0 can be returns as well
-				if [[ $RETV =~ ^[0-9]+$ ]]; then
-					return $RETV
-				else
-					echo $RETV
-					return 1
-				fi
-			else
-				CONFIG_CACHE[$*]="1"
-				ax_config_error=1
-				return 1
-			fi
-		else
-		# config file unreadable, one will be created if not existing
-			mkdir --parents $AX_BASE/config
-			touch $AX_BASE/config/autoxrc
-			cat <<-EOF > $AX_BASE/config/autoxrc
-			#
-			# autoxrc
-			# autox configuration
-			#
-			configuration_created=1
-			EOF
-			if (($?)); then
-				echo "WARNING: could not create configuration file!"
-				tty -s && sleep 2 # dont wait if no point
-			else
-				echo "Configuration File Was Created: $AX_BASE/config/autoxrc"
-			fi
-		fi
-	}
-
-	ax.config.get()
-	{
-		# [name]
-		# returns 1 if bad value or 0 if good value, echos the value
-		if ax.config.has $1; then
-			VALUE="$(ax.config $1)"
-			echo ${VALUE:-$?}
-			return 0
-		else
-			return 1
-		fi
-	}
-
-	ax.config.has()
-	{
-		# [name]
-		ax.config "$1" &> /dev/null
-		return $ax_config_error;
-	}
-
-	ax.config.set()
-	{
-		# [name] [newvalue]
-		cfgfile="$AX_BASE/config/autoxrc"
-		if ax.config.has "$1"; then
-			# set config myself
-			echo "replacing value: $1=$2"
-			tmpfile="$(mktemp)"
-			grep -Pv "^\s*$1\s*=" "$cfgfile"; echo "$1=$2" >> "$tmpfile"
-			mv -f "$cfgfile" "${cfgfile}.bak"
-			mv -f "$tmpfile" "$cfgfile"
-		else
-			# add config str
-			echo "$1=$2" >> "$cfgfile"
-		fi
-	}
-	ax.helperalias()
-	{ # [alias helper (reserved for internal use) ]
-
-		#SHIM FOR INTERNAL USE: echo "$FUNCNAME $*"
-		if [[ ! -v AX_HELPER_ALIASES ]]; then
-			# make sure no internal function or alias from ax gets aliased over either
-			# because we would lose function over the entire library!
-			declare -gxa AX_HELPER_ALIASES=( $(grep '^ax\.[^\( ]+' -Po "$BASH_SOURCE") )
-		fi
-		if [[ $# -gt 1 ]]; then
-			for item in "$@"; do ax.helperalias "$item"; done
-		elif [[ $# -eq 1 ]]; then
-			# do it
-			NAME="${*%%=*}"
-			OVERWRITE=NO
-			for i in "${AX_HELPER_ALIASES[@]}"; do
-				if [[ "$i" == "$NAME" ]]; then
-					echo "Warning, This ax.helper alias is being overwritten: $i"
-					OVERWRITE=YES
-				else
-					if ax.config cacheok debug_helperalias; then
-						echo "debug: ax.helper $i being set for first time ok"
-					fi
-				fi
-			done
-			builtin alias "$@"
-
-			[[ $OVERWRITE == NO ]] && AX_HELPER_ALIASES+=( $NAME )
-			# end
-		else # zero
-			echo -e "builtin helper aliases:\n"
-			if [[ -v AX_HELPER_ALIASES ]]; then
-				local -i n=0
-				for i in "${AX_HELPER_ALIASES[@]}"; do
-					echo -e "\t$i"
-					let n++
-				done
-				echo -e "\n$n alias(es).\n"
-			else
-				echo -e "\t<<NONE>>\n\nZero alias(es).\n"
-			fi
-		fi
-
-	}
 
 	[[ $AX_DROP_IN_MODE -eq 1 ]] || AX_BASE="$(realpath $(dirname $BASH_SOURCE))"
 	{
@@ -936,7 +986,7 @@ elif [[ $AX_PHASE == 2 ]]; then
 	for i in $AX_BASE/bootstrap.d/*.ax; do
 		true extdebug echo "-------------- BOOTSTRAPPER $i ------------ "
 		if [[ -s "$i" ]]; then
-			#shellcheck disable=2030
+			
 			ax.echo $(declare -p BASH_SOURCE | sed 's/declare\s?//g') source "$i" "$$" "$USER" "$AX_BASE"
 			. "$i" "$$" "$USER" "$AX_BASE"
 		fi

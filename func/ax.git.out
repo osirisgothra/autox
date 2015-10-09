@@ -1,0 +1,4 @@
+pushit () 
+{ 
+    git commit -am "$*" && git push --all || echo "commit failed so we wont push"
+}
