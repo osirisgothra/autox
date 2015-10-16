@@ -62,6 +62,7 @@
 
 ## PRIMARY INIT KEEP FIRST!!##
 # establish AX_BASE first
+
 if [[ ! $- =~ i ]]; then
 	echo "You must SOURCE this file, not run it!"
 	exit 1
@@ -438,7 +439,11 @@ if [[ -r ~/.bash_completion.ax ]]; then
 	fi
 fi
 
+echo "shell settings: $-"
+
 # debug support
+echo "about to check for debug"
+read
 if [[ $- =~ x ]]; then	
 	echo "DEBUG MODE IS ACTIVE, ENABLING DEBUG FOR ALL SHELL FUNCTIONS!"
 	# turns on inherit debug/trace information,
@@ -560,6 +565,11 @@ fi
 # the alias autox starts with the phase given via the variable AX_PHASE prologue(1)
 # the default zero is the none(0) phase.
 [[ $# -gt 0 || -z $AX_PHASE ]] && declare -i AX_PHASE="${AX_PHASES[$1]}"
+ax.usage()
+{ 
+echo "source $BASH_SOURCE <phase>"
+}
+
 
 [[ $AX_PHASE -eq 0 ]] && { echo "Error: phase was unknown ($1)"; ax.usage; return 1; }
 shift

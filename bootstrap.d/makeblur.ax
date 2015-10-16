@@ -43,7 +43,7 @@
 #======================================================================================================================
 
 # do not run outside of X sessions
-[[ $AX_HAS_XSESSION != yes ]] && return 1
+[[ $AX_ON_XSESSION != yes ]] && return 1
 
 function makeblur()
 {
