@@ -1,5 +1,23 @@
 # vim:ft=rest
 # DEVELOPER
+#
+# Notes for the developer(s) of autox
+#
+#
+# please use branch 'dev' for all developmental changes
+# that branch has all the hot new stuff in it, the 'master' 
+# branch has all the stable stuff in it.
+#
+# upon releases,  tags are made and dev is merged to master
+# this does not happen until dev is stable at that point,
+# once it does, it becomes the new master, but changes can still
+# happen AFTER that merge which make the dev branch once again
+# unstable. It is quite common for the dev branch to not work at all!
+
+# MISC DEVELOPER NOTES FOLLOW (NOT TOO IMPORTANT)
+
+#
+# DEVELOPER
 # at least most of this is just scratchpad/r&d crap
 
 # AX_PHASE variable takes on this form:
