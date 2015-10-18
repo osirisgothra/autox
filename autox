@@ -68,12 +68,18 @@ if [[ ! $- =~ i ]]; then
 	exit 1
 fi
 
+####
+#### VARIABLES
+####
+
 export AX_BASHSOURCE_REAL=$(readlink -e "$BASH_SOURCE" 2> /dev/null || echo none)
 export AX_BASHSOURCE_LINK="$BASH_SOURCE"
 export AX_BASE=$(dirname "$AX_BASHSOURCE_REAL" 2> /dev/null || echo none)
 export AX_SYS_CONF="$AX_BASE/config"
 export AX_USER_CONF="$HOME/config/autox"
 declare -gixa AX_RUN_COUNT[$$]=$(( ${AX_RUN_COUNT[$$]} + 1))
+
+
 # and verify we are autox proper
 if [[ ! $(cat "$AX_BASE/autox.id" | tr -d '\n') == "3bdc9ba4-2429-11e5-8ae2-00196605e97c" ]]; then
 	echo "AUTOX Not installed properly, make sure you unpacked it with it's directories and ran any installers first!"
@@ -81,7 +87,11 @@ if [[ ! $(cat "$AX_BASE/autox.id" | tr -d '\n') == "3bdc9ba4-2429-11e5-8ae2-0019
 else
 	true debug echo "[AutoX verified via GUID ok]"
 fi
-# make available (TEMPORARY! SEE TODO) the primary configuration:
+
+###
+### FUNCTIONS
+###
+
 ax.config()
 {
 	# this is the heart of the ax.config getter, however, it has some funky
@@ -224,11 +234,6 @@ ax.helperalias()
 
 }
 
-## END PRIMARY INIT
-
-
-# live functions (reloaded from disk without restarting autox, see end in experimental(909))
-# these are useful and mainly used when developing new features
 livefunc__ax.cache.exists()
 {
 	if [[ -r "$AX_BASE/cache/use" ]]; then
@@ -238,9 +243,10 @@ livefunc__ax.cache.exists()
 	fi
 }
 
-# TODO: split ax.cache.create into smaller parts, due to screen-spanning (screen meaning 80x25 text cells)
 livefunc__ax.cache.create()
 {
+    # TODO: split ax.cache.create into smaller parts, due to screen-spanning (screen meaning 80x25 text cells)
+
 	unset OPTIND OPTERR OPTARG
 	if [[ $# -gt 0 ]]; then
 		while true; do
@@ -403,7 +409,8 @@ livefunc__ax.cache.create()
 
 ax.updatecache()
 {
-	# checks the signature
+	# TODO: complete this - checks the signature (sha) and updates
+	#       if needed
 	true
 }
 
@@ -423,36 +430,22 @@ ax.isreadonlyfunc()
 	fi
 }
 
+function qunalias()
+{
+    unalias "$@" &> /dev/null
+}
 
+##
 ## MAIN EXECUTION SECTION
+##
 
-# TODO: remove this shim for axtool/config once testing done
-builtin alias axtool='true axtool not ready'
-builtin alias axconfig='true axconfig not ready'
-
-# run the completion original, if it was renamed
 if [[ -r ~/.bash_completion.ax ]]; then
 	if [[ ! -v AX_BASHCOMPLETION_RAN ]]; then
 		builtin source ~/.bash_completion.ax "$@"
-		# do not export this or the next shell instance down won't execute it!
 		AX_BASHCOMPLETION_RAN=1
 	fi
 fi
 
-echo "shell settings: $-"
-
-# debug support
-echo "about to check for debug"
-read
-if [[ $- =~ x ]]; then	
-	echo "DEBUG MODE IS ACTIVE, ENABLING DEBUG FOR ALL SHELL FUNCTIONS!"
-	# turns on inherit debug/trace information,
-	# and execution echoing
-	set -ETxv
-	# setup extra debug hook
-	trap 'echo -n $BASH_SOURCE:$LINENO: ' DEBUG
-	trap 'echo -n --PROCESS ENDED (SIGCHLD)--' SIGCHLD
-fi
 if [[ $(ps --format=%c $PPID) =~ bash ]]; then
     if [[ -d "$AX_BASSE" ]] && cd "${AX_BASE}"; then
     	if ! ax.config.has no_axdir_change_with_subshell; then
@@ -480,23 +473,16 @@ if ax.config.has enable_experimental_harmful_features && [[ -r $AX_BASE/cache/us
 		echo "Files have changed, doing a full load... please use ax.cache.create to make a new cache if you"
 		echo "want to enable cache support again!"
 	fi
-else
-	if [[ -z ${AX_ONE_TIME_MESSAGES[NOCACHE]} ]]; then
-		declare -gA AX_ONE_TIME_MESSAGES
-		# AX_ONE_TIME_MESSAGES[NOCACHE]=1
-		# TODO: uncomment once cache support is completely done
-		# #echo "hint: no cache available, use ax.cache.create if you want faster load times!"
-	fi
 fi
-
-
-
 
 if [[ ! -v AX_USER_VARS_INITIALIZED ]]; then
 	declare -g AX_STARTUP_FILE_NAME="$BASH_SOURCE"
 	declare -gi AX_USER_BASHRC_ORIGINATED=0
 	declare -gi AX_USER_BASHRC_ORIGIN_COUNT=0
 	declare -gr AX_USER_VARS_INITIALIZED=1
+	declare -gi AX_STARTUP_CYCLE_COUNT=1
+else
+    let AX_STARTUP_CYCLE_COUNT++
 fi
 
 for x in "${BASH_SOURCE[@]}"; do
@@ -506,6 +492,35 @@ for x in "${BASH_SOURCE[@]}"; do
 		let AX_USER_BASHRC_ORIGIN_COUNT++
 	fi
 done
+if [[ -r ~/.ax_lowlevel_debug_messages ]]; then
+
+    function _ax_true_false()
+    {
+        retval=$1
+        if [[ $2 == debug ]]; then
+            shift 2
+            eval echo "$@"
+            return 0
+        else
+            # emulate item, do not bother handling the rest, however
+            # the cmdline always is dropped with real true/false b/i
+            return $retval
+        fi
+    }
+    function true()
+    {
+        _ax_true_false $FUNC_NAME "$@";
+    }
+    function false()
+    {
+        _ax_true_false $FUNC_NAME "$@";  
+    }
+else
+    unset -f true
+    unset -f false
+    qunalias true
+    qunalias false
+fi
 
 if [[ $AX_USER_BASHRC_ORIGINATED -eq 1 ]]; then
 	true debug echo "Triggering AutoX Load OK (request comes from user's home)"
@@ -615,8 +630,6 @@ if [[ "$*" ]]; then
 fi
 
 # Phase 1 - Prologue (Declare Functions)
-
-if [[ $AX_PHASE == 1 ]]; then
 
 	ax.echo() {
 		case $1 in  on|off)
@@ -931,29 +944,7 @@ if [[ $AX_PHASE == 1 ]]; then
 		fi
 	}
 
-	# TODO: we need to separate runtime stuff from configuration
-	#       stuff, this will be on the RPC Schedule
-	#
-	
 
-	[[ $AX_DROP_IN_MODE -eq 1 ]] || AX_BASE="$(realpath $(dirname $BASH_SOURCE))"
-	{
-		# helper aliases (not part of alias chain! - reserved for use by ax)
-		ax.helperalias stub=function
-		ax.helperalias ro=readonly
-		ax.helperalias int='declare -i'
-		ax.helperalias list='declare -a'
-		ax.helperalias hash='declare -A'
-		ax.helperalias islist='declare -pa'
-		ax.helperalias ishash='declare -pA'
-		ax.helperalias ax.echoa='echo ${!BASH_ALIASES[*]}'
-		ax.helperalias next=done
-		ax.helperalias endif=fi
-		ax.helperalias elseif=elif
-		ax.helperalias endselect=done
-		ax.helperalias endwhile=done
-		ax.helperalias enduntil=done
-	}
 	# hardwire a unique session id
 	if [[ ! -v AX_SESSION_ID ]] && [[ -d $AX_BASE ]] && [[ -r $AX_BASE/autox ]]; then
 		AX_SESSION_ID_PREFIX="$USER:$GROUP:"
@@ -963,6 +954,7 @@ if [[ $AX_PHASE == 1 ]]; then
 	fi
 	# hardwire $TTY to $(tty) for this session
 	export TTY=$(tty 2>/dev/null || echo dumb)
+
 	# detect and set the
 	# AX_TERMINAL and AX_TERMINAL_PID variables
 	if command xprop -root 2> /dev/null | grep _NET_ACTIVE_WINDOW -q; then
@@ -991,12 +983,14 @@ if [[ $AX_PHASE == 1 ]]; then
 	AX_TERMINAL_PPID=$PPID
 	# ax main loader
 	ax.load
-elif [[ $AX_PHASE == 2 ]]; then
+
+##### OLD PHASE 2
+
 	# ax bootstrap loader
 	for i in $AX_BASE/bootstrap.d/*.ax; do
 		true extdebug echo "-------------- BOOTSTRAPPER $i ------------ "
 		if [[ -s "$i" ]]; then
-			
+
 			ax.echo $(declare -p BASH_SOURCE | sed 's/declare\s?//g') source "$i" "$$" "$USER" "$AX_BASE"
 			. "$i" "$$" "$USER" "$AX_BASE"
 		fi
@@ -1017,13 +1011,6 @@ elif [[ $AX_PHASE == 2 ]]; then
 	done
 	# TODO: end devel area for DLCE
 	unset -f _comperr
-elif [[ $AX_PHASE -le 4 ]]; then
-	echo "runtime and exit phases are not yet supported, doing nothing successfully (0)..."
-	return 0
-else
-	echo "Unsupported phase: $AX_PHASE"
-	return 122
-fi
 
 # --- experimental
 # live function support:
@@ -1066,15 +1053,19 @@ function source()
 [[ -v AX_TERMINAL_PID ]] || echo "warning: terminal PID not set (AX_TERMINAL_PID)"
 [[ -v AX_TERMINAL_PPID ]] || echo "warning: terminal parent PID not set (AX_TERMINAL_PPID)"
 
-# --- make sure some settings are forced off
+# --- make sure some settings are forced off they will screw up things if not
+# --- TODO: create a user-level and shell-level environment separately so user can use any shopts (s)he wants
 
 set +o nounset
 set +EHxvT
 
-# ---------------------------------- end of script ---------------------------------------------------
 # this last echo is for separation, dont delete it unless you hate whitespace
+
 if ax.config.has hatewhitespace; then
 	true "";
 else
 	echo "";
 fi
+
+
+# END OF SCRIPT
