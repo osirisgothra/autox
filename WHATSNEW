@@ -2,8 +2,49 @@ WHATSNEW
 
 ... a log of what new features were added and when, subversions divided into
     date segments MMDDYY (so we are at version 0.0.093015 at the time of the
-    writing).
+    first writing).
+
+ALMOST!    
+0.0.102115
+    - This is the last bit of additions before the FIRST RELEASE, happening
+      in NOVEMBER OR DECEMBER!!
+    - Speed up on autox by rewriting much of the core autox script, removing
+      phase features that didnt seem to make too much difference during R/D
+    - Fixed some minor issues in autox
+    - Added 'metadata' that can be attached to ANY autox object file
+    - Introduced object-side support for metadata in aliases and 'funcs'
+    - Added lyrics parser, ax.media.getlyrics, which is an alias pointing
+      to one of the ax.media.getlyrics.?? items. There are also (at this time 1
+      ) bindings to them for program support. Since the simplest is mocp, I have
+      included bindings on it for both azlyrics.com and musixmatch.com. Currently
+      it seems that musixmatch is the better choice and supports better realiabilty
+      and consistency. azlyrics requires you to have 'html2text' installed, not
+      installed by default on many unix systems!
+    - The mocp bindings for getlyrics will grab lyrics from the currently playing
+      item and dump it to terminal. 
+    - AX_BASE is the base dir variable for autox. Now we have AX_USERBASE too, which
+      points to ~/.config/autox, which identically stores USER-SPECIFIC stuff. Much
+      of the tools are yet to support it, but funcs and aliases SHOULD work they
+      will be in ~/.config/autox/alias|func. Note that since they are personal
+      it will be YOU adding these. More to come, see planned in the future below.
+    - You can now run autox if you want, without embedding it in any file, just be
+      sure to source it
+    - Fixed the CTRL+N feature so it works without freezing up
+    - Fixed the startup so it only runs one time instead of two
+    - Added GUIDs to _ALL_ directories -- these MUST NOT change, they identify each dir without
+      needing names, which is going to be used by client-side obfuscation later on to boost security!  
+      
+      Planned in the future 
+      - a parser that will put lyrics to text files with the same name of the currently playing item so Ctrl+L
+        in mocp will show it, it would be run by mocp each time a new song is played
+      - a list feature that grabs help and info from the metadata
+      - actually adding to default aliases and funcs distributed with the program
+      - finish user-config support
     
+      - continue work on obfuscation of user settings to avoid any third party peeking
+              
+
+Hum...    
 0.0.093015
 	- Created WHATSNEW to track new features or important changes/fixes/etc
     
