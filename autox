@@ -60,36 +60,20 @@
 #      REVISION: 09/04/2015 10:54
 #===============================================================================
 
-## PRIMARY INIT KEEP FIRST!!##
-# establish AX_BASE first
-
-if [[ ! $- =~ i ]]; then
-	echo "You must SOURCE this file, not run it!"
-	exit 1
-fi
 
 ####
-#### VARIABLES
+#### 1. GLOBALLY ACCESSABLE VARIABLES
 ####
 
-export AX_BASHSOURCE_REAL=$(readlink -e "$BASH_SOURCE" 2> /dev/null || echo none)
-export AX_BASHSOURCE_LINK="$BASH_SOURCE"
-export AX_BASE=$(dirname "$AX_BASHSOURCE_REAL" 2> /dev/null || echo none)
-export AX_SYS_CONF="$AX_BASE/config"
-export AX_USER_CONF="$HOME/config/autox"
+declare -gx AX_BASHSOURCE_REAL=$(readlink -e "$BASH_SOURCE" 2> /dev/null || echo none)
+declare -gx AX_BASHSOURCE_LINK="$BASH_SOURCE"
+declare -gx AX_BASE=$(dirname "$AX_BASHSOURCE_REAL" 2> /dev/null || echo none)
+declare -gx AX_SYS_CONF="$AX_BASE/config"
+declare -gx export AX_USER_CONF="$HOME/config/autox"
 declare -gixa AX_RUN_COUNT[$$]=$(( ${AX_RUN_COUNT[$$]} + 1))
 
-
-# and verify we are autox proper
-if [[ ! $(cat "$AX_BASE/autox.id" | tr -d '\n') == "3bdc9ba4-2429-11e5-8ae2-00196605e97c" ]]; then
-	echo "AUTOX Not installed properly, make sure you unpacked it with it's directories and ran any installers first!"
-	return 1
-else
-	true debug echo "[AutoX verified via GUID ok]"
-fi
-
 ###
-### FUNCTIONS
+### 2. FUNCTIONS
 ###
 
 ax.config()
@@ -189,6 +173,7 @@ ax.config.set()
 		echo "$1=$2" >> "$cfgfile"
 	fi
 }
+
 ax.helperalias()
 { # [alias helper (reserved for internal use) ]
 
@@ -407,14 +392,14 @@ livefunc__ax.cache.create()
     # NB: part of FUNCTION ax.cache.create (LIVE) -- ENDS HERE
 }
 
-ax.updatecache()
+function ax.updatecache()
 {
 	# TODO: complete this - checks the signature (sha) and updates
 	#       if needed
 	true
 }
 
-ax.isreadonlyfunc()
+function ax.isreadonlyfunc()
 {
 	declare -i final=0
 	while [[ -n "$1" ]]; do
@@ -435,10 +420,390 @@ function qunalias()
     unalias "$@" &> /dev/null
 }
 
+
+function ax.echo()
+{
+	case $1 in  on|off)
+		case $1 in 	on) AX_DEBUGGING=1;;
+					off) AX_DEBUGGING=0;;
+		esac;
+		echo "ax.echo is now $1";
+		return 0;;
+	esac
+	((AX_DEBUGGING)) && echo "$@";
+}
+
+function galias()
+{
+	ax.checkaliasdir || return 2
+	alias --nolocal "$@"
+}
+
+function gunalias()
+{
+	ax.checkaliasdir || return 2
+	unalias --nolocal "$@"
+}
+
+function lalias()
+{
+	ax.checkaliasdir || return 2
+	builtin alias "$@";
+}
+
+function lunalias()
+{
+	ax.checkaliasdir || return 2
+	builtin unalias "$@"
+}
+
+function gexport()
+{
+	ax.checkaliasdir || return 2
+	local EXPCNT=0
+	if [[ $# -gt 0 ]]; then
+		for i in "$@"; do
+			local EXPORTED=0
+			for j in "${!BASH_ALIASES[@]}"; do
+				if [[ "$i" == "$j" ]]; then
+					# i is an alias
+					# j is the alias's name too
+					builtin alias "$j" >> $AX_BASE/"$i"
+					ax.echo "exported $j"
+					EXPORTED=1
+				fi
+			done
+			let EXPCNT+=EXPORTED
+			((EXPORTED)) || echo "alias not found: $i"
+		done
+		ax.echo "$EXPCNT alias(es) exported$(let EXPCNT-$# && echo ,\ $((\ EXPCNT-$#\ ))\ skipped. || echo \.)"
+	else
+		local n=0
+		echo
+		echo "Aliases on $HOSTNAME for $USER($UID):"
+		echo
+		for i in $AX_BASE/*; do
+			ax.echo "$i[30G$(stat $i --format=%s)"
+			let n+=1
+		done
+		echo
+		echo "$n aliases."
+		echo
+	fi
+}
+
+function alias()
+{
+	# prevents scripts from declaring permanant aliases
+	declare -gi AX_ALIAS_CALLS
+	if [[ $0 =~ bash ]]; then
+		let AX_ALIAS_CALLS++
+	else
+		builtin alias "$@"
+		return $?
+	fi
+	# dir check, no dir, act like normal 'alias' -- fails back to normal operation silently!
+	ax.checkaliasdir && NOGLOB=0 || NOGLOB=1
+	# pre check, exempt from usual out-of-place checks
+	[[ $1 == '--nolocal' ]] && { NOLOC=1; shift; } || NOLOC=0
+
+	if [[ $# -eq 1 ]]; then
+		if [[ $1 =~ = ]]; then
+			# handle single argument
+			local NAME="${1%%=*}"
+
+			if [[ ! $NAME =~ ' '+ ]]; then
+				declare -gx LASTALIASSET=$NAME
+			else
+				echo "$NAME - alias name contains illegal characters!"
+				return 1
+			fi
+		else
+			# query for just an alias name, pass to builtin
+			# and check global if none
+			if [[ ${BASH_ALIASES[$1]} ]]; then
+				builtin alias "$1"
+				return $?
+			else
+				if [[ -r $AX_BASE/alias/$1 ]]; then
+					echo "global version: currently offline"
+					echo "value: $(cat $AX_BASE/alias/$1)"
+					# return error value so other scripts don't choke
+					return 1
+				else
+					echo "no alias, $1, defined global or local"
+					return 1
+				fi
+			fi
+		fi
+	elif [[ $# -eq 0 ]]; then
+		builtin alias
+		return $?
+	else
+		# iterate through multiple arguments
+		FINALRET=0
+		for i in "$@"; do
+			if [[ $i =~ .*=.* ]]; then
+				# a setter, handle ourselves via single argument handler ^ above
+				alias "$i"
+			elif [[ $i == -p ]]; then
+				: # do nothing, its just print...
+			else
+				# call alias to handle it (shows the alias)
+				builtin alias "$i"
+			fi
+			[[ $? -ne 0 ]] && FINALRET=1
+		done
+		# alias builtin behavior for multi-alias mixed failures is to
+		# return 0 if ALL has succeeded, and 1 if one or more (or all)
+		# have failed to be set, for any reason.
+		return $FINALRET
+	fi
+	# if we made it here, we are ok
+	if [[ $NOLOC == 0 ]]; then
+			builtin alias "$@";
+	fi
+	if [[ $NOGLOB == 0 ]]; then
+			builtin alias "$NAME" > $AX_BASE/alias/$NAME
+		fi
+}
+
+function unalias()
+{
+	if [[ $0 =~ bash ]]; then
+		ax.checkaliasdir || return 2
+		local NOLOC=0
+		[[ $1 == '--nolocal' ]] && NOLOC=1
+		if [[ $NOLOC -ne 1 ]]; then
+			builtin unalias "$@"
+		else
+			if [[ $# == 0 ]]; then
+				echo "required: alias name"
+			fi
+		fi
+		[[ $# -eq 0 ]] && return
+		if [[ -r ${AX_BASE}/alias/$1 ]]; then
+			rm ${AX_BASE}/alias/$1
+			ax.echo "Global alias removed"
+		else
+			ax.echo "Not global so no global file removed."
+		fi
+	else
+		# prevent unalias from removing global aliases when using a script
+		builtin unalias "$@"
+		return $?
+	fi
+}
+
+function ax.contains()
+{
+	# search for in array
+	# contains [ITEM] [ARRAY CONTENTS]
+	ITEM=$1
+	shift
+	for i do
+		if [[ "$i" == "$ITEM" ]]; then
+			return 0
+		fi
+	done
+	return 1
+}
+
+function ax.contains.i()
+{
+	# ax.contains.i [ITEM] [ARRAYNAME] [ITEM2] [ARRAYNAME2]
+	local NOT_CONTAINS=0
+	# contains.i [ITEM] [ARRAY-NAME]
+	while (( $# % 2 == 0 )); do
+		ITEM=$1
+		ARRAY_NAME=$2
+		shift 2
+		eval 'ARRAY_VALUES=( "${'$ARRAY_NAME'[@]}" )'
+		if ax.contains $ITEM "$@"; then
+			echo "$( [[ $INDEX -gt 0 ]] && echo ' ' )$INDEX"
+			continue
+		fi
+		echo "$ARRAY_NAME"
+		let NOT_CONTAINS++
+	done
+	return $NOT_CONTAINS
+}
+
+function ax.acquire()
+{
+	return
+	# load source if needed
+	# syntax: ax.acquire ~/.autox/boostrap.d/00bootstrapmacros.ax
+	# same as: ax.acquire <00bootstrapmacros>
+	# you MUST surround in <> to intend on using expansion!
+	# no <> means it must be an absolute path!
+	# so: 'ax.acquire "/$AX_BASE/bootstrap.d/00bootstrapmacros.ax" is legal
+	# and: <bootstrapmacros> is the same thing
+	#
+	declare -gA AX_ACQUISITIONS
+	for x in "$@"; do
+		[[ ${x: 0:1} == "<" ]] && [[ ${x: -1:1} == ">" ]] && BRACED=1 || BRACED=0
+		# trim suffixes
+		j="${x%%>}"
+		i="${j##<}"
+		i="${j##[0-9][0-9]}"
+
+		if ax.contains.i AX_ACQUISITIONS "$i"; then
+			return 1; # already loaded, skip
+		else
+			if [[ $BRACED == 1 ]]; then
+				ITEMS=( $(
+				find -L $AX_BASE -iname '$i') )
+				ITEM="${ITEMS[0]}"
+			else
+				ITEM="$x"
+			fi
+		fi
+		source "$ITEM"
+	done
+}
+
+function ax.source.item()
+{
+	BS=$BASH_SOURCE
+	if AX_AUTOX=$(readlink -e "$BS"); then
+		return 0
+	else
+		return 1
+	fi
+
+}
+
+function ax.load()
+{
+	true debug echo "Entering ax.load"
+	ax.checkaliasdir || return 2
+	# globals
+	# dereferenced
+	declare -g AX_AUTOX="$(readlink -e $BASH_SOURCE)"
+	ALIAS_ITEMS=( $(grep -P '^\s*alias \S+=' $AX_BASE/alias/* --line-number | grep '^[^:]*(?=:1)' -P -o) )
+	ALIAS_CACHE=$(mktemp)
+	if [[ ${#ALIAS_ITEMS[@]} -gt 0 ]]; then
+	true debug echo "Loading aliases..."
+	cat "${ALIAS_ITEMS[@]}" | sed 's/^alias/builtin alias/g' > $ALIAS_CACHE
+	true debug echo "Evaluating..."
+	source $ALIAS_CACHE
+	true debug echo "Cleaning up..."
+	rm $ALIAS_CACHE
+	else
+		echo "Warning: no aliases have been defined in the autox install of $AX_BASE"
+	fi
+
+	#for i in $AX_BASE/alias/*; do
+	#	if grep -Pq '^alias\s+\S+=\S+' "$i"; then
+	#		tmploc=$(mktemp)
+	#		# optimize out the trivial call to alias()
+	#		cat "$i" | sed 's/^\s*alias/builtin alias/g' >> "$tmploc";
+	#		echo "load $i"
+	#		source $i;
+	#	else
+	#		ax.echo "skipping $i, does not appear to be an alias file..."
+	#	fi
+	#done
+}
+
+function ax.checkaliasdir()
+{
+	[[ -r $AX_BASE/alias/alias.id ]] || { echo "error: AX_BASE not set properly, alias.id missing from alias directory!"; return 1; }
+}
+
+function ax.unload()
+{
+	ax.checkaliasdir || return 2
+	for i in $AX_BASE/alias/*; do builtin unalias $(basename $i)
+		ax.echo "unloading global alias $i"
+	done
+}
+
+function ax.reload()
+{
+	if {
+	if [[ -r $AX_BASE/autox ]] && [[ -v AX_BASE ]]; then
+		local AX_BASE_TEMP=$AX_BASE
+		unset AX_BASE
+		source "$AX_BASE_TEMP/autox"
+	else
+		echo "$FUNCNAME: warning - autox AX_BASE not set or not right, loading fresh copy..."
+		source "$BASH_SOURCE"
+	fi
+	}; then
+		if [[ -v AX_BASE ]] && [[ -d $AX_BASE/alias ]]; then
+			echo "Load succeeded!"
+			return 0
+		else
+			echo "Load okay, but AX_BASE does not point to a proper location!!! Please check your installation files!!"
+			return 1
+		fi
+	else
+		echo "Failed! *check your permissions/environment/installation*"
+		return 2
+	fi
+}
+
+# live function support:
+#  restrictions: 1) start must match with "^livefunc__[[:alnum:].]()"
+#                2) end must match with "^}$"
+#                3) matches must be exact or they wont be loaded!
+#                4) a shim function is created that sources it from disk each time it is needed to be called
+# important!
+# please note that the function name restriction is greater than that of a bash function name
+# the only punctuation that is allowed is the period, that and alphanumerics (not even underscores!)
+# Of course we will allow letters that fall into the upper unicode ranges such as the umlat (letter umlat)
+function echo_livefunc()
+{
+	perl -wne 'print if /livefunc__'$1'/ .. /^}/' "$BASH_SOURCE"
+}
+
+function echo_livefuncnames()
+{
+	perl -wne 'print("$1\n") if /(?<=^livefunc__)(\S+?)(?=\(\))/' "$BASH_SOURCE"
+}
+
+function update_livefunctiontables()
+{
+	[[ -v IFS ]] && OLDIFS=$IFS
+	IFS=$'\n'
+	for LIVE_FUNC_NAME in $(echo_livefuncnames); do
+		[[ $- =~ x ]] && echo "Making live function $LIVE_FUNC_NAME"
+		eval "
+		function ${LIVE_FUNC_NAME}()
+		{
+			eval \"\$(echo_livefunc $LIVE_FUNC_NAME)\"
+			livefunc__$LIVE_FUNC_NAME \"\$@\"
+		}
+		"
+	done
+}
+
+function source()
+{
+	builtin source "$@"
+	local rv=$?
+	update_livefunctiontables
+	return $rv
+}
+
 ##
-## MAIN EXECUTION SECTION
+## 3. MAIN EXECUTION SECTION
 ##
 
+## 3.A INIT
+
+if [[ ! $- =~ i ]]; then
+	echo "You must SOURCE this file, not run it!"
+	exit 1
+fi
+if [[ ! $(cat "$AX_BASE/autox.id" | tr -d '\n') == "3bdc9ba4-2429-11e5-8ae2-00196605e97c" ]]; then
+	echo "AUTOX Not installed properly, make sure you unpacked it with it's directories and ran any installers first!"
+	return 1
+else
+	true debug echo "[AutoX verified via GUID ok]"
+fi
 if [[ -r ~/.bash_completion.ax ]]; then
 	if [[ ! -v AX_BASHCOMPLETION_RAN ]]; then
 		builtin source ~/.bash_completion.ax "$@"
@@ -455,7 +820,6 @@ if [[ $(ps --format=%c $PPID) =~ bash ]]; then
 fi
 
 if ax.config.has enable_experimental_harmful_features && [[ -r $AX_BASE/cache/usecache ]]; then
-
 	AX_CACHE_SITE=$AX_BASE/cache/usecache
 	SHAPRINT_THIS="$(eval shasum $(find -type f -not -iname 'shasumprint' -not -type l -iname '*[^~]' -printf '"'$PWD'/%P"\n') | shasum)"
 	[[ -r $AX_BASE/shasumprint ]] && SHAPRINT_PREV="$(cat $AX_BASE/shasumprint)" || SHAPRINT_PREV=NONE
@@ -513,7 +877,7 @@ if [[ -r ~/.ax_lowlevel_debug_messages ]]; then
     }
     function false()
     {
-        _ax_true_false $FUNC_NAME "$@";  
+        _ax_true_false $FUNC_NAME "$@";
     }
 else
     unset -f true
@@ -526,541 +890,87 @@ if [[ $AX_USER_BASHRC_ORIGINATED -eq 1 ]]; then
 	true debug echo "Triggering AutoX Load OK (request comes from user's home)"
 else
 	true debug echo "Triggering AutoX Load DENY (request comes from outside user's home)"
-	# bash_completion expects a nice return value, dont be angry!
 	return 0
 fi
 
-if [[ $AX_STARTUP_FILE_NAME == ~/.bash_completion ]] && [[ $# -eq 0 ]]; then
-	##DEV ONLY COMMENTED OUT (2 LINES)
-	##echo -ne "invoked from: "; caller
-	##echo "$(tput bold)[${BASH_SOURCE[@]}]"
-	true debug echo "Running in Drop-In Mode ($AX_STARTUP_FILE_NAME)$(tput sgr0)"
-	# set some defaults -- because we might have been picked up
-	# from an unknown or empty environment
-	# ...speaking of empty, make sure we fix up the path if that is so
-	[[ -z $PATH ]] && export PATH="$([[ -d ~/bin ]] && echo $HOME/bin):/bin:/sbin:/usr/bin:/usr/sbin"
-	set +o nounset;		set +xv
-	set +o histexpand;	set +ET
-	shopt -s extglob
-	shopt -u nullglob
-	shopt -s interactive_comments
-	shopt -s progcomp
-	shopt -s promptvars
-	# adjust AX_BASE to read from link target not link source
-	true debug echo -n "adjusting AX_BASE reference to..."
-#shellcheck disable=2155
-	export AX_BASE="$(dirname "$(readlink -e "$BASH_SOURCE")")"
-
-	true debug echo -n $AX_BASE
-	if [[ -w $AX_BASE && -d $AX_BASE ]]; then
-		true debug echo "... OK"
-	else
-		echo " ** FAILED TO SET AX_BASE (AX_BASE=\"$AX_BASE\"/PWD=\"$PWD\")"
-		echo " ** Please Check All Setups And Try Again!"
-		echo " ** stop (1)."
-		return 1
-		exit 1
-	fi
-	# --dropin is needed since we set AX_BASE ahead of time
-	source "$BASH_SOURCE" prologue --dropin
-	source "$BASH_SOURCE" epilogue
-	return $?
-fi
-
-if [[ "${AX_PHASES[defined]}" != "yes" ]]; then
-	false && declare AX_PROLOGUE AX_EPILOGUE AX_RUNTIME AX_EXIT AX_NONE AX_DEBUG AX_CACHELOAD AX_CACHESTORE # for prog completion in editor support
-	declare -rA AX_PHASES=( [prologue]="1"  [epilogue]="2" [runtime]="3" [exit]="4" [none]="0"	[debug]="5"     [cacheload]="6" [cachestore]="7" [defined]="yes" )
-	for xx in "${!AX_PHASES[@]}"; do
-		eval "declare -ri AX_${xx^^}=${AX_PHASES[$xx]}"
-	done
-fi
-
-
-# defaults to zero if AX_PHASE not set and no command phase given on command line
-# the alias autox starts with the phase given via the variable AX_PHASE prologue(1)
-# the default zero is the none(0) phase.
-[[ $# -gt 0 || -z $AX_PHASE ]] && declare -i AX_PHASE="${AX_PHASES[$1]}"
-ax.usage()
-{ 
-echo "source $BASH_SOURCE <phase>"
-}
-
-
-[[ $AX_PHASE -eq 0 ]] && { echo "Error: phase was unknown ($1)"; ax.usage; return 1; }
-shift
-
-# settings
-
-# since epilogue passes here too, do not set if already set!
-# note that whichever is used first will be used (in $1 spot)
-# because --reload and --dropin are not to be used together
-# and because only one flag should be specified; either --dropin
-# or --reload (no further arguments are allowed!)
-[[ -v AX_DROP_IN_MODE ]] || declare -g AX_DROP_IN_MODE=0
-if [[ $1 == "--dropin" ]]; then
-	# uncomment if you want a pause for drop-in mode (slows startup!)
-	#sleep 0.5
-	declare -g AX_DROP_IN_MODE=1
-	shift
-elif [[ $1 == "--reload" ]]; then
-	unset AX_BASE
-	echo "RELOADING autox..."
-	sleep 1
-	shift
-elif [[ -v AX_BASE ]]; then
+if [[ -v AX_BASE ]]; then
 	if [[ $AX_PHASE -eq 1 ]]; then
 		ax.echo "skipping re-run of autox, it is already run (unset AX_BASE to allow a new run!)"
 		return
 	fi
 fi
 
-# check if any more flags (there should NOT be any)
-# this section however is reserved for future expansion
-if [[ "$*" ]]; then
-	echo "Warning: This version of autox does not allow any more arguments!"
-	echo "         proceeding in 2 seconds unless C is pressed!"
-	TMOUT=2
-	unset REPLY
-	read -sn1
-	[[ $REPLY == C ]] && { echo "Stopped." && return 1; }
-	TMOUT=0
-	# purge
-	set --
-	echo "Continuing with purged command line..."
+# hardwire a unique session id
+if [[ ! -v AX_SESSION_ID ]] && [[ -d $AX_BASE ]] && [[ -r $AX_BASE/autox ]]; then
+	AX_SESSION_ID_PREFIX="$USER:$GROUP:"
+	if [[ $AX_SESSION_ID_PREFIX == "$USER:$GROUP" ]]; then
+		AX_SESSION_ID=${AX_SESSION_ID_PREFIX}_0${RANDOM: 0: 5}
+	fi
 fi
+# hardwire $TTY to $(tty) for this session
+export TTY=$(tty 2>/dev/null || echo dumb)
 
-# Phase 1 - Prologue (Declare Functions)
-
-	ax.echo() {
-		case $1 in  on|off)
-			case $1 in 	on) AX_DEBUGGING=1;;
-						off) AX_DEBUGGING=0;;
-			esac;
-			echo "ax.echo is now $1";
-			return 0;;
-		esac
-		((AX_DEBUGGING)) && echo "$@";
-	}
-	galias(){
-		ax.checkaliasdir || return 2
-		alias --nolocal "$@"
-	}
-	gunalias(){
-		ax.checkaliasdir || return 2
-		unalias --nolocal "$@"
-	}
-	lalias() {
-		ax.checkaliasdir || return 2
-		builtin alias "$@";
-	}
-	lunalias(){
-		ax.checkaliasdir || return 2
-		builtin unalias "$@"
-	}
-	gexport(){
-		ax.checkaliasdir || return 2
-		local EXPCNT=0
-		if [[ $# -gt 0 ]]; then
-			for i in "$@"; do
-				local EXPORTED=0
-				for j in "${!BASH_ALIASES[@]}"; do
-					if [[ "$i" == "$j" ]]; then
-						# i is an alias
-						# j is the alias's name too
-						builtin alias "$j" >> $AX_BASE/"$i"
-						ax.echo "exported $j"
-						EXPORTED=1
-					fi
-				done
-				let EXPCNT+=EXPORTED
-				((EXPORTED)) || echo "alias not found: $i"
-			done
-			ax.echo "$EXPCNT alias(es) exported$(let EXPCNT-$# && echo ,\ $((\ EXPCNT-$#\ ))\ skipped. || echo \.)"
-		else
-			local n=0
-			echo
-			echo "Aliases on $HOSTNAME for $USER($UID):"
-			echo
-			for i in $AX_BASE/*; do
-				ax.echo "$i[30G$(stat $i --format=%s)"
-				let n+=1
-			done
-			echo
-			echo "$n aliases."
-			echo
-		fi
-	}
-
-	alias()
-	{
-		# prevents scripts from declaring permanant aliases
-		declare -gi AX_ALIAS_CALLS
-		if [[ $0 =~ bash ]]; then
-			let AX_ALIAS_CALLS++
-		else
-			builtin alias "$@"
-			return $?
-		fi
-		# dir check, no dir, act like normal 'alias' -- fails back to normal operation silently!
-		ax.checkaliasdir && NOGLOB=0 || NOGLOB=1
-		# pre check, exempt from usual out-of-place checks
-		[[ $1 == '--nolocal' ]] && { NOLOC=1; shift; } || NOLOC=0
-
-		if [[ $# -eq 1 ]]; then
-			if [[ $1 =~ = ]]; then
-				# handle single argument
-				local NAME="${1%%=*}"
-
-				if [[ ! $NAME =~ ' '+ ]]; then
-					declare -gx LASTALIASSET=$NAME
-				else
-					echo "$NAME - alias name contains illegal characters!"
-					return 1
-				fi
-			else
-				# query for just an alias name, pass to builtin
-	 			# and check global if none
-				if [[ ${BASH_ALIASES[$1]} ]]; then
-					builtin alias "$1"
-					return $?
-				else
-					if [[ -r $AX_BASE/alias/$1 ]]; then
-						echo "global version: currently offline"
-						echo "value: $(cat $AX_BASE/alias/$1)"
-						# return error value so other scripts don't choke
-						return 1
-					else
-						echo "no alias, $1, defined global or local"
-						return 1
-					fi
-				fi
-			fi
-
-		elif [[ $# -eq 0 ]]; then
-			builtin alias
-			return $?
-		else
-			# iterate through multiple arguments
-			FINALRET=0
-			for i in "$@"; do
-				if [[ $i =~ .*=.* ]]; then
-					# a setter, handle ourselves via single argument handler ^ above
-					alias "$i"
-				elif [[ $i == -p ]]; then
-					: # do nothing, its just print...
-				else
-					# call alias to handle it (shows the alias)
-					builtin alias "$i"
-				fi
-				[[ $? -ne 0 ]] && FINALRET=1
-			done
-			# alias builtin behavior for multi-alias mixed failures is to
-			# return 0 if ALL has succeeded, and 1 if one or more (or all)
-			# have failed to be set, for any reason.
-			return $FINALRET
-		fi
-		# if we made it here, we are ok
-		if [[ $NOLOC == 0 ]]; then
-	    	builtin alias "$@";
-		fi
-		if [[ $NOGLOB == 0 ]]; then
-	    	builtin alias "$NAME" > $AX_BASE/alias/$NAME
-	    fi
-	}
-	unalias()
-	{
-		if [[ $0 =~ bash ]]; then
-			ax.checkaliasdir || return 2
-			local NOLOC=0
-			[[ $1 == '--nolocal' ]] && NOLOC=1
-			if [[ $NOLOC -ne 1 ]]; then
-				builtin unalias "$@"
-			else
-				if [[ $# == 0 ]]; then
-					echo "required: alias name"
-				fi
-			fi
-			[[ $# -eq 0 ]] && return
-			if [[ -r ${AX_BASE}/alias/$1 ]]; then
-				rm ${AX_BASE}/alias/$1
-				ax.echo "Global alias removed"
-			else
-				ax.echo "Not global so no global file removed."
-			fi
-		else
-			# prevent unalias from removing global aliases when using a script
-			builtin unalias "$@"
-			return $?
-		fi
-	}
-	ax.contains()
-	{
-		# search for in array
-		# contains [ITEM] [ARRAY CONTENTS]
-		ITEM=$1
-		shift
-		for i do
-			if [[ "$i" == "$ITEM" ]]; then
-				return 0
-			fi
-		done
-		return 1
-	}
-	ax.contains.i()
-	{
-		# ax.contains.i [ITEM] [ARRAYNAME] [ITEM2] [ARRAYNAME2]
-		local NOT_CONTAINS=0
-		# contains.i [ITEM] [ARRAY-NAME]
-		while (( $# % 2 == 0 )); do
-			ITEM=$1
-			ARRAY_NAME=$2
-			shift 2
-			eval 'ARRAY_VALUES=( "${'$ARRAY_NAME'[@]}" )'
-			if ax.contains $ITEM "$@"; then
-				echo "$( [[ $INDEX -gt 0 ]] && echo ' ' )$INDEX"
-				continue
-			fi
-			echo "$ARRAY_NAME"
-			let NOT_CONTAINS++
-		done
-		return $NOT_CONTAINS
-
-
-
-
-	}
-	ax.acquire()
-	{
-		return
-		# load source if needed
-		# syntax: ax.acquire ~/.autox/boostrap.d/00bootstrapmacros.ax
-		# same as: ax.acquire <00bootstrapmacros>
-		# you MUST surround in <> to intend on using expansion!
-		# no <> means it must be an absolute path!
-		# so: 'ax.acquire "/$AX_BASE/bootstrap.d/00bootstrapmacros.ax" is legal
-		# and: <bootstrapmacros> is the same thing
-		#
-
-
-		declare -gA AX_ACQUISITIONS
-		for x in "$@"; do
-			[[ ${x: 0:1} == "<" ]] && [[ ${x: -1:1} == ">" ]] && BRACED=1 || BRACED=0
-			# trim suffixes
-			j="${x%%>}"
-			i="${j##<}"
-			i="${j##[0-9][0-9]}"
-
-			if ax.contains.i AX_ACQUISITIONS "$i"; then
-				return 1; # already loaded, skip
-			else
-				if [[ $BRACED == 1 ]]; then
-					ITEMS=( $(
-					find -L $AX_BASE -iname '$i') )
-					ITEM="${ITEMS[0]}"
-				else
-					ITEM="$x"
-				fi
-			fi
-			source "$ITEM"
-		done
-	}
-	ax.source.item()
-	{
-		BS=$BASH_SOURCE
-		if AX_AUTOX=$(readlink -e "$BS"); then
-			return 0
-		else
-			return 1
-		fi
-
-	}
-	ax.load()
-	{
-		# SHIM echo "Entering ax.load"
-		ax.checkaliasdir || return 2
-		# globals
-		# dereferenced
-
-		declare -g AX_AUTOX="$(readlink -e $BASH_SOURCE)"
-		#
-		ALIAS_ITEMS=( $(grep -P '^\s*alias \S+=' $AX_BASE/alias/* --line-number | grep '^[^:]*(?=:1)' -P -o) )
-		ALIAS_CACHE=$(mktemp)
-		if [[ ${#ALIAS_ITEMS[@]} -gt 0 ]]; then
-		# SHIM	echo "Loading aliases..."
-			cat "${ALIAS_ITEMS[@]}" | sed 's/^alias/builtin alias/g' > $ALIAS_CACHE
-		# SHIM	echo "Evaluating..."
-			source $ALIAS_CACHE
-		# SHIM	echo "Cleaning up..."
-			rm $ALIAS_CACHE
-		else
-			echo "Warning: no aliases have been defined in the autox install of $AX_BASE"
-		fi
-
-		#for i in $AX_BASE/alias/*; do
-		#	if grep -Pq '^alias\s+\S+=\S+' "$i"; then
-		#		tmploc=$(mktemp)
-		#		# optimize out the trivial call to alias()
-		#		cat "$i" | sed 's/^\s*alias/builtin alias/g' >> "$tmploc";
-		#		echo "load $i"
-		#		source $i;
-		#	else
-		#		ax.echo "skipping $i, does not appear to be an alias file..."
-		#	fi
-		#done
-	}
-	ax.checkaliasdir()
-	{
-		[[ -r $AX_BASE/alias/alias.id ]] || { echo "error: AX_BASE not set properly, alias.id missing from alias directory!"; return 1; }
-	}
-	ax.unload()
-	{
-		ax.checkaliasdir || return 2
-		for i in $AX_BASE/alias/*; do builtin unalias $(basename $i)
-			ax.echo "unloading global alias $i"
-		done
-	}
-	ax.reload()
-	{
-		if {
-		if [[ -r $AX_BASE/autox ]] && [[ -v AX_BASE ]]; then
-			local AX_BASE_TEMP=$AX_BASE
-			unset AX_BASE
-			source "$AX_BASE_TEMP/autox"
-		else
-			echo "$FUNCNAME: warning - autox AX_BASE not set or not right, loading fresh copy..."
-			source "$BASH_SOURCE"
-		fi
-		}; then
-			if [[ -v AX_BASE ]] && [[ -d $AX_BASE/alias ]]; then
-				echo "Load succeeded!"
-				return 0
-			else
-				echo "Load okay, but AX_BASE does not point to a proper location!!! Please check your installation files!!"
-				return 1
-			fi
-		else
-			echo "Failed! *check your permissions/environment/installation*"
-			return 2
-		fi
-	}
-
-
-	# hardwire a unique session id
-	if [[ ! -v AX_SESSION_ID ]] && [[ -d $AX_BASE ]] && [[ -r $AX_BASE/autox ]]; then
-		AX_SESSION_ID_PREFIX="$USER:$GROUP:"
-		if [[ $AX_SESSION_ID_PREFIX == "$USER:$GROUP" ]]; then
-			AX_SESSION_ID=${AX_SESSION_ID_PREFIX}_0${RANDOM: 0: 5}
-		fi
-	fi
-	# hardwire $TTY to $(tty) for this session
-	export TTY=$(tty 2>/dev/null || echo dumb)
-
-	# detect and set the
-	# AX_TERMINAL and AX_TERMINAL_PID variables
-	if command xprop -root 2> /dev/null | grep _NET_ACTIVE_WINDOW -q; then
-		eval $(ps -p $(xprop -id $(xprop -root -notype | grep -Po '(?<=_NET_ACTIVE_WINDOW: window id # )[[:xdigit:]x]+') | grep PID | grep '[[:digit:]]*' -o) --no-header -o "AX_TERMINAL=\"%c\" AX_TERMINAL_PID=\"%p\"" | sed -r 's/(")( *)([^ ]+)( *)(")/\1\3\5/g')
+# detect and set the
+# AX_TERMINAL and AX_TERMINAL_PID variables
+if command xprop -root 2> /dev/null | grep _NET_ACTIVE_WINDOW -q; then
+	eval $(ps -p $(xprop -id $(xprop -root -notype | grep -Po '(?<=_NET_ACTIVE_WINDOW: window id # )[[:xdigit:]x]+') | grep PID | grep '[[:digit:]]*' -o) --no-header -o "AX_TERMINAL=\"%c\" AX_TERMINAL_PID=\"%p\"" | sed -r 's/(")( *)([^ ]+)( *)(")/\1\3\5/g')
+else
+	# TODO: further checking for hardware/ssh
+	# when via a real tty or over-the-line connections (remote or otherwise),
+	# the terminal is considered to be 'hardware' meaning that the user's keyboard
+	# and screen are directly connected to the terminal device via the kernel, or simmilar
+	# this applies to any @/dev/ttyn terminals, or, /dev/ttySnn, and not ptmx terminals.
+	# ptmx is always controlled by something, if that something is not identified then
+	# we assume it is ssh remotea
+	if [[ $TTY =~ /dev/tty ]]; then
+		AX_TERMINAL=hardware
+	elif [[ $TTY =~ /dev/.*pt ]]; then
+		AX_TERMINAL=ptmx_ssh
 	else
-		# TODO: further checking for hardware/ssh
-		# when via a real tty or over-the-line connections (remote or otherwise),
-		# the terminal is considered to be 'hardware' meaning that the user's keyboard
-		# and screen are directly connected to the terminal device via the kernel, or simmilar
-		# this applies to any @/dev/ttyn terminals, or, /dev/ttySnn, and not ptmx terminals.
-		# ptmx is always controlled by something, if that something is not identified then
-		# we assume it is ssh remotea
-		if [[ $TTY =~ /dev/tty ]]; then
-			AX_TERMINAL=hardware
-		elif [[ $TTY =~ /dev/.*pt ]]; then
-			AX_TERMINAL=ptmx_ssh
-		else
-			declare AX_TERMINAL=special
-		fi
-		# since no terminal emulator is running, it is bash itself that is
-		# will end the "session" ultimately and it's parent (usually getty)
-		# that can identify who will be starting the next round (might be
-		# useful)
-		AX_TERMINAL_PID=$$
+		declare AX_TERMINAL=special
 	fi
-	AX_TERMINAL_PPID=$PPID
-	# ax main loader
-	ax.load
+	# since no terminal emulator is running, it is bash itself that is
+	# will end the "session" ultimately and it's parent (usually getty)
+	# that can identify who will be starting the next round (might be
+	# useful)
+	AX_TERMINAL_PID=$$
+fi
+AX_TERMINAL_PPID=$PPID
+# ax main loader
+ax.load
+# ax bootstrap loader
+for i in $AX_BASE/bootstrap.d/*.ax; do
+	true extdebug echo "-------------- BOOTSTRAPPER $i ------------ "
+	if [[ -s "$i" ]]; then
 
-##### OLD PHASE 2
-
-	# ax bootstrap loader
-	for i in $AX_BASE/bootstrap.d/*.ax; do
-		true extdebug echo "-------------- BOOTSTRAPPER $i ------------ "
-		if [[ -s "$i" ]]; then
-
-			ax.echo $(declare -p BASH_SOURCE | sed 's/declare\s?//g') source "$i" "$$" "$USER" "$AX_BASE"
-			. "$i" "$$" "$USER" "$AX_BASE"
-		fi
-		true extdebug echo "----------- END BOOTSTRAPPER $i ----------- "
-	done
-	function _comperr() { A=$1;B=$2;shift 2;echo "Completer Error(Error# $A, File $B): $*"; return 1; }
-	# TODO: begin devel area for DLCE
-	for i in $AX_BASE/completers/*.ac; do
-		if [[ -s "$i" ]]; then
-			mapfile COMPDATA < "$i"
-			#  completer files must have at least 5 lines (see COMPLETER_FORMAT in /doc)
-			case "${#COMPDATA[*]}" in
-				[0-4])	_comperr 1 "$i" "Insufficient Data In File";;
-				*)	echo "warning: completer $i not loaded (dynamic live completion engine is still in development!)"
-					true;;
-			esac
-		fi
-	done
-	# TODO: end devel area for DLCE
-	unset -f _comperr
-
-# --- experimental
-# live function support:
-#  restrictions: 1) start must match with "^livefunc__[[:alnum:].]()"
-#                2) end must match with "^}$"
-#                3) matches must be exact or they wont be loaded!
-#                4) a shim function is created that sources it from disk each time it is needed to be called
-# important!
-# please note that the function name restriction is greater than that of a bash function name
-# the only punctuation that is allowed is the period, that and alphanumerics (not even underscores!)
-# Of course we will allow letters that fall into the upper unicode ranges such as the umlat (letter umlat)
-function echo_livefunc()		{	perl -wne 'print if /livefunc__'$1'/ .. /^}/' "$BASH_SOURCE";	}
-function echo_livefuncnames() 	{	perl -wne 'print("$1\n") if /(?<=^livefunc__)(\S+?)(?=\(\))/' "$BASH_SOURCE"; }
-function update_livefunctiontables()
-{
-	[[ -v IFS ]] && OLDIFS=$IFS
-	IFS=$'\n'
-	for LIVE_FUNC_NAME in $(echo_livefuncnames); do
-		[[ $- =~ x ]] && echo "Making live function $LIVE_FUNC_NAME"
-		eval "
-		function ${LIVE_FUNC_NAME}()
-		{
-			eval \"\$(echo_livefunc $LIVE_FUNC_NAME)\"
-			livefunc__$LIVE_FUNC_NAME \"\$@\"
-		}
-		"
-	done
-}
-# you will need to run this if you want to use this feature anywhere else!
-update_livefunctiontables
-function source()
-{
-	builtin source "$@"
-	local rv=$?
-	update_livefunctiontables
-	return $rv
-}
-
+		ax.echo $(declare -p BASH_SOURCE | sed 's/declare\s?//g') source "$i" "$$" "$USER" "$AX_BASE"
+		. "$i" "$$" "$USER" "$AX_BASE"
+	fi
+	true extdebug echo "----------- END BOOTSTRAPPER $i ----------- "
+done
+function _comperr() { A=$1;B=$2;shift 2;echo "Completer Error(Error# $A, File $B): $*"; return 1; }
+# TODO: begin devel area for DLCE
+for i in $AX_BASE/completers/*.ac; do
+	if [[ -s "$i" ]]; then
+		mapfile COMPDATA < "$i"
+		#  completer files must have at least 5 lines (see COMPLETER_FORMAT in /doc)
+		case "${#COMPDATA[*]}" in
+			[0-4])	_comperr 1 "$i" "Insufficient Data In File";;
+			*)	echo "warning: completer $i not loaded (dynamic live completion engine is still in development!)"
+				true;;
+		esac
+	fi
+done
+# TODO: end devel area for DLCE
+unset -f _comperr
 [[ -v OLDIFS ]] && IFS=$OLDIFS
 [[ -v AX_TERMINAL_PID ]] || echo "warning: terminal PID not set (AX_TERMINAL_PID)"
 [[ -v AX_TERMINAL_PPID ]] || echo "warning: terminal parent PID not set (AX_TERMINAL_PPID)"
-
 # --- make sure some settings are forced off they will screw up things if not
 # --- TODO: create a user-level and shell-level environment separately so user can use any shopts (s)he wants
-
 set +o nounset
 set +EHxvT
-
-# this last echo is for separation, dont delete it unless you hate whitespace
-
+update_livefunctiontables
 if ax.config.has hatewhitespace; then
 	true "";
 else
