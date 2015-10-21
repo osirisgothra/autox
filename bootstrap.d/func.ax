@@ -97,15 +97,15 @@ __func()
 EOF
 				declare -pf ${1/=*} > $AX_BASE/func/${1/=*}.af
 				;;
-		*)		if [[ "${AX_FUNCS[$1]}" ]]; then					
+		*)		if [[ "${AX_FUNCS[$1]}" ]]; then
 					printf "func $1='%s'" "$(declare -pf "$1" | head -n-1 | tail -n+3)"
 				else
 					echo "Unknown func ($1)"
 				fi
 				;;
 	esac
-	
-	
+
+
 }
 __func_loader()
 {
@@ -113,13 +113,16 @@ __func_loader()
 	shopt -q nullglob || NONULLGLOB=1
 	shopt -s nullglob
 	for fname in $AX_BASE/func/*.af; do
-		source "$fname"
+		local ftemp=$(mktemp)
+		cat "$fname" |  perl -wne 'print unless /METADATA_START/ .. /METADATA_END/' > "$ftemp"  && true debug echo "parsed from $fname, without any apparent error, on to the executioner..."
+		source "$ftemp" && true debug echo "returned from source $ftemp, no error values reported!"
+		rm "$ftemp" && true debug echo "removed $ftemp from $fname okay"
 		local FNAME=$(basename $fname | sed 's/\.af$//g' )
 		AX_FUNCS[$FNAME]="$fname"
 	done
 	[[ $NONULLGLOB -eq 1 ]] && shopt -u nullglob
 
-	
+
 }
 
 __func_loader "$@"
