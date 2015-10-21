@@ -67,9 +67,10 @@
 
 declare -gx AX_BASHSOURCE_REAL=$(readlink -e "$BASH_SOURCE" 2> /dev/null || echo none)
 declare -gx AX_BASHSOURCE_LINK="$BASH_SOURCE"
+
+declare -gx AX_USERBASE=~/.config/autox
 declare -gx AX_BASE=$(dirname "$AX_BASHSOURCE_REAL" 2> /dev/null || echo none)
-declare -gx AX_SYS_CONF="$AX_BASE/config"
-declare -gx export AX_USER_CONF="$HOME/config/autox"
+
 declare -gixa AX_RUN_COUNT[$$]=$(( ${AX_RUN_COUNT[$$]} + 1))
 
 ###
@@ -662,49 +663,51 @@ function ax.acquire()
 		source "$ITEM"
 	done
 }
-
-function ax.source.item()
+function ax.load.metadata()
 {
-	BS=$BASH_SOURCE
-	if AX_AUTOX=$(readlink -e "$BS"); then
-		return 0
-	else
-		return 1
-	fi
-
+	echo "Notice: this method is currently only for informational purposes, the metadata is not yet put into use!"
+	echo "Notice: metadata is observable only in two forms, XML and ASCII. Other forms such as binary may not be supported properly!"
+	# TODO: support for this metadata will be left to the bootstrap 'metadata.ax' at some time
+	# TODO: to be called when signatures change only
+	# TODO: might be experimental ??
+	true debug echo "metadata loading from all sources in the autox tree $AX_BASE and $AX_USERBASE..."
+	local ITEMS=( $(grep '^METADATA_START$' -PRl "$AX_BASE"/* "$AX_USERBASE"/*) )
+	unset AX_METADATA
+	declare -gxA AX_METADATA
+	AX_METADATA[$$]="parent_process=$PPID"
+	for ITEMDIR in ${ITEMS[@]}; do
+			local OBSERVE=$(mktemp)
+			local METADATA_CONTENTS=$(cat "$ITEMDIR" | perl -wne 'print if /METADATA_START/ .. /METADATA_END/' | tail -n+2 | head -n-1)
+			echo "$METADATA_CONTENTS" > $OBSERVE
+			echo "Metadata found for $ITEMDIR (${#ITEMDIR} bytes): $(file -b $OBSERVE)"
+			AX_METADATA[$ITEMDIR]="$METADATA_CONTENTS"
+	done
+	echo "Finished Loading, there are now ${#AX_METADATA[@]} object(s) loaded."
 }
+
 
 function ax.load()
 {
-	true debug echo "Entering ax.load"
+	#  note that only lines that start with 'alias' will be executed in the /alias directories
+	true debug echo "Entering ax.load which loads the aliases"
 	ax.checkaliasdir || return 2
-	# globals
-	# dereferenced
-	declare -g AX_AUTOX="$(readlink -e $BASH_SOURCE)"
-	ALIAS_ITEMS=( $(grep -P '^\s*alias \S+=' $AX_BASE/alias/* --line-number | grep '^[^:]*(?=:1)' -P -o) )
-	ALIAS_CACHE=$(mktemp)
-	if [[ ${#ALIAS_ITEMS[@]} -gt 0 ]]; then
-	true debug echo "Loading aliases..."
-	cat "${ALIAS_ITEMS[@]}" | sed 's/^alias/builtin alias/g' > $ALIAS_CACHE
-	true debug echo "Evaluating..."
-	source $ALIAS_CACHE
-	true debug echo "Cleaning up..."
-	rm $ALIAS_CACHE
-	else
-		echo "Warning: no aliases have been defined in the autox install of $AX_BASE"
-	fi
-
-	#for i in $AX_BASE/alias/*; do
-	#	if grep -Pq '^alias\s+\S+=\S+' "$i"; then
-	#		tmploc=$(mktemp)
-	#		# optimize out the trivial call to alias()
-	#		cat "$i" | sed 's/^\s*alias/builtin alias/g' >> "$tmploc";
-	#		echo "load $i"
-	#		source $i;
-	#	else
-	#		ax.echo "skipping $i, does not appear to be an alias file..."
-	#	fi
-	#done
+	local ALIAS_DIRS=( "$AX_BASE/alias" "$AX_USERBASE/alias" )
+	for ALIAS_DIR in ${ALIAS_DIRS[@]}; do
+		true debug echo "Processing directory $ALIAS_DIR..."
+		# TODO: maybe evaluate stderr here and report error when an alias directory is not present
+		ALIAS_ITEMS=( $(grep -P '^\s*alias \S+=' $ALIAS_DIR/* --line-number 2>/dev/null | grep '^[^:]*(?=:1)' -P -o) )
+		ALIAS_CACHE=$(mktemp)
+		if [[ ${#ALIAS_ITEMS[@]} -gt 0 ]]; then
+			true debug echo "Loading aliases..."
+			cat "${ALIAS_ITEMS[@]}" | sed 's/^alias/builtin alias/g' > $ALIAS_CACHE
+			true debug echo "Evaluating..."
+			source $ALIAS_CACHE
+			true debug echo "Cleaning up..."
+			rm $ALIAS_CACHE
+		else
+			true debug echo "No aliases have been defined in $ALIAS_DIR"
+		fi
+	done
 }
 
 function ax.checkaliasdir()
