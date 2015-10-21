@@ -1,0 +1,33 @@
+METADATA_START
+<?xml version=1.0 encoding="UTF-8"?>
+<?autox minver=0.2?>
+<metadata>
+    <des>
+        <tag fn='ax.media.getlyrics.mm' txt='lyrics getter for musixmatch.com'/>
+        <tag fn='ax.media.getlyrics.mm.mocp' txt='musixmatch lyrics support for a running mocp instance'/>
+    </des>
+    <reqs>
+        <areqs name='main'>
+            <program type='ELF' name='grep'/>
+            <program type='ASCII' name='GET' target='lwp-request'/>    
+        </areqs>
+        <areqs name='moc'>
+                    <program type='ELF' name='mocp'/>
+        </areqs>
+    </reqs>
+    <subf count="1">
+        <sf name='mocp' areq='moc'/>
+    </subf>
+</metadata>    
+METADATA_END
+function ax.media.getlyrics.mm()
+{    
+    local URL_PREFIX="https://www.musixmatch.com/lyrics/"
+    local ARTIST="${1// /-}"
+    local TITLE="${2// /-}"
+    GET "${URL_PREFIX}${ARTIST}/${TITLE}" | tr '\n' '\t' | grep '(?<=lyrics-body..).*?(?=\<\/span)' -Po | tr '\t' '\n'    
+}
+function ax.media.getlyrics.mm.mocp()
+{
+    eval $(mocp -Q "ax.media.getlyrics.mm \"%artist\" \"%song\"")
+}

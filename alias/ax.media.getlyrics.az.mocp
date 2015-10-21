@@ -1,0 +1,1 @@
+alias ax.media.getlyrics.az.mocp='eval ax.media.getlyrics.az $(echo $(mocp --info | sed -nr '\''/SongTitle/s/SongTitle: //gp;/Artist/s/Artist: //g p'\'' | sed "s/'\''//g" |tr '\'' '\'' '\''_'\'' | tr '\''\n'\'' '\'' '\'' | sed '\''s/_$//g'\'') | sed '\''s/./\L\0/g'\'' | tr -d '\''_'\'') | less'
