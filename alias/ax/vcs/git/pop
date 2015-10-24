@@ -1,0 +1,1 @@
+alias pop='git reset --soft HEAD^'

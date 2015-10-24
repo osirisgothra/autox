@@ -1,0 +1,1 @@
+alias ps='git diff --cached --stat'

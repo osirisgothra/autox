@@ -1,0 +1,1 @@
+alias amend='git commit --verbose --amend'

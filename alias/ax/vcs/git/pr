@@ -1,0 +1,1 @@
+alias pr='git pull --rebase'

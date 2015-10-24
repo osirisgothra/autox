@@ -1,0 +1,1 @@
+alias rev-parse='git rev-parse'

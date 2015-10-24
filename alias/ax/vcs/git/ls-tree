@@ -1,0 +1,1 @@
+alias ls-tree='git ls-tree'

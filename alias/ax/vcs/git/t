@@ -1,0 +1,1 @@
+alias t='git diff --cached'

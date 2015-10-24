@@ -1,0 +1,1 @@
+alias re='git rebase --interactive'

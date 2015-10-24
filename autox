@@ -77,7 +77,7 @@ declare -gixa AX_RUN_COUNT[$$]=$(( ${AX_RUN_COUNT[$$]} + 1))
 ### 2. FUNCTIONS
 ###
 
-ax.config()
+function ax.config()
 {
 	# this is the heart of the ax.config getter, however, it has some funky
 	# internalist workings, so you should probably want 'ax.config.get' and
@@ -138,7 +138,7 @@ ax.config()
 	fi
 }
 
-ax.config.get()
+function ax.config.get()
 {
 	# [name]
 	# returns 1 if bad value or 0 if good value, echos the value
@@ -151,14 +151,14 @@ ax.config.get()
 	fi
 }
 
-ax.config.has()
+function ax.config.has()
 {
 	# [name]
 	ax.config "$1" &> /dev/null
 	return $ax_config_error;
 }
 
-ax.config.set()
+function ax.config.set()
 {
 	# [name] [newvalue]
 	cfgfile="$AX_BASE/config/autoxrc"
@@ -175,7 +175,7 @@ ax.config.set()
 	fi
 }
 
-ax.helperalias()
+function ax.helperalias()
 { # [alias helper (reserved for internal use) ]
 
 	#SHIM FOR INTERNAL USE: echo "$FUNCNAME $*"
@@ -220,7 +220,7 @@ ax.helperalias()
 
 }
 
-livefunc__ax.cache.exists()
+function livefunc__ax.cache.exists()
 {
 	if [[ -r "$AX_BASE/cache/use" ]]; then
 		return 0
@@ -229,7 +229,7 @@ livefunc__ax.cache.exists()
 	fi
 }
 
-livefunc__ax.cache.create()
+function livefunc__ax.cache.create()
 {
     # TODO: split ax.cache.create into smaller parts, due to screen-spanning (screen meaning 80x25 text cells)
 
@@ -693,17 +693,18 @@ function ax.load()
 	ax.checkaliasdir || return 2
 	local ALIAS_DIRS=( "$AX_BASE/alias" "$AX_USERBASE/alias" )
 	for ALIAS_DIR in ${ALIAS_DIRS[@]}; do
-		true debug echo "Processing directory $ALIAS_DIR..."
+		true debug echo "Processing directory: $ALIAS_DIR"
 		# TODO: maybe evaluate stderr here and report error when an alias directory is not present
 		ALIAS_ITEMS=( $(grep -P '^\s*alias \S+=' $ALIAS_DIR/* --line-number 2>/dev/null | grep '^[^:]*(?=:1)' -P -o) )
 		ALIAS_CACHE=$(mktemp)
 		if [[ ${#ALIAS_ITEMS[@]} -gt 0 ]]; then
 			true debug echo "Loading aliases..."
+			true debug echo "$(declare -p ALIAS_ITEMS)"
 			cat "${ALIAS_ITEMS[@]}" | sed 's/^alias/builtin alias/g' > $ALIAS_CACHE
-			true debug echo "Evaluating..."
+			true debug echo "Evaluating the cache, this pass it is: $ALIAS_CACHE"
 			source $ALIAS_CACHE
-			true debug echo "Cleaning up..."
-			rm $ALIAS_CACHE
+			true debug echo "Removing Cache"
+			rm $ALIAS_CACHE && true debug echo "Removal OK" || true debug echo "Removal FAILED!"
 		else
 			true debug echo "No aliases have been defined in $ALIAS_DIR"
 		fi
@@ -867,12 +868,18 @@ if [[ -r ~/.ax_lowlevel_debug_messages ]]; then
         if [[ $2 == debug ]]; then
             shift 2
             eval echo "$@"
-            return 0
+            retval=0
         else
-            # emulate item, do not bother handling the rest, however
-            # the cmdline always is dropped with real true/false b/i
-            return $retval
+            # pass to builtin, maybe
+            if enable | grep -Pnqw $1; then
+                builtin "$@"
+            fi 
         fi
+        if ax.config.has debug_pause; then
+            echo "[Press Any Key]"
+            read -sn1
+        fi
+        return $retval
     }
     function true()
     {

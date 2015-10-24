@@ -1,0 +1,1 @@
+alias s='git commit --dry-run --short'
