@@ -1,0 +1,10 @@
+#!/bin/bash
+usage() { echo -e "$1\nsyntax: $0 [source-dir] [dest-dir]\n"; exit ${2}; }
+[[ $# -eq 2 ]] || usage "not enough args!" 3
+[[ ! -d $1 || ! -d $2 ]] && usage "both items must be readable directories!" 4
+[[ $0 =~ dirdiffclr ]] || ln -s $BASH_SOURCE `realpath $(dirname $BASH_SOURCE)/../dirdiffclr -s` && echo 'created dirdiffclr tool' || usage "tool creation failed, check your permissions!" 5
+[[ ! -r $1 || ! -r $2 ]] && usage "both directories must be readable, one or both directories are unreadable!" 6 || diff "$1" "$2" --report-identical-files --recursive --brief | sed -r 's/Only in mini.*/[0;31m\0[0m/g;s/Only in \..*/[0;32m\0[0m/g;s/(Files).*/[1m\0[0m/g;s/Files|and|\/|are identical/[1;30m\0[0;1m/g'
+#
+# error code = line of error (2,3,4,etc) = error on line 2,3,4,etc , 0 = no error, 1 = generic involuntary error (can't execute, etc)  \
+#
+

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#===============================================================================
+#
+#          FILE: dirs-short
+# 
+#         USAGE: ./dirs-short 
+# 
+#   DESCRIPTION: Short but Colorful Directory Filter
+# 
+#       OPTIONS: dirs-short [ls options]
+#  REQUIREMENTS: ---
+#          BUGS: ---
+#         NOTES: ---
+#        AUTHOR: Dr. Fritz Mehner (fgm), mehner.fritz@fh-swf.de
+#  ORGANIZATION: FH Südwestfalen, Iserlohn, Germany
+#       CREATED: 02/15/2015 11:43
+#      REVISION:  ---
+#===============================================================================
+
+
+# or failsafe:
+[[ -v COLUMNS ]] || COLUMNS=80
+[[ -v LINES ]] || LINES=25
+
+# keep "$@" (command line) before the internal one, because
+# the regexps here rely on the placement. 														
+( ls "$@" -C --classify -h --size --color=always | perl -wpe 's/\b([0-9.]+[KMG]?)(?=\s)/[38;5;235m$1[0m/g;s/(?<=\w)([\/@*])(?=\s)/[38;5;49m$1[0m/g;'; echo; ) | sed 's/total.*/\0\n/g' 
+

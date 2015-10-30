@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# apt-search
+#
+# A more detailed search of items in the debian dpkg database. This is intended to be used in conjunction with
+# the installer setup tool provided by gxbase, which is a semi-gui for simple install/purge/remove/upgrade of
+# your system software.
+#
+# syntax: apt-search [flags] [keywords]
+#
+# [flags]	Any flag that can be used with 'apt-cache search'.
+# [keywords]	This is a regular string or a regular expression (regex) to define one or many search results' items.
+#
+( for i in `apt-cache search "$@" | grep '^\S+' -Po`; do echo -e "\n$i"; apt-cache show $i | perl -wne 'if (/^Description-..:/ ... /^\S/) { unless (/^Description-md5/) { s/^Description-..: / /g; s/^ /\t/g; print } }'; done ) | sed 's/^\s*\.\s*$//g'
+
+
+# see the README for more info about this filter
