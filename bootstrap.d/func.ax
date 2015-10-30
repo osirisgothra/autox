@@ -7,14 +7,144 @@ declare -gA AX_FUNC_CMPMODES=( [and]="&" [or]="|" )
 
 source "$AX_BASE/bootstrap.d/axmacros.ax"
 
-isfunc()
+__isfunc_usage()
 {
+    case "$1" in
+        short)
+            echo "usage: isfunc [-print -any] name [[-any -print|-unany -unprint] name ...]"; return 2;;
+        long)
+            __isfunc_usage short
+            cat <<-EOF
+            
+            returns whether a function or functions are valid 'func' types
+            
+            switches
+            
+            -print      turn on printing for following observations
+            -any        turn on anymode, which returns TRUE (0) if any match given
+            -unany      turns anymode back off for following observations
+            -unprint    turns printing back off for following observations
+            -help       this help message
+            
+            parameters
+            
+            name        name of 'func' to be checked. this item must exist in
+                        AX_FUNCS global array hash. if it is not, then the item
+                        is assumed a normal function and fails.
+           
+            for more info on the autox 'func' feature, please read the
+            documentation in AX_BASE/docs folder, or visit the repository
+            at http://osirisgothra.github.io/autox
+            
+            examples
+            
+                isfunc  goodfunc -any anothergood anotherbad
+                (returns true because -any matches)
+                isfunc -any goodfunc -unany anothergood anotherbad
+                (returns false because any was turned back off)
+                isfunc goodfunc -any badfunc -unany goodfunc -any badfunc2 goodfunc2
+                (returns true, badfuncs were inside -any blocks)
+                isfunc somefunc -print otherfunc
+                (returns info about otherfunc and final results)
+                isfunc -print somefunc -unprint otherfunc
+                (returns info about somefunc, but not otherfunc nor the totals)
+                isfunc somefunc anotherfunc -print
+                (returns printing of final results ONLY)
+                
+          defaults
+          
+            the defaults are '-unany' and '-unprint' at this time
+            
+          contact
+          
+            you can contact the developer at osirisgothra@hotmail.com
+            
+EOF
+            ;;
+       *) echo "fatal: bad help usage command, need short or long!"
+        ;;
+ esac
+}
+
+function isfunc()
+{
+    # cols = columns = columns on screen or fallback to linux console default width of 80
+    local COLS=${COLUMNS-80}
+    local HALF=$(( COLS / 2 ))
+    local ANYMODE=0
+    local PRINTMODE=0
+    local b=""
+    local e="exclusive"
+
+    ### TODO: following is THE rewrite, please complete it
+    # multi-argument is batch arguments
+    case $# in
+        0)  __isfunc_usage short
+            return
+            ;;
+        1)  if [[ $1 == --help ]]; then
+                __isfunc_usage long
+            else
+                # single argument is test argument
+                if [[ -v AX_FUNCS[$1] ]]; then
+                    return 0
+                else
+                    return 1
+                fi
+            fi
+            ;;
+        *)  # more than one argument? batch time!
+            for b in "$@"; do
+                if [[ $b == "-unany" ]]; then
+                    if [[ $ANYMODE -eq 1 ]]; then
+                        e='mixed'
+                    fi
+                    ANYMODE=0
+                    continue
+                elif [[ $b == "-unprint" ]]; then
+                    PRINTMODE=0
+                    continue
+                elif [[ $b == "-any" ]]; then
+                    ANYMODE=1
+                    continue
+                elif [[ $b == "-print" ]]; then
+                    PRINTMODE=1
+                    continue
+                fi
+                if ! isfunc $b; then
+                    [[ $PRINTMODE -eq 1 ]] && echo -e "$b\e[${HALF}Gfalse"
+                    if [[ $ANYMODE -eq 1 ]]; then
+                        continue
+                    else
+                        [[ $PRINTMODE -eq 1 ]] && echo "at least one non-function in sudden-death mode (false)"
+                        return 1
+                    fi
+                else
+                    [[ $PRINTMODE -eq 1 ]] && echo -e "$b\e[${HALF}Gtrue"
+                    FOUNDONE=1
+                fi
+            done
+            if [[ $ANYMODE -eq 1 ]] && [[ $FOUNDONE -eq 1 ]]; then
+                [[ $PRINTMODE -eq 1 ]] && echo "found at least one function in anymode (true)"
+                return 0
+            elif [[ $ANYMODE -eq 1 ]]; then
+                [[ $PRINTMODE -eq 1 ]] && echo "found NO functions in anymode (false)"
+                return 1
+            else
+                [[ $PRINTMODE -eq 1 ]] && echo "found all functions in $e mode (true)"
+                return 0
+            fi
+            ;;
+    esac
+    ### TODO: end of THE rewrite
+
+    ### TODO: following is in rewrite, please depreciate it
+    ### WARN: no longer using this block of script delete when finished with it
 	FUNC_ISFUNC_CMP_MODE=${AX_FUNC_CMPMODE}
 	[[ $FUNC_ISFUNC_CMP_MODE =~ ^(and|or)$ ]] || {
 		FUNC_ISFUNC_CMP_MODE=or
 		echo "warn: AX_FUNC_CMPMODE setting is not supported: $AX_FUNC_CMPMODE"
 	}
-
 	case $# in
 		0) 	echo "syntax: isfunc [-and|-or] names"; false;;
 		1) 	declare -pF "$1" &> /dev/null;;
@@ -40,6 +170,7 @@ isfunc()
 			echo "R = $R"
 			;;
 	esac
+	# WARN: end of scriptblock marked for deletion
 }
 
 func()
@@ -63,7 +194,12 @@ unfunc()
 
 __unfunc()
 {
-	if [[ -z ${AX_FUNCS[$1]} ]]; then
+    local FORCE=0
+    if [[ $1 == +force ]]; then
+        FORCE=1
+        shift
+    fi
+	if [[ -z ${AX_FUNCS[$1]} ]] && [[ $FORCE -ne 1 ]]; then
 		if isfunc $1; then
 			echo "$1 is a function, not a func!"
 			echo "hint: use unset -f to delete functions."
@@ -78,10 +214,15 @@ __unfunc()
 			echo "func $1 deleted"
 			true
 		else
-			echo "failed to delete $1, check your permissions of ${AX_FUNCS[$1]} and try again"
-			echo "$1 will not be removed from memory unless you are allowed to delete the file."
-			echo "hint: You may delete the file yourself, and then re-run this command to force a delete."
-			false
+		    if [[ $FORCE -eq 1 ]]; then
+		        # force/semiquiet with * indicating removal error
+		        echo "func $1 deleted*"
+		    else
+			    echo "failed to delete $1, check your permissions of ${AX_FUNCS[$1]} and try again"
+			    echo "$1 will not be removed from memory unless you are allowed to delete the file."
+			    echo "hint: You may delete the file yourself, and then re-run this command to force a delete."
+			    false
+			fi
 		fi
 	fi
 
@@ -90,17 +231,17 @@ __func()
 {
 	case $1 in
 		*=*)	source /dev/stdin <<EOF
-				function ${1/=*}()
+				function ${1%%=*}()
 				{
-					$(echo ${1/*=})
+					$(echo ${1#*=})
 				}
 EOF
-				declare -pf ${1/=*} > $AX_BASE/func/${1/=*}.af
+				declare -pf ${1%%=*} > $AX_BASE/func/${1%%=*}.af
 				;;
 		*)		if [[ "${AX_FUNCS[$1]}" ]]; then
 					printf "func $1='%s'" "$(declare -pf "$1" | head -n-1 | tail -n+3)"
 				else
-					echo "Unknown func ($1)"
+					echo "Not found and/or tagged as func ($1)"
 				fi
 				;;
 	esac
@@ -118,6 +259,7 @@ __func_loader()
 		source "$ftemp" && true debug echo "returned from source $ftemp, no error values reported!"
 		rm "$ftemp" && true debug echo "removed $ftemp from $fname okay"
 		local FNAME=$(basename $fname | sed 's/\.af$//g' )
+		true debug echo "FNAME=$FNAME = $fname"
 		AX_FUNCS[$FNAME]="$fname"
 	done
 	[[ $NONULLGLOB -eq 1 ]] && shopt -u nullglob
