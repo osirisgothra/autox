@@ -88,7 +88,8 @@ function _b_reload() {
 		bind -x '"\C-e": _b_poweroff'
 		bind -x '"\C-a": _ctrl_a_handler'
 		bind -x '"\C-l": clear'
-		bind -x '"\C-k": { clear; /gxbase/tools/filters/dirs-short; }'
+		bind -x '"\C-k": { clear; $AX_BASE/bin/dirs-short; }'
+		bind -x '"\C-b": { echo "c=[${BASH_ARGV[@]}]s=[$*]l=[$_]"; }'
 		bind -x '"[1;3A": cd ..'
 }
 function _b_perltoggle()
