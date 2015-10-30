@@ -1,0 +1,11 @@
+ax.service.action () 
+{ 
+    a=$1;
+    shift;
+    for x in "$@";
+    do
+        echo $x;
+        sudo service $x $a;
+        sudo service $x --status;
+    done
+}
