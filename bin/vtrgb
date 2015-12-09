@@ -1,0 +1,39 @@
+#!/bin/bash - 
+#===============================================================================
+#
+#          FILE: vtrgb
+# 
+#         USAGE: ./vtrgb 
+# 
+#   DESCRIPTION: Virtual Terminal RGB Editor
+# 
+#       OPTIONS: ---
+#  REQUIREMENTS: ---
+#          BUGS: ---
+#         NOTES: ---
+#        AUTHOR: Gabriel Thomas Sharp (gts), etherial_raine@outlook.com
+#  ORGANIZATION: Paradisim Enterprises, LLC, PA/PGH/USA
+#       CREATED: 03/19/2015 10:49
+#      REVISION:  ---
+#===============================================================================
+
+
+[[ $- =~ i ]] && return
+
+set -o nounset                              # Treat unset variables as an error
+
+lwhich() { local -i errcnt=0; for i in "$@"; do which $i > /dev/null || { printf "item: %s = not found!\n" "$i" > /dev/stderr; let errcnt++; }; done; return $errcnt; }
+ROOTPATH=$(dirname $BASH_SOURCE)/vtrgb.pl
+perl=perl
+env=env
+
+if ( lwhich $ROOTPATH $perl $env ); then	
+	$env $perl "$ROOTPATH" -- "$@"
+else
+	echo "file(s) were missing, can't continue!"
+	tty -s && sleep 0.5
+fi
+
+
+
+

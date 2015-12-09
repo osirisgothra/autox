@@ -1,25 +1,108 @@
 #!/bin/bash
-# vim:ft=sh
-# CHANGELOG
-#
-# - 9.22.2015 - update identify.im6 to identify-im6 and supplied workaround and backward compatible solution
-#
 
-# shell settings
+# note.text="i hate codesmell so much comments are at the END of the file"
+
+declare -i USENEWSECTION=0
+if [[ $USENEWSECTION -eq 1 ]]; then
+
+echo "--entering new/experimental section--"
+ declare -i PIPESTATUS=0
+declare -i EC=0
+THISCMDLINE="UNK"
+THISCMDSHA="09486c44b5ebe60eede72ea0fdf36c0a5e8981e1"
+IFS=$'\n'
+shatxt=( $(perl -wpe 's/(THISCMDSHA=")[^"]+(")/$1$2/g' $BASH_SOURCE) )
+echo $shatxt | shasum
+read -sn1
+eval `resize`
+declare -i n=0 ts=0 s=0 ll=0 lm=$COLUMNS lmp=10
+declare -g x="" ex="" IFS=$'\n'
+lm="$(( lm-((lmp<=5)*lmp)+((!(lmp<=5))*((lm*100)/(lmp))) ))"
+for x in "${shatxt[@]}"; do
+    let n++
+    echo -ne "line [\e[1m$n\e[0m] is: \e[41m[[[\e[0m${x: 0:$lm}\e[41m]]]\e[0m"
+    ts=${#x}
+    echo -ne "[${COLUMNS-69}[F [1;36;44m{{$ts}}[0m\n"
+    let s += ts
+    ll="$(( (((ll>ts)*ll)+((!(ll>ts))*ts)) ))"
+done
+echo "total: $n line(s) $ts char(s)"
+let n--
+echo "total lines: $n"
+read -sn1
+
+if [[ $# -gt 0 ]]; then
+    echo "args will be saved as: $@"
+    if [[ $1 == '??' ]]; then
+        echo "args WONT be saved, first arg is literal ??, means ignore!"
+        echo "args previously used will NOT be overwritten either."
+        shift
+        THISCMDLINE="SKIP"
+    elif [[ $1 == '?' ]]; then
+        echo "args WONT be saved, and old ones WILL be erased due to the"
+        echo "literal ? command line argument in position 1!"
+        shift
+        THISCMDLINE="WIPE"
+    else
+        echo "using args, and will save as: $@"
+    fi
+else
+    echo "using last args if they exist, use ?? to temporarily override this behavior, or ? to remove last memory!"
+    THISCMDLINE="USE"
+fi
+case $THISCMDLINE in
+    USE)
+        if [[ -r /tmp/pickwallpaper-cmds ]]; then
+            set -- $(cat /tmp/pickwallpaper-cmds)
+            echo "cmdline is now: $@"
+        else
+            echo "no cmdline file, no settings to use"
+        fi
+       ;;
+     WIPE)
+        echo "wiping command file..."
+        if rm -f "/tmp/pickwallpaper-cmds"; then
+            echo -- " ...ok"
+        else
+            echo "failed - $?"
+        fi
+        ;;
+    SKIP)
+        echo "ignoring command file for now"
+        if [[ -r /tmp/pickwallpaper-cmds ]]; then
+            echo "..but not next time"
+        else
+            echo "..theres no command file anyway! so no need for this!!"
+        fi
+        ;;
+    UNK)
+        echo "WARNING: THISCMDLINE was not initialized properly, could be corrupted! proceeding in 2 seconds so you see this..."
+        sleep 2
+        echo "reverting to SKIP status"
+        ;;
+      *)
+        echo "DANGER: THISCMDLINE is definately corrupted!!"
+        echo "enough of a bad thing to stop, but wont...for 4 seconds sleeping so you see it"
+        sleep 4
+        echo "reverting to SKIP status"
+        THISCMDLINE=SKIP
+        ;;
+esac
+
+EC=$?
+echo "command line processing mode ending with status \"$THISCMDLINE\"";sleep 1.5
+echo "arguments ending with value: $@ -- $# arguments";sleep 0.5
+echo "errors: cur=$? ps=$PIPESTATUS last=$EC";sleep 0.5
+echo "--now leaving new/experimental section--";sleep 1.5
+fi
 
 shopt -s globstar
 shopt -s nullglob
 shopt -s extglob
-  set +o nounset
-  set +o histexpand
-# the color values are given in #, so we cant have interactive comments!
+set +o nounset
+set +o histexpand
 shopt -u interactive_comments
-
-# set up local variables (3 arrays, 1 integer)
 declare -a PICK_WALLPAPER_FLAGS=( "$@" )
-# HACK: program changed name from identify.im6 to identify-im6 as of 8/2015
-# declare -a PICK_WALLPAPER_REQUIREMENTS=( hsetroot sed perl identify.im6 grep )
-# this hack allows for either (but the - version takes precedence)
 if ! which identify-im6; then
 	declare -g IDENTIFY_IM6='identify.im6'
 else
@@ -29,35 +112,23 @@ declare -a PICK_WALLPAPER_REQUIREMENTS=( hsetroot sed perl $IDENTIFY_IM6 grep )
 declare -a PICK_WALLPAPER_MISSING
 declare -i PICK_WALLPAPER_NODEPS=0
 declare -i PICK_WALLPAPER_IMAGE_CMD_RUNNING=0
-# ADD/FIX: converted to a multiple directory array and moved here from inline (below)
 declare -a WALLPAPER_DIRS=( ~/Pictures/Wallpaper )
-
-# preliminary checks
-
-
 for i in ${PICK_WALLPAPER_REQUIREMENTS[@]}; do
 	if [[ ! -x `which $i` ]]; then
 		PICK_WALLPAPER_MISSING+=( $i )
 		PICK_WALLPAPER_NODEPS+=1
 	fi
 done
-
 if [[ $PICK_WALLPAPER_NODEPS == 0 ]]; then
-
-	# functions
 	function addwph()
 	{
 		echo "$1" >> ~/.wallpaper_history
-		echo "$1" > ~/.wallpaper	
+		echo "$1" > ~/.wallpaper
 		if [[ $PICK_WALLPAPER_IMAGE_CMD_RUNNING != 1 ]]; then
-			# use this line to modify per-sync commands (like adding sudo or env to the beginning, if needed)
 			PICK_WALLPAPER_IMAGE_CMD=( "${PICK_WALLPAPER_IMAGE_CMD[@]}" )
 			echo hsetroot $(for W in "${PICK_WALLPAPER_IMAGE_CMD[@]}"; do [[ $W =~ ^- ]] && echo "$W" || echo \""$W"\"; done) | tr '\n' ' ' > ~/.wallpaper_sync
-			# add the newline (all newlines were stripped from the previous line by tr)
 			echo >> ~/.wallpaper_sync
-			# the image name ALWAYS comes last in image setting
-			# this identify command is not for checking purposes, but soley for output display
-			echo identify \"${PICK_WALLPAPER_IMAGE_CMD[-1]}\" >> ~/.wallpaper_sync
+			echo identify \"${PICK_WALLPAPER_IMAGE_CMD[-1]}\" 2>/dev/null >> ~/.wallpaper_sync
 		fi
 	}
 	function setwp()
@@ -67,74 +138,43 @@ if [[ $PICK_WALLPAPER_NODEPS == 0 ]]; then
 		( "$IDENTIFY_IM6" "$WP" && echo "Command Line: hsetroot ${PICK_WALLPAPER_IMAGE_CMD[@]}" && hsetroot "${PICK_WALLPAPER_IMAGE_CMD[@]}" && return 1 ) || return 0
 	}
 	if [[ $* =~ '-help' ]]; then
-		# combine help text together
-		# making sure to let the hsetroot guy get credit (most of it)
 		hsetroot -help | sed 's/hsetroot/pick-wallpaper (via hsetroot)/g;s/<image>//g;s/^Send/Send pick-wallpaper bug reports to: osirisgothra@hotmail.com\nSend hsetroot/g'
+        echo -ne "identify\n";identify --version | sed -r 's/(^.{0,'$((COLUMNS-11))'})(.*)/\t\1/g' | sed -r 's/\s\S{0,2}$/.../g'
 		exit 1
 	elif [[ $1 == '-hist' && $# == 1 ]]; then
 		echo "syncing with ~/.wallpaper..."
 		PICK_WALLPAPER_IMAGE_CMD_RUNNING=1
 		if source ~/.wallpaper_sync; then
-			echo "Status: sync succeeded! (code 0)"
+			echo "Status: sync succeeded! code 0"
 			exit 0
 		else
-			echo "Status: failed to sync -- you must run $0 normally at least once!! (code 4)"
+			echo "Status: failed to sync -- you must run $0 normally at least once!! code 4"
 			exit 4
-		fi				
+		fi
 	elif [[ $1 == '-last' && $# == 1 ]]; then
 		cat ~/.wallpaper
-		shift 
-		# this space is reserved for future use
+		shift
+        true SPACE_RESERVE --INFO "this space is reserved for future use"
 		exit 0
 	elif [[ $1 == '-last' && $# == 2 ]]; then
-		perl -wne 'print if $. == int("'$2'")' ~/.wallpaper_history 	
-		shift 2	
-		# this space is reserved for future use
+		perl -wne 'print if $. == int("'$2'")' ~/.wallpaper_history
+		shift 2
+        true SPACE_RESERVE --INFO "this space is reserved for future use"
 		exit 0
 	fi
-
-	# DEFAULTS
-	# any variable here can be overriden by exporting prior to running this script
-	# set up defaults, if not defined by user:
-	#
-	# PICK_WALLPAPER_FAILSAFE_EFFECT	effect used if no fallback image is found
-	# PICK_WALLPAPER_FAILSAFE_IMAGE		image to fall back to if other images are missing
-	# PICK_WALLPAPER_BINARY				the 'hsetroot' binary, if named differently
-	# PICK_WALLPAPER_DEFAULT_FLAGS		flags used BEFORE the filename (one of -cover, -extend, etc must be used LAST)
-	# PICK_WALLPAPER_WALLPAPER_IMAGES*	array of full path+filenames of wallpaper(s) to use, _overrides_scans_!
-	# PICK_WALLPAPER_FLAGS				extra flags to pass to hsetroot**
-	# PICK_WALLPAPER_WALLPAPER_COUNT	explicit cap for images to cycle in collection (max length of the image list)
-	#
-	# * instead of specifying them on the command line, they are set here and at the start via the WALLPAPER_DIRS variable
-	#   which should be set in your profile if need by. The builtin defaults are usually what you want if you use standard
-	#   filesystem rules.
-	#
-	# ** the extra flags variable (PICK_WALLPAPER_FLAGS) is only useful if you need to automate the setup elsewhere like
-	#    in your bashrc or eqivalent profile/environment script. For on-the-fly extra flags, just pass them with the
-	#    'pick-wallpaper' command
-	#
-
 	[[ -r $PICK_WALLPAPER_FAILSAFE_EFFECT ]]	||	PICK_WALLPAPER_FAILSAFE_EFFECT=( "-add" "#808080" "-add" "#404040" "-gradient" "45" )
 	[[ -r $PICK_WALLPAPER_FAILSAFE_IMAGE ]]		||	PICK_WALLPAPER_FAILSAFE_IMAGE="/opt/tilebg.jpg"
 	[[ -x $PICK_WALLPAPER_BINARY ]] 			||	PICK_WALLPAPER_BINARY=hsetroot
 	[[ -n $PICK_WALLPAPER_DEFAULT_FLAGS ]] 		||	PICK_WALLPAPER_DEFAULT_FLAGS=( "-cover" )
-	# ADD/FIX
-	# added support for declare -a W=( ${w[@]}/**/*.{png,jpg,jpeg,gif} )
-	# fixed support for extra dirs and using standard locations fit for all
 	[[ -n $PICK_WALLPAPER_WALLPAPER_IMAGES ]]	||	PICK_WALLPAPER_WALLPAPER_IMAGES=( ${WALLPAPER_DIRS[@]}/**/*.{png,gif,jpg,jpeg,bmp,xpm} )
 	[[ -n $PICK_WALLPAPER_FLAGS ]]              ||  PICK_WALLPAPER_FLAGS=( "${PICK_WALLPAPER_DEFAULT_FLAGS[@]}" )
 	[[ -n $PICK_WALLPAPER_WALLPAPER_COUNT ]]    ||  PICK_WALLPAPER_WALLPAPER_COUNT=${#PICK_WALLPAPER_WALLPAPER_IMAGES[@]}
 	echo "WALLPAPER COUNT: $PICK_WALLPAPER_WALLPAPER_COUNT"
-
-	# --- main program ---
-
-	# pick the wallpaper image
 	if [[ $PICK_WALLPAPER_WALLPAPER_COUNT > 0 ]]; then
 		PICK_WALLPAPER_INDEX=`perl -e 'srand('$RANDOM$SECONDS'); print int(rand('$PICK_WALLPAPER_WALLPAPER_COUNT'*10)/10)'`
 		PICK_WALLPAPER_IMAGE="${PICK_WALLPAPER_WALLPAPER_IMAGES[$PICK_WALLPAPER_INDEX]}"
 	fi
 
-	# set the image, or die trying...
 
 	if setwp "$PICK_WALLPAPER_IMAGE" "${PICK_WALLPAPER_FLAGS[@]}"; then
 		addwph "$PICK_WALLPAPER_IMAGE"
@@ -144,20 +184,210 @@ if [[ $PICK_WALLPAPER_NODEPS == 0 ]]; then
 		echo "failing back to internal non-image background ($PICK_WALLPAPER_FAILSAFE_EFFECT)"
 		if ! hsetroot "${PICK_WALLPAPER_FAILSAFE_EFFECT[@]}"; then
 			echo -e "Fatal: giving up, nothing is working, check that hsetroot is working and your DISPLAY variable is valid!\nWhen that fails to work, check your permissions, disk conditions, etc."
-			echo "Status: Ran but cannot pass image parser anything it likes (code 2)"
+			echo "Status: Ran but cannot pass image parser anything it likes code 2"
 			exit 2
 		fi
 	fi
-	echo "Status: No Errors! (code 0)"	
+	echo "Status: No Errors! code 0"
 	(exit 0)
-	
-else		
-	echo "*** Fatal: dependency failure ***"	
+
+else
+	echo "*** Fatal: dependency failure ***"
 	echo -e "\nThe following binaries are not accessible/executable: \n"
 	for D in ${PICK_WALLPAPER_MISSING[@]}; do echo -e "\t* $D"; done
 	echo -e "\nThis program requires packages: ${PICK_WALLPAPER_REQUIREMENTS[@]}"
 	echo "Please make certain that you have these and they are available for you to use. Contact your administrator or"
 	echo "visit your software management program to install these packages!"
-	echo -e "Status: Not Able To Run (Missing $PICK_WALLPAPER_NODEPS Components(code 3))\n"
+	echo -e "Status: Not Able To Run Missing $PICK_WALLPAPER_NODEPS Components code 3\n"
 	(exit 3)
 fi
+
+
+# PROGRAM ENDS HERE, COMMENTS START HERE, NO COMMENTS ABOVE HERE!
+
+# linter:bash -n
+#
+# README SECTION-BEGINS
+# ---------------------
+#
+# CHANGELOG---
+#
+# - 9.22.2015 - update identify.im6 to identify-im6 and supplied workaround and backward compatible solution
+# - black-fri 11.27.2015 - merry black friday! - added text facets and cmdline memory
+#
+#
+# LATEST ADDITIONS---
+#
+# TEXTUAL FACETS:
+#
+# TEXTUAL ADDITIONS FORMAT (what you are reading now is one of them)
+#
+# more important sections like this....
+# the slash at the beginning is omitted, its there to fool
+# the text formatter so we dont fold here maybe even yours (vim?)!
+#
+# /---SECTION-NAME
+#
+#   <section text>
+#
+# /---<next section must be this, or end of readme?>
+#
+# less important comments are in this format...
+#
+# FORMAT:
+# [
+#  SECTION:
+#  FEATURENAME ADDED (feature_comment)
+#  feature detail
+#  __END_FEATURENAME__
+# ] .. [repeat] .. [__END_FEATURENAME__]
+# __END_TEXTUAL ADDITIONS FORMAT__
+# :END_SECTION
+#
+#  btw below is the _real_ section ender
+# :END_TEXTUAL_FACETS
+#
+# CMDLINE MEMORY:
+#
+# MEMORYMODES ADDED (using ? or ?? or none)
+#
+# The mode is the 'status' in THISCMDLINE, if it is not touched/initted, then
+# the sleep(1) is used within so:
+#       1) you will see the error before returning while debugging
+#       2) console-detached processes dont hang on a PAKTC message
+#       3) a pause will indicate error to those who are detached too
+#
+# MEMORYMODES_END
+#
+# :CMDLINE_MEMORY_END
+#
+# SHASELFTEST:
+# REGISTERS ADDED (many)
+# registers
+# n = line number current               ts = totalsize of current line in chars
+# s = size in chars total accumlative   ll = longest line compared cumulative
+# x = current line char[0..[s-1]]       ex = accumulated lines to point with IFS delimited
+# IFS=internal-field (aka "inline-field" or 'infield') separator
+# lm = limit of line length             lmp = # of padding chars to subtract/add(negative)
+# lmp note: values more than 5 are percentages!!
+#  %  note: % cant be calced out as decimals because bash does not perform FP math, so we just
+#            shift the decimal point right instead, creating zeros (x100 then divide to prevent needing decimal math!)
+#            this is still as accurate as rounding afterward to a degree of 0.05 (5%) or so
+# END_REGISTERS
+#
+# FASTMATH/XNOT OPS ADDED (2):
+# !NB: "Fast" (fast-ish) if math:!
+# its fast as in needs no floating point or extra commands from bash
+# and needs no external program to perform it, and, it is compact. it
+# uses exclusion to create a mathematical IF statement with COND:
+# (COND*first)+(!COND*second)
+# COND must be boolean expression, first/second are the true/false values
+# COND does not neccisarily have to have first and second in them, but usually do:
+# to select A when greatest, or B if greatest, for example we do:
+# COND=((A>B)*A)+(!(A>B)*B)
+#         ^-----------^---COND must be static and a boolean reciprocal!!
+# because of this weird complexity (not really, i documented it above)
+# but its just a simple selector thats fast: just looks complex at first to some...
+# I usually refer to this as an 'exclusive NOT operation (XNOT)' even though
+# a true XNOT would be 0!1=0 0!0=1 1!1=1 but since XNOT is not used much, at least
+# less than the more appropriate 'XNOR' logic, i decided to borrow the term
+# see the percentages note also above, and this is all in the 'new seciton'
+#
+# last note: please encase inside assignment with $(( )) for clarity
+# using 'let' with ( ) grouping DOES NOT WORK RIGHT, just use
+# x=$((x-(stmts))) instead of 'let x-=(stmts)' or 'x=$[x-(stmts)]'
+#
+# END_FASTMATH
+#
+# FEATURE EXCLUSIVE SHATESTING ADDED
+#
+# IMPORTANT/NB: must remove sha from quotes of THISCMDSHA before running test
+# 1) remove SHA code from variable so it is THISCMDSHA="" and your code is in some variable
+# 2) remember dont modify the file itself, just the variable representation!
+# 2) run shasum -c to compare on remainin text to be read into a variable as well
+# 3) even a single change in this file MUST be updated HERE:
+# 4) when editing/updating, dont forget to remove the code, and have "" only!
+# 5) and more importantly, put the UPDATED sha back in!!!
+# 6) if available, use the --fastresha switch to update the edited file!
+#
+# END_EXCLUSIVE_SHATESTING
+# END_SHASELFTEST
+#
+# GENERAL COMMENTS
+#
+# COMMENT_CONSOLIDATION ADDED (no comments in main code anymore, too much clutter)
+#
+# CC1 - The identify.im6 HACK explanation
+# ====
+# 1. the color values are given in #, so we cant have interactive comments!
+# 2. set up local variables (3 arrays, 1 integer)
+# 3. a former HACK; program changed name from identify.im6 to identify-im6 as of 8/2015
+# 4. caused us to remove line: "declare -a PICK_WALLPAPER_REQUIREMENTS=( hsetroot sed perl identify.im6 grep )"
+# 5. this hack allows for either (but the - version takes precedence)
+# 6. now we don't look back, change if you wish!
+# ====
+#
+# CC2 - Quick Onliner Notes All-Over
+# ====
+# 1. first two declares, integerized to 0 to ensure has value of integer type
+# 2. ~210 first [re]assignment of, converted WALLPAPER_DIRS to a multidir array
+# 3. modify PICK_WALLPAPER_IMAGE_CMD[@] on ~231 to mod persync cmds just be
+#    sure image is last in it, or might get bad output text (ie;sudo prefix..)
+# 4. near ~234 'echo >>' used to add \n at EOLF of ~/.wallpaper_sync because
+#    echo|tr strips \n
+# 5. next^, the image name must MUST ALWAYS comes last in image setting in
+#    PICK_WALLPAPER_IMAGE_CMD, so identify WILL fail if you dont adhere
+#    to this!! (or if we dont)
+# 6. next^, the first identify command is not for checking purposes,
+#    but soley for output display so wont cause errors, we MUTE the error channel!
+# 7. commands in --help around ~246 combines help text together and make sure
+#    to let the REAL authors of the binaries, the hsetroot guy, the image-setting and
+#    the identify (imagemagick6) authors get credit (alot of) for their work, and
+#    a measly 1% to me, the scriptwriter, which i didnt do much...
+# ====
+# END_GENERAL_COMMENTS
+# END_FEATURES_ADDED
+#
+# MAIN PROGRAM NOTES:
+#
+# DEFAULT EXPLANATION (just read)
+#
+# any variable here can be overriden by exporting prior to running this script
+# set up defaults, if not defined by user:
+#
+# PICK_WALLPAPER_FAILSAFE_EFFECT	effect used if no fallback image is found
+# PICK_WALLPAPER_FAILSAFE_IMAGE		image to fall back to if other images are missing
+# PICK_WALLPAPER_BINARY				the 'hsetroot' binary, if named differently
+# PICK_WALLPAPER_DEFAULT_FLAGS		flags used BEFORE the filename (one of -cover, -extend, etc must be used LAST)
+# PICK_WALLPAPER_WALLPAPER_IMAGES*	array of full path+filenames of wallpaper(s) to use, _overrides_scans_!
+# PICK_WALLPAPER_FLAGS				extra flags to pass to hsetroot**
+# PICK_WALLPAPER_WALLPAPER_COUNT	explicit cap for images to cycle in collection (max length of the image list)
+#
+# * instead of specifying them on the command line, they are set here and at the start via the WALLPAPER_DIRS variable
+#   which should be set in your profile if need by. The builtin defaults are usually what you want if you use standard
+#   filesystem rules.
+#
+# ** the extra flags variable (PICK_WALLPAPER_FLAGS) is only useful if you need to automate the setup elsewhere like
+#    in your bashrc or eqivalent profile/environment script. For on-the-fly extra flags, just pass them with the
+#    'pick-wallpaper' command
+# PICK_WALLPAPER_WALLPAPER_IMAGES init on ~296 there has been, for a while,
+# added support for declare -a W=( ${w[@]}/**/*.{png,jpg,jpeg,gif} )
+# and the fixed support for extra dirs and using standard locations fit for all (see prior note CC1)
+#
+# END DEFAULTS_EXPLANATION
+#
+# MAIN_RUN_AFTER_DEFAULTS (just read)
+#
+# we had this annoying PICK WALLPAPER after default, so...
+# now we have the 'then main run program notes...' which is equally annoying, ok?
+#
+# 0. main program starts around line ~302ish, just after "DEFAULTS" are set
+# 1. around old mp start with setwp on approx ~305, we set the image, or die trying...
+# 2. thats all!
+#
+# END MAIN_RUN_AFTER_DEFAULTS
+# :END MAIN PROGRAM NOTES
+# ------------------------------------------------------------------------
+# README ENDS HERE        ....and FOLD! (Ctrl K+K, ctrl...K+F or, Ctrl+F?***)
+# ------------------------------------------------------------------------
+# EOF

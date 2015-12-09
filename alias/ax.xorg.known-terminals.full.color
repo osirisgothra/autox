@@ -1,0 +1,1 @@
+alias ax.xorg.known-terminals.full.color='ls --color=always `ax.xorg.known-terminals.full`'

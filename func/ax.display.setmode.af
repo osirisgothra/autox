@@ -1,0 +1,4 @@
+ax.display.setmode () 
+{ 
+    xrandr --output $1 --mode $2 "${@: 3}"
+}

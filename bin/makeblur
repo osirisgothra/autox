@@ -1,0 +1,99 @@
+#!/bin/bash
+
+function __makeblur()
+{
+unset -f $0
+unset PICK_WINDOW IGNORE_NOKDE
+ARGS=`getopt -n ${0//_/} -l unblur,help,pick,ignore-no-kde -o uh?pi -- "$@"`
+[[ $? -ne 0 ]] && { echo "Usage: makeblur [-hpi? | --help --pick --ignore-no-kde] -- [xprop flags]"; return $?; }
+eval set -- "$ARGS"
+while [[ $1 != '--' ]]; do
+	case ${1//-/} in 
+		help|h)
+			cat <<-EOH
+			
+			Make the background of a terminal or other semi-transparent window blurry.
+			This requires KDE's kwin compositor in order to work with this script.
+
+			syntax: makeblur [-hpi? | --pick|--ignore-no-kde|--help] -- [xprop flags]
+
+			-u  --unblur does reverse (experimental) of making the terminal blur by removing the attribute
+			-p	--pick 
+			 \tdo not autodetect current window, your mouse pointer will change shape, then you must click on
+			\tthe window that you wish to apply the attributes to (or right-click to cancel). The button order
+				is reversed on left-handed mouse systems.
+			-i	--ignore-no-kde
+			    try to apply the attributes even if the window does not seem to carry the right kind of
+			    window attributes (forcefully apply) This does not guarentee that the window will be blurred!
+			-h	-?	--help
+				The text you are reading now
+
+			This script is distributed as part of the GXBASE repository and distribution and is licensed under
+			the LGPL versions 2 and above. Visit the GNU-GPL website for more information on this license.
+
+			EOH
+			return 0;;
+		unblur|u)
+				DO_UNBLUR=1
+				;;
+		pick|p)
+			PICK_WINDOW=1;;
+		ignore-no-kde|i)
+			IGNORE_NOKDE=1;;
+		*)
+			echo "internal error: $1 not expected at this time";;
+	esac
+	shift
+done
+unset getspec
+while [[ ! -z "$1" ]]; do
+	# process non-proc options
+	[[ $getspec ]] && [[ $getspec != -root ]] && echo "warning: xprops already set, being overwritten by later specs: $1";
+	getspec=$1
+	shift
+done
+if [ $DISPLAY ]; then
+	if ( ! xprop -root | grep KDE > /dev/null ) && [[ -z $IGNORE_NOKDE ]]; then
+		echo "MAKEBLUR: window type not KDE, cannot run."; false
+	else
+		function func_getcurrentwindow()
+		{
+			
+			eval xprop -root | grep ^"_NET_ACTIVE_WINDOW" | grep --only-matching "0x[0-9a-fA-F]*" --color=never			
+		}
+		if [[ $PICK_WINDOW != 1 ]]; then
+			USEID="-id `func_getcurrentwindow`"
+		else
+			unset USEID
+		fi
+		echo "USEID=$USEID"
+		set -x
+		if [[ $DO_UNBLUR == 1 ]]; then			
+			eval xprop -remove _KDE_NET_WM_BLUR_BEHIND_REGION $USEID
+		else
+			eval xprop -f _KDE_NET_WM_BLUR_BEHIND_REGION 32c -set _KDE_NET_WM_BLUR_BEHIND_REGION 1 $USEID
+		fi
+		set +x	
+
+		RETVAL=$[ $? + 0 ]
+		# just in case we were sourced, undefine the function
+		unset func_getcurrentwindow
+		if [ $RETVAL -eq 0 ]; then
+			# in the case that we are not sourced and can't use "return" then we must
+			# just set the return value to 1 this way to avoid errors (same with the false case above/below)
+			true
+		else
+			echo -ne "MAKEBLUR: "
+			if [ $RETVAL -eq 1 ]; then
+				echo "Something went wrong when setting the window attributes, general failure."
+			else
+				echo "Attribute Setting Failed, Got Extended Error Code # $RETVAL (but returning 1)."
+			fi
+			false
+		fi
+	fi
+fi
+
+}
+
+__makeblur "$@"

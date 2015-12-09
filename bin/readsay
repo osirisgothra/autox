@@ -1,0 +1,82 @@
+#!/usr/bin/perl
+
+#|[   Details
+#   -----------------------------------------------------------------------
+#    Summary:   readsay.pl
+#     Author:   gabriel [osirisgothra@hotmail.com]
+#    Purpose:   Main Code for gabriel's dev
+
+#    Created:	Sat 13 Sep 2014 10:52:35 AM EDT#
+#     Update:   http://paradisim.twilightparadox.com
+#   -----------------------------------------------------------------------
+#|]
+
+#|[ Includes
+
+use 5.014;           # module: perl executive v5.14
+use warnings;        #         builtin:warnings
+use strict;          #         builtin:strict
+use feature "switch";#         experimental::given-when
+use Test::File;      #         CPAN Test::File
+use Pod::Usage;      #         pod2usage
+use Getopt::Long;    #         Getoptions
+use File::Spec;      #         catfile
+
+
+#|]
+#|[ Global Variables
+
+    our @argv = $ARGV;
+    our $argc = $#ARGV+1;
+    our $args = $argc >= 1 ? "true" : "false";
+
+    use Term::ReadKey;
+    use Time::Format qw! %time %strftime %manip !;
+
+
+#|]
+#|[ Functions
+
+sub echo { say(@_) }
+sub clear { $|=1; print "[2J[0;0H" }
+
+#|]
+
+#|[ Entry Point
+{
+    clear;
+    echo "Program entered on " . $strftime{'%c'};
+    echo "Now entering dispatch mode, please press a key to exit.";
+    ReadMode 4;
+    my $key = undef;
+
+    use warnings;
+
+
+    while (not defined ($key = ReadKey(-1)))
+    {
+      if ( -r "say" )
+      {
+         system qq ! spd-say "$_" ! foreach <SAY>;
+         open SAY, "<", 'say' or
+            warn "can't open file";
+
+         echo "Processed Pipe Say on " . $strftime{'%c'};
+         unlink "say" if close SAY;
+      }
+      else
+      {
+         echo "Waiting for file...";
+         sleep 1;
+      }
+
+    }
+    print "Break: (key $key pressed)\n";
+    ReadMode 0;
+
+   exit(1);
+}
+#|]
+
+#|[ Modeline:  vim:foldlevel=4:et:fen:fdm=marker:fcl=all:fmr=\#\|[,\#\|]:tw=160:sw=4:ts=4:sts=0:vbs=0:cc=80:fdc=3:mls=4:fml=0:foldexpr=|]
+

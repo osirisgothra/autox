@@ -1,0 +1,1 @@
+alias arejobsrunning='jobs | grep ".+" -qPn && echo "jobs ARE running" || echo "no, jobs are NOT running"'

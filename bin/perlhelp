@@ -1,0 +1,382 @@
+#!/usr/bin/perl
+
+#
+# perlhelp
+#
+# converted from perlhelp.sh
+#
+# features: URI and XML entity string decoding on-the-fly
+# making it compatible with a wide variety of IDE programs
+#
+
+use v5.14;
+use warnings;
+use strict;
+use HTML::Entities;
+use URI::Escape;
+use XTerm::Conf;
+use X11::WMCtrl;
+use Getopt::Long qw ( :config no_ignore_case bundling );
+use Pod::Usage;
+use Path::Class;
+use JSON qw ! from_json to_json !;
+use File::Slurp::Tiny qw ! read_file  write_file !;
+no warnings "experimental";
+
+
+exit(
+		say("Which topic, function, module, manpage, or perldoc page do you want?")
+) unless @ARGV;
+
+my %cachedata =
+	( # Put things we KNOW should be here to speed up the cache so the user doesnt have
+			 # to wait for the obvious -- firstoff, we use the items in 'perldoc perl'
+			 # the entries are stored as a list reference
+		perlvar => [ 'perldoc', 'perlvar' ],
+
+	);
+
+my $return                  = 0;
+my $noswitch                = 0;
+my $help                    = 0;
+my $man                     = 0;
+my $debugging               = 0;    # (default 0)
+my $no_uri_decode           = 0;    # (default 0)
+my $no_html_entities_decode = 0;    # (default 0)
+my $home  				          = defined $ENV{'HOME'} ? $ENV{'HOME'} : ".";
+my $cachefile 				      = <~/.perlhelpcache>;
+my $usecache  				      = 0;
+my $json      				      = JSON->new();
+my $cacheprocessing 				= 0;
+my $addtocache 							= 0;		# 0=dont rewrite cache  1=rewrite cache
+my $nopager	                = 0;
+my $perldocargs             = '';
+
+GetOptions(
+		'nopager|N'             => \$nopager,
+		'switch|s'               => \$noswitch,
+		'help|?'                 => \$help,
+		'no-uri-decode|u'        => \$no_uri_decode,
+		'no-xml-entity-decode|x' => \$no_html_entities_decode,
+		'debug-output|d'         => \$debugging,
+		'manpage-help|m'         => \$man,
+		'home|h=s'               => \$home,
+		'cache|c=s'              => \$cachefile,
+		'nocache|n'              => \$usecache,
+		'perldocargs|P=s'	       => \$perldocargs,
+
+) or pod2usage(2);
+
+pod2usage(1) if $help;
+pod2usage( -exitstatus => 0, -verbose => 2 ) if $man;
+$| = 1;    # flush always
+
+
+my @perldocargs=split(',',$perldocargs)
+	if defined $perldocargs;
+
+
+# usecache/noswitch have their states flipped by default
+$usecache ^= 1;
+$noswitch ^= 1;
+
+my @org_args = @ARGV;
+
+sub _ptrycache(@) {
+		$cacheprocessing = 1;
+		say( "cache is " . ( $usecache ? "ON" : "OFF" ) ) if $debugging;
+		if ($usecache) {
+				if ( -e -r -f $cachefile ) {
+						print "Cache file: readable\n" if $debugging;
+						my $data         = read_file($cachefile);
+						my %extcachedata = %{ $json->decode($data) };
+
+						# validate items, each item MUST be straight string keys /w array ref'ed lists containing 2 or more items
+						for my $key ( keys %extcachedata ) {
+								my $data = $extcachedata{$key};
+								$cachedata{$key} = $data if ( @$data > 1 );
+								print "Warning: key $key in cache contained invalid data, removing from cache"
+									unless @$data > 1;
+
+						}
+				}
+				else {
+						print "Cache file: not present\n" if $debugging;
+				}
+
+				if ( exists( $cachedata{ $_[0] } ) ) {
+						my $cachehit = $cachedata{ $_[0] };
+						print "Cache Hit: @_ and $cachehit\n" if $debugging;
+						my $tryresult = _try(@$cachehit);
+						$cacheprocessing = 0
+							; # must be set to zero AFTER try, or else first try will be made (takes longer)
+						return $tryresult;
+				}
+				else {
+						print "Cache Miss: @_\n" if $debugging;
+				}
+		}
+
+		$cacheprocessing = 0;    # let next function know we are done with the cache
+		return 0;                # not in cache, give up
+}
+
+sub _try(@) {
+
+# two arglists are needed
+# one for the redirected bash command, and one for the regular call (unescaped, uninterpreted)
+# first decode, the HTML entities come first, then the raw URI decoding comes second
+# make the argument safe, strip out any bad elements
+		my @arglist = ();
+		for my $item (@_) {
+				if ( $item =~ m/\//g ) {
+						print "Skipping argument: $_ because it has illegal chars";
+				}
+				else {
+						my ($filtered) = $item =~ /(.*)/;
+						push @arglist, $filtered;
+				}
+
+		}
+
+		# decode any embedded stuff
+		@arglist = decode_entities(@arglist) unless $no_html_entities_decode;
+		@arglist = URI::Escape::uri_unescape(@arglist) unless $no_uri_decode;
+		my @arglist_alt = @arglist;
+		s/([<>])/\\$1/g for @arglist_alt;
+
+		if ($debugging) {
+				print "args=";
+				print "$_ " for @arglist_alt;
+				print "\n";
+		}
+
+		# restrict to /bin and /usr/bin for safety (untainting)
+		$ENV{PATH} = "/usr/bin:/bin:/gxbase/bin";
+
+		# test only needs to happen if the cache isn't being used
+		# (cache has already seen a successful run)
+		my $ret =
+			_system( "bash", "-c", join( " ", @arglist_alt, "&>", "/dev/null" ) )
+			unless $cacheprocessing;
+		$ret = 0
+			if $cacheprocessing;
+
+		if ( $ret == 0 ) {
+
+				unless ($noswitch) {
+						unless ( $ENV{TERM} =~
+								/(cons|linux|ansi|tty|vt[0-9]*|dumb|none|raw|^$)/ )
+						{
+								local $ENV{TERM} = "x-terminal-emulator";
+								xterm_conf "-T", "Perl Help Viewer";
+						}
+						sleep 1;
+						_system( "wmctrl", "-a", "Perl Help Viewer" );
+				}
+				my @callargs = @arglist;
+
+				_system(@callargs);
+
+				unless ($cacheprocessing) {
+						print "@org_args: found target; adding to cache.\n"
+							if $debugging;
+						$cachedata{"@org_args"} = \@arglist;
+						$addtocache = 1;
+				}
+				else {
+						print "completed run /w cache, no data needs to be added to the cache!\n"
+							if $debugging;
+				}
+				return 1;
+		}
+		else {
+				print "@_ : this pass failed, returning to main...\n"
+					if $debugging;
+				return 0;
+		}
+
+}
+
+sub _ptry(@) {
+		_try "perldoc", @_;
+}
+
+sub _mtry(@) {
+		_try "man", @_;
+}
+
+
+sub _perldoctest
+{
+	my $cmd = shift;
+	my @args = @_;
+	die unless $cmd =~ /perldoc/;
+	unshift @args, $cmd;
+	my $self_pid = $$;
+	my $forked_pid = fork();
+	given ($$)
+	{
+		when (/$self_pid/)
+		{
+			waitpid $forked_pid,0;
+		}
+		when (/$forked_pid/)
+		{
+
+			}
+	}
+
+
+
+
+}
+
+sub _system {
+
+	# warning: taint mode does not pick up on this being tained, but it is, and we need to scrub out the
+	#          things that should not be (only flags should get passed and of course, the dashes
+	if (@perldocargs) { s/[^-a-zA-Z]//g for @perldocargs; }
+
+	my $cmd = shift;
+	my @args = @_;
+	if ($cmd =~ /perldoc/) {
+		unshift @args,'-T' if $nopager; # must be first (before any other args)
+		push @args, @perldocargs if @perldocargs;
+	}
+	elsif ( $cmd =~ /bash/ ) {
+		my $arginject = "";
+		$arginject = " @perldocargs " if @perldocargs;
+
+	}
+	if ($debugging) {
+		local $" = ','; # pretty argument printing
+		print "executing command=$cmd  arguments=@args\n";
+	}
+	return system $cmd,@args,@perldocargs;
+}
+
+if (   _ptrycache(@ARGV)
+		|| _ptry( "-v", @ARGV )
+		|| _ptry( "-f", @ARGV )
+		|| _ptry( "-q", @ARGV )
+		|| _ptry(@ARGV)
+		|| _ptry( "-iv", @ARGV )
+		|| _ptry( "-if", @ARGV )
+		|| _ptry( "-iq", @ARGV )
+		|| _ptry( "-i",  @ARGV )
+		|| _mtry(@ARGV)
+		|| _mtry( "-s", @ARGV ) )
+{
+		$return = 0;
+		if ($usecache) {
+				if ($addtocache) {
+						my $jsondata         = $json->pretty->encode( \%cachedata );
+						my $cachefile_secure = ( $cachefile =~ /([a-zA-Z\/\.]+)/ )[0];
+						if ( defined($cachefile_secure) ) {
+								write_file( $cachefile_secure, $jsondata );
+								print "Write to $cachefile_secure, the new cache data\n"
+									if $debugging;
+						}
+						else {
+								print STDERR "Can't write to $cachefile, it has an unsafe name, pick a name without unsafe characters.\n"
+									if $debugging;
+						}
+				}
+				else {
+						print "cache $cachefile not being written (item[s] not flagged for cache addition)\n"
+							if $debugging;
+				}
+		}
+		print "returning without errors (0)\n"
+			if $debugging;
+
+}
+else {
+		print STDERR "returning with errors (1)\n"
+			if $debugging;
+		$return = 1;
+}
+
+exit $return;
+
+__END__
+
+=head1 NAME 
+
+perlhelp - automatically launch perldoc with flags best suited to the keyword used
+
+=head1 SYNOPSIS
+
+perlhelp attempts to call perldoc based on the keyword you give it, and tries to guess any parameters that may be needed.
+
+...
+
+examples: 
+ perlhelp perlvar
+ perlhelp use
+ perlhelp FAQ_QUESTION          
+
+=head1 OPTIONS
+
+		 -? -help                    brief help message
+		 -m --man                    full documentation
+		 -n --noswitch               do not activate active terminal window (xterm compatible terminals only)
+		 -u --no-uri-decode          ignore % codes in the string (% will be treated literally)
+		 -x --no-xml-entity-decode   don't translate xml entities (&xxx;) in the command line (ie, '&amp;' for '&')
+		 -d --debug-output           display extra information related to the program's execution
+		 -s --silent                 do not show any progress indicator elipses (...)
+		 -C --cache [file]           use alternate cache file (default is $HOME/.perlhelpcache)
+		 -H --home [dir]             use alternate home directory (default is HOME environment variable)
+		 -n --nocache                disable use of cache (overrides -C no matter where it is in the arguments!)
+		 -N --nopager                do not use a pager (calls perldoc with the '-T' flag) -- same as '--perldocargs "-T"'
+		 -P --perldocargs [arglist]  a comma-separated list of arguments to pass on to perldoc (params are sanitized to prevent program compromising)
+
+		 These arguments are subject to change without notice, and may not be complete. If you notice any problems
+		 contact the author at (osirisgothra@hotmail.com).
+
+=head1 DETAILS
+
+The following information is given only for arguments that are less than obvious or ones I felt needed explanation. If you
+really don't know what something does, try it (at your own risk, of course!), this program only writes it's cache to your home
+directory if you do not specify an alternate.
+
+=over 8
+
+=item B<--noswitch -n>
+
+When starting the perlhelp from an xterm-compatible terminal, and 'wmctrl' is installed, the window that the xterm belongs to will be focused (brought to the foreground, activated) and the current desktop may also be switched. If KDE is running, the current activity will also be changed. This option will turn off this behavior.
+
+=item B<--no-uri-decode -u>
+
+If a string contains uri character codes (like '%20' for space), the will be left alone if you turn this option on.
+
+=item B<--no-xml-entity-decode -x>
+
+Using this switch will cause perlhelp to not pass the keyword through perl's HTML Entity parser. An HTML entity is a sequence of characters, starting with an '&', and terminated with a ';'. Such codes will be left alone. For more information about entities visit the w3c homepage at http://www.w3c.org/html4.
+
+=item B<--debug-output -d>
+
+Normally, only elipses (...) are shown for each search made with perldoc. If this option is enabled, additional messages will be shown as well.
+
+=item B<--silent -s>
+
+This is the opposite of the -d switch. When enabled, it will cause NO OUTPUT to be written at all before launching the viewer. Please note that stderr and perl messages will still be seen.
+
+=item B<--help -?>
+
+Print a brief help message and exits.
+
+=item B<--man -m>
+
+Prints the manual page and exits.
+
+=back
+
+=head1 DESCRIPTION
+
+B<perlhelp> takes an input keyword (usually from an text editor or IDE). The keyword is then fed to the 'perldoc'
+program to test which switches are required to get documentation for that word. The keyword itself has precedence
+in the following order:
+
+=cut

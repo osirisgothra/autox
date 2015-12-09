@@ -1,0 +1,1 @@
+alias ax.groups.real='id -G --name --real'

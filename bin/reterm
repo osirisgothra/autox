@@ -1,0 +1,4 @@
+#!/bin/bash
+
+bash -c "/etc/alternatives/x-terminal-emulator & disown"
+kill $$

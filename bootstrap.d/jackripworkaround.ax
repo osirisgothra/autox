@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+#======================================================================================================================
+#
+#          FILE: jackripworkaround.ax
+# 
+#         USAGE: jackripworkaround [arguments]
+# 
+#   DESCRIPTION: work-arounder for the jack cd ripper that should not use the name 'jack' at all since the daemon has that name since long ago
+# 
+#       OPTIONS: ---
+#  REQUIREMENTS: a non-jack dbus 'jack' binary in PATH, and,
+#                one of the 'jackd' dbus audio server/daemon binaries also in path and detectable!
+#          BUGS: jack/jackd checks names only, not signatures
+#         NOTES: aliases and funcs are not affected by this command
+# 				 defines root aliases to both:
+#                ax.misc.workaround.jackcdripper.binary
+#                ax.misc.workaround.jackcdripper.proper-jack.binary
+#        AUTHOR: Gabriel Thomas Sharp (gts), osirisgothra@hotmail.com
+#  ORGANIZATION: Paradisim Enterprises, LLC, PA, USA
+#       CREATED: 05/03/2015 07:20
+#      REVISION:  ---
+#  HELP CONTENT:
+#					usage: jackripworkaround <arguments>
+#					
+#					<arguments>		options you can pass to jackripworkaround
+#									
+#					This script (C) Copyright 2014-2015 Paradisim Enterprises, LLC, PA, USA, Licensed under GNU GPL v3
+#					You may get a copy of this LICENSE at the website: http://gpl.gnu.org
+#					For more info, contact the author Gabriel Thomas Sharp osirisgothra@hotmail.com
+#======================================================================================================================
+
+jackripwa()
+{
+	if [[ $AX_JACKRIPWA_OK -gt 0 ]] && [[ -x "/usr/bin/jack" ]]; then
+		command "/usr/bin/jack"
+	elif [[ ! -x /usr/bin/jack ]]; then
+		echo "JACKRIPWA installed (in autox bootstrapper) but /usr/bin/jack not here, so no workaround can be performed!"
+	elif [[ $AX_JACKRIPWA_OK -eq 0 ]]; then
+		echo "state of AX_JACKRIPWA_OK is zero, the loaded did not complete okay, please check and try again"
+		echo "(you may run this $FUNCNAME command simply as its original name until loaded properly)"
+	fi
+
+}
+
+jack()
+{
+	local CMDIS=false
+	# pretend, then command is...
+	if [[ $AX_JACKRIPWA_OK -gt 0 ]]; then
+		CMDIS="$AX_JACKRIPWA"
+	else
+		CMDIS="$FUNCNAME"
+	fi
+	# execute command as it is needed to be executed (no eval here, we did that already when calling this func!!!)
+	"$CMDIS" "$@"
+	# the return, state of system, etc none of our business, leave it to our caller to work with...
+	return $?
+	# as it were..
+}
+
+__jackripworkaround_loader()
+{
+	if [[ $AX_JACKRIPWA_OK -gt 0 ]]; then
+		echo "NOTICE: $FUNCNAME already ran $AX_JACKRIPWA_OK time(s), skipping!"
+	else
+		declare -xi AX_JACKRIPWA_OK=0
+		for x in jackd jackd2 jack2d jack2 jack-daemon djack jackdalsa jack_workaround_othername_lastresort; do
+			if AX_JACKRIPWA=`which $x`; then
+				AX_JACKRIPWA="$(basename $AX_JACKRIPWA)"
+				let AX_JACKRIPWA_OK++
+				break
+			fi		
+		done
+
+		declare -agx AX_TRIVIAL_BOOTSTRAP_LOADERS
+		AX_TRIVIAL_BOOTSTRAP_LOADERS+=( "${BASH_SOURCE}|STATIC|OK|NOUNLOADER" )
+
+		alias ax.misc.workaround.jackcdripper.binary=jackripwa
+        alias ax.misc.workaround.jackcdripper.proper-jack.binary=$AX_JACKRIPWA
+        alias ax.misc.workaround.jackcdripper.loader=$FUNCNAME.notavailable_unloaded        
+	fi
+	unset -f $FUNCNAME
+}
+
+# entry point
+__jackripworkaround_loader
+
+
+
+
+
+

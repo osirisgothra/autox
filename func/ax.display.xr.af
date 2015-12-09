@@ -1,0 +1,4 @@
+ax.display.xr () 
+{ 
+    xrandr --output "$@"
+}

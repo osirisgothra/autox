@@ -1,0 +1,1 @@
+alias ax.xorg.known-managers='for x in x-session-manager x-window-manager; do update-alternatives --list $x; done'

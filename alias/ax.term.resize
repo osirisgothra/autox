@@ -1,0 +1,1 @@
+alias ax.term.resize='for x in true resize; do eval "eval \`$x\`";echo -e "$x: \$LINES -> $LINES\t \$COLUMNS -> $COLUMNS";done;true'

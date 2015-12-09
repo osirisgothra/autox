@@ -1,0 +1,1 @@
+alias rtcwake='echo -e "\e[0;30;1m<\e[0mnote \e[32;1mrtcwake \e[0;1m[arg(s)]\e[0m running as superuser, not \e[1m$USER\e[0m\e[0;1;30m>\e[0m";sudo -H rtcwake'

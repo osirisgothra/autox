@@ -1,0 +1,4 @@
+ax.fs.rm.all.recursive () 
+{ 
+    rm -fr "$@"
+}

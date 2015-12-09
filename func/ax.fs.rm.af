@@ -1,0 +1,4 @@
+ax.fs.rm () 
+{ 
+    rm --verbose --interactive --preserve-root --one-file-system "$@"
+}

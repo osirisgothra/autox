@@ -1,0 +1,1 @@
+alias unetbootin='sudo unetbootin & which unetbootin && { disown %; echo "okay!"; } || echo you dont have it or its broken'

@@ -1,0 +1,1 @@
+alias ax.term.powersave.on='setterm --powersave on'

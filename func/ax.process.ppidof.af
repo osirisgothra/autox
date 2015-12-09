@@ -1,0 +1,4 @@
+ax.process.ppidof () 
+{ 
+    ps --format ppid --no-header --pid `ax.process.idof "$*"` | tr -d " " | tr "\\n" " "
+}

@@ -1,0 +1,1 @@
+alias alials='eval `resize`;declare -i m=0 n=0;for x in ${!BASH_ALIASES[@]}; do [[ $x =~ ^$APWD${APWD+.}[^.]* ]] && printf "%-20.20s%10.10s%10.10s\t" "$x" "<alias>" "${#BASH_ALIASES[$x]}";let m+=40;[[ $[ m + 40 ] -gt $COLUMNS ]] && { m=0;echo; }; let n++; done; echo "$n alias(es) in $APWD";unset n m'

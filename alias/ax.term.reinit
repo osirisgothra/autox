@@ -1,0 +1,1 @@
+alias ax.term.reinit='setterm --reset; setterm --init; sudo clear'

@@ -1,0 +1,43 @@
+#!/usr/bin/perl
+# Author:	gabriel
+# Purpose:	«Pattern Test Program»
+# Created:	Mon 01 Sep 2014 06:48:56 AM EDT
+
+
+### Code {{{1
+## Includes   {{{2
+use 5.010;
+
+use warnings              ;
+use strict                ;
+use Pod::Usage            ; # pod2usage()
+use Getopt::Long          ; # Getoptions()
+use File::Spec            ; # catfile
+
+
+
+## Globals    {{{2
+## Functions  {{{2
+## Main       {{{2
+my $esc  = '';
+my $ansi = "${esc}" . '[';
+my ( $none, $white, $green, $red, $blue, $cyan, $pink, $yellow ) =
+  qw ! $esc0m $esc0;1m $esc0;32m $esc1;31m $esc1;34m $esc1;36m $esc1:35m $esc1;33m !;
+
+die "Not enough arguments!!\n" if ( $#ARGV < 0 );
+
+my @patterns = @ARGV;
+while (<>) {
+
+    for my $pattern (@patterns) {
+        my $err = 0;
+        if ( eval "$pattern" ) { print $_; continue; }
+        warn "${red}Could not process this line (${white}$_${white}) to this pattern (${white}$pattern${red})\n${green}($!)${none}\n";
+    }
+}
+
+# see perlfunc for more details on functions called here
+
+# ======================================================================
+# vim600: set foldmethod=marker:
+# vim:noet:ts=4:tw=0

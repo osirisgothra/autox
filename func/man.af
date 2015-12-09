@@ -1,0 +1,4 @@
+man () 
+{ 
+    ( command man --section 1,8,5,2,3,4,9,6,7 "$@" )
+}

@@ -1,0 +1,1 @@
+alias ax.term.init='setterm --init'

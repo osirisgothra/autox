@@ -1,0 +1,341 @@
+#!/usr/bin/perl -w
+#===============================================================================
+#
+#         FILE: perlhelp-open
+#
+#        USAGE: ./perlhelp-open  
+#
+#  DESCRIPTION: Helper for perlhelp(1) that sends page to an 'opener' program
+#
+#      OPTIONS: perlhelp-open [program-name] [perlhelp-command-line]
+# REQUIREMENTS: perlhelp
+#         BUGS: ---
+#        NOTES: Formatting is not handled at this time, you may need to tweak
+#               the 'opener' program to handle such documents
+#       AUTHOR: Gabriel Thomas Sharp (gts), osirisgothra@hotmail.com
+# ORGANIZATION: Paradisim Enterprises, LLC - http://paradisim.twilightparadox.com
+#      VERSION: 1.0
+#      CREATED: 01/13/2015 10:21:45 AM
+#     REVISION: ---
+#===============================================================================
+
+use strict;
+use warnings;
+use v5.18;
+use utf8;
+use File::Temp qw ! tempfile tempdir !;
+use Config::General;
+use Getopt::Long;
+use Pod::Usage;
+use File::Which qw ! which !;
+use Path::Class::Dir;
+use Path::Class::File;
+use Config::INI::Writer;
+use Config::INI::Reader;
+use HTML::Entities qw ! decode_entities !;
+use URI::Escape qw ! uri_unescape !;
+our $VERSION = '1.0';
+
+
+Getopt::Long::Configure qw ! bundling !;
+
+my $configdir = Path::Class::Dir->new($ENV{HOME},".config","paradisim-enterprises-llc","perlhelp");
+my $configfilename = Path::Class::File->new($configdir->stringify, "perlhelpopencacherc");
+
+my %confighash = 	(	'_' =>
+						{
+							type => 'perlhelp-open',
+							version => '1.0'
+						},
+						main =>
+						{
+							configuration_created => "1",
+							cache_entries => "0",
+						},
+						cache =>
+						{
+							empty => "1",
+						},						
+					);
+
+if (! -d $configdir) {
+	say "created configuration directory, $configdir";
+	my @dirs2 = ();
+	push @dirs2, Path::Class::Dir->new($dirs2[-1],$_)->stringify for ($configdir->dir_list);
+	mkdir for @dirs2;
+} else {
+	say "conguration directory, $configdir, verified";
+	if (! -r -f $configfilename) {
+		Config::INI::Writer->write_file(\%confighash, $configfilename);
+	} else {
+		%confighash = %{Config::INI::Reader->read_file($configfilename)};
+	}
+	
+}
+	
+
+my $nocachefiles = 0;
+my $nodecodefilenames = 0;
+my $filetype = "";
+my $friendly = 0;
+my $noansi = 0;
+my $notermcodes = 0;
+my $extrafmt = 0;
+my $man = 0;
+my $help = 0;
+my $minimal = 0;
+my $cleanup = 0;
+my $configchanged = 0;
+
+GetOptions(	"cleanup|U" => \$cleanup,
+			"no-decode-filenames|D" => \$nodecodefilenames,
+			"file-suffix|s=s" => \$filetype,
+		    "friendlyfilename|F" => \$friendly,
+					"noansi|a"      => \$noansi,
+					  "notermcodes|t" => \$notermcodes,
+						"extrafmt|f"    => \$extrafmt,
+						'man|m'         => \$man,
+						"minimal|0"     => \$minimal,
+						'help|?'        => \$help,
+						'nocachefiles|C' => \$nocachefiles,
+					) or pod2usage(2);
+
+# overrides these (minimal)
+$noansi = 1 if $minimal;
+$notermcodes = 1 if $minimal;
+$extrafmt = 0 if $minimal;
+
+
+my $topicname = "untitled_topic";
+
+pod2usage(1) if ($help);
+pod2usage(-exitval => 0, -verbose => 2) if ( $man );
+pod2usage(2) if (@ARGV < 1 && ! $cleanup);
+
+# sub(s)
+
+sub friendlyfile()
+{
+	my $name = Path::Class::File->new(tempdir(),$topicname)->stringify;
+	$name = uri_unescape(decode_entities($name)) unless $nodecodefilenames;		
+	open(my $fh, ">",$name) or die("error creating tempfile '$name': $!");
+	return ($fh,$name)
+}
+sub alloc_file()
+{
+	my ($fh, $name);
+	if ($nocachefiles || ! -r ($confighash{cache}->{$topicname} // "")) {
+
+		say "generating new file for $topicname";
+		($fh, $name) = $friendly ? friendlyfile() : tempfile();
+		$confighash{cache}->{$topicname} = $name;
+		Config::INI::Writer->write_file(\%confighash,$configfilename);
+		$confighash{cache}->{empty} = 0;
+		$confighash{main}->{cache_entries}++; # used for cleanup
+		say "file $name created";
+		$nocachefiles = 1; # because we didnt/wont use/find it
+	}
+	else
+	{
+		say "reading from cache $topicname";
+		$name = $confighash{cache}->{$topicname};
+		say "reading from cache file $name";
+		$nocachefiles = 0; # (already=0, kept here for symetric purposes)
+	}
+	return ($fh, $name);
+}
+# main code
+
+if ($cleanup)
+{
+	say "cache cleanup requested, removing all entries and files related to them, please wait a moment...";
+
+	for my $key (keys %{$confighash{cache}})
+	{
+		my $val = $confighash{cache}->{$key};
+		say "removing $key ($val)...";
+		unlink $val;
+		delete $confighash{cache}->{$key};
+	}
+	say "updating configuration...";
+	Config::INI::Writer->write_file(\%confighash,$configfilename);
+}
+else
+{
+
+	my $program = shift @ARGV;
+	   $topicname = shift @ARGV;
+	my $width = $ENV{COLUMNS} // 80;
+	my ($fh,$tempfile) = alloc_file();
+	# should be pretty damn obvious how caching can dramatically speed
+	# up the process of read/launching the text & helper.
+	# uses the -C|cleanup to remove said cache and entries
+	if ($nocachefiles)
+	{
+		my @lines = `perlhelp --nopager $topicname @ARGV`;
+		my $found = 0;
+		print "$program ";
+		$program = ( which($program) or die ("Error: program $program does not seem to be executable by you.\n") );
+		print "= $program\n";
+
+
+
+		if ($#lines > 1)
+		{
+
+			my $doc = " ";
+			if ($extrafmt)
+			{
+				$doc = "Documentation for $ARGV[-1]\n" . ("_" x $width) . "\n\n @lines[4 .. $#lines]";
+				$doc =~ s/\S\)/)]/g;
+				$doc =~ s/ \S(?![ \(])/ [/g;
+			}
+			$doc .= "@lines";						    						# convert to single string (for below's processing)
+			$doc =~ s/\S//g if $notermcodes;					# strip terminal formatting codes
+			$doc =~ s/\[[0-9;]*m//g if $noansi;				# strip ansi codes
+			if ($? == 0)
+			{
+
+				print $fh $doc;
+				close $fh;
+				print "$noansi $notermcodes = noansi notermcodes\n";
+				system($program,$tempfile) and die "Error launching $program $! - $?";
+			}
+			else
+			{
+				die "result of last call to system bad == $? - $!";
+			}
+		}
+		else
+		{
+			die "Help for this topic is unavailable!";
+		}
+	}
+	else
+	{
+		say "launching program on cache that already was written...";
+		system ($program, $tempfile) and die "Error launching program $! - $?";
+	}
+}
+0;
+
+__END__
+
+=head1 NAME
+
+perlhelp-open
+
+=head1 DESCRIPTION
+
+helper program for the perlhelp program; a helper of the perldoc program, which
+is a helper for perl's plain old documentation (POD).
+
+=head1 SYNOPSIS
+
+perlhelp-open [-matf0] [program-name] [topic]
+
+ Options:
+	 -? --help            	brief help message
+	 -m --man             	full documentation
+	 -a --noansi          	strip ansi codes
+	 -t --notermcodes     	strip control codes
+	 -f --extrafmt        	add header to the output
+	 -F --friendly-filename	use search term as the filename 
+							instead of the temporary filename
+	 -0 --minimal         	same as -n -a, (undoes -f)
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<[-a --noansi]>
+
+Removes escape sequences (ie, color codes, cursor movements, screen clearing)
+
+=item B<[-t --notermcodes]>
+
+Removes control sequences (ie, BOLD codes, underline or reverse codes)
+
+=item B<[-f --extrafmt]>
+
+Adds a header to the document page, mainly for when printing.
+
+=item B<[-0 --minimal]>
+
+This is like saying -at. It also revokes any use of -f. THE PLACEMENT OF THIS FLAG DOES NOT MATTER!!! It will override previous or even flags given further down the line (so -f -0 and -0 -f have the SAME effect).
+
+=item B<[-F --friendly-filename]>
+
+Uses the search term that you used when naming the tempfile. If a more accurate name can be divined from the resulting help output, it will be used instead. This is useful when using with programs that have editor tabs or window lists showing the filename. The file will still be created in your /tmp (or equivalent) directory.
+
+=item B<[program name]>
+
+The program name which will be executed along with the documentation you have requested (see [topic] below).
+
+=item B<[topic]>
+
+The topic to request from perlhelp, which will be detected by using it's cache mechansism (or, on first run, by querying perldoc). This must be a topic perldoc is able to find. Regular man pages are also supported; just be warned that PERL documentation is prioritized over manpages... including the FAQ.
+
+For example:
+
+perldoc man     # is not the same as
+man man         # because 'man' is a perldoc faq topic!
+# however:
+perldoc sudo     # is the same as
+man sudo		 			# will get you the same thing *unless you have a sudo perl document or package installed*
+
+=item B<-help>
+
+print a brief help message and exits.
+
+=item B<-man>
+
+Prints the manual page and exits.
+
+=back
+
+=head1 DESCRIPTION
+
+B<perlhelp-open> will read the given topic outputted by perlhelp, and write
+it to a temporary file using mktemp(2). The [program file] will be used to open
+that same file.
+
+=head1 BUGS
+
+=over 8
+
+=item
+
+When using friendly filenames, it is possible that a name clash with other programs could happen. This known
+bug is a side effect of that feature. Furthermore, a needless re-writing can be done when the contents are
+already there, which is not efficient at all. This issue will be dealt with later when it becomes priority in
+the scope of the entire ax/gx project lifetime.
+
+=item
+
+Because it is hard to predict when the tempfiles are no longer needed, they will only
+be delted if: the same name is picked again (not likely), disk space becomes sparse (more likely),
+or, cron or a reboot forces the cleanup of the temp directory (most likely). Support for this
+may be added in future releases.
+
+=item
+
+section names subject to change depending on system
+
+=back
+
+=head1 AUTHOR
+
+perlhelp, perlhelp-open was written by Gabriel Thomas Sharp (etherial_raine@outlook.com)
+
+=head1 ACKNOWLEDGEMENTS
+
+B<perldoc> was written with the help of: brian d foy "<bdfoy@cpan.org>" Adriano R. Ferreira "<ferreira@cpan.org>", Sean M. Burke
+"<sburke@cpan.org>", Kenneth Albanowski "<kjahds@kjahds.com>", Andy Dougherty  "<doughera@lafcol.lafayette.edu>", and many
+others!
+
+=head1 SEE ALSO
+
+perldoc(1), perlhelp(1), man(1), perlpod(1), perlpodspec(1)
+
+=cut

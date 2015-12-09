@@ -1,0 +1,206 @@
+#!/bin/bash
+#
+# Make file(s) executable for group members and users (same as 'sudo a+x *' with some checking/assumptions)
+#
+# Without any arguments, will make all scripts in the current directory executable
+#
+
+case $- in
+	*i*) $BASH_SOURCE "$@"; return $?;;
+esac
+[[ -v MAKEX_DEBUG ]] && set -x || set +x
+
+#vars
+declare -ag exflags=( )
+declare -g sudo=""
+declare -i rv=0 forced=0 forceall=0 CM_ERR_COUNT=0
+declare -g opmode=detect
+unset IFS;
+
+if ARGS=( `getopt -n $(basename $BASH_SOURCE) --longopt=recursive,help,force,all,mode: -o RaHfurs -- "$@"` ); then
+	eval set -- "${ARGS[@]}"
+	while [[ $1 != "--" ]]; do
+		case $1 in
+			--mode)
+				shift
+				if [[ $1 =~ ^(user|root|sudo)$ ]]; then
+					opmode=${1}
+				else
+					echo "Fatal: invalid mode '"$1"' specified (user, root, or sudo expected)."
+					exit 2
+				fi;;
+			-u) opmode=user;;
+ 			-r) opmode=root;;
+			-s) opmode=sudo;;
+			--all|-a)
+				declare -i forceall=1;;
+			--force|-f)
+				declare -i forced=1;;
+			--recursive|-R)
+				exflags+=( "-R" );;
+			--help|-H)
+				echo ""
+				echo "syntax: makex [-ursafR] [--mode=[user|root|sudo]] [--recursive] [--force] [[filespec] ... ]"				
+				echo "        makex [-H] [--help]"
+				echo " "
+				echo "    --mode       makes 'makex' /behave/ like a certain situation exists. This does NOT grant permissions!"
+				echo "                 Use this option when 'makex' incorrectly detects root, sudo, or normal user mode. "
+				echo "-u  --mode=user  Assume no special permissions to use the sudo program"
+				echo "-s  --mode=sudo  Forces the use of sudo regardless of user's sudo -l chmod response."
+				echo "-r  --mode=root  Pretends that UID is set to 0 (but does not grant; assumes root permissions)."
+				echo "-R  --recursive  passes the recursive flag to chmod (processes all files in subdirectories in filespec"
+				echo "-f  --force      sets permissions, even if the file is already executable (to the effective UID/GID)"
+				echo "-a  --all        sets permissions, regardless of any current permissions"
+				echo "    [filespec]   One or more file system entries (directory, file, node, pipe, etc) to be set."
+				echo ""
+				echo "-H  --help       This help text (that you are reading at this instant!)."
+				echo ""
+				echo " The first command style passes arguments together to the system's chmod "
+				echo " command, of course, barring any other arguments chmod takes. If you need"
+				echo " those commands, use chmod(1) instead."
+				echo ""
+				echo " The filespec is a list of files. Wildcards and other glob like expressions are completely dependant"
+				echo " upon your current system shell. For example, in bash, you may use globs like '*/' to specify all directories."
+				echo ""
+				echo " This program is a part of GXBASE collection of scripts and functions <http://gitorious.org/gxbase> "
+				echo " Authored By: Gabriel T. Sharp <osirisgothra@hotmail.com> "
+				echo ""
+				exit 1;;
+			*)
+				echo "Error: unknown argument ($1)"
+				exit 254;;
+	esac
+		shift
+	done
+	shift # remove '--' from list
+	unset DIRMODE
+	case $# in
+		0)
+			echo "No files given, working in single-level autodetect mode..."
+			DIRMODE=Y
+	esac
+	# graft flag back into chmod (this prevents other flags from being passed to chmod)
+	sudoreq=0
+	for i do [[ ! -w $i ]] && sudoreq=1; done
+	set -- "${exflags[@]}" "$@"
+
+	if [[ $opmode == detect ]]; then
+		
+		if [[ $UID -ne 0 ]] && sudo -ln chmod &> /dev/null; then
+			if [[ $sudoreq == 1 ]]; then
+				opmode=sudo
+				sudo="sudo"
+			else			
+				echo "info: you are sudo-capable, however, detection verified no items are unread/writable, therefore user mode is being used."
+				opmode=user
+				sudo=""
+			fi				
+		elif [[ $opmode == root ]] || [[ $UID -eq 0 ]]; then
+			opmode=root
+			sudo=""
+		else
+			opmode=user
+			sudo=""
+		fi
+	fi
+	case $opmode in
+		sudo)	echo "[0;40;31m  USER MODE  [0;40;33m  ROOT MODE  [1;42;37m >SUDO MODE< [0m";;
+		user)	echo "[1;41;37m >USER MODE< [0;40;33m  ROOT MODE  [0;40;32m  SUDO MODE[0m";;
+		root)	echo "[0;40;31m  USER MODE  [1;43;37m >ROOT MODE< [0;40;32m  SUDO MODE[0m";;
+		   *)	echo "Fatal: opmode corrupted!"; exit 2;;
+	esac
+
+	unset FILE EXPLAIN AUTOCOUNT IGNCOUNT suff
+	if [[ $DIRMODE == Y ]]; then
+		declare -i AUTOCOUNT=0 IGNCOUNT=0
+		let AUTOCOUNT=0
+		for FILE in *; do
+			# dont process files that are already executable
+			if file "$FILE" | grep -q executable && [[ ! -x "$FILE" || $forced == 1 ]] || [[ $forceall == 1 ]]; then
+				set -- "$@" "$FILE"
+				echo -n "Adding executable $FILE"
+				[[ $forced -eq 1 ]] && echo -n ", forced on already-set"
+				[[ $forceall -eq 1 ]] && echo -n ", forced on ALL files"
+				echo
+				let AUTOCOUNT++
+			else
+				let IGNCOUNT++
+				echo -n "Skipping $FILE, "
+				if [[ -x "$FILE" ]]; then
+					echo "(Already Executable)"
+				else
+					echo "(does not seem to be executable*)"
+					EXPLAIN=1
+				fi
+			fi
+		done
+	else
+		echo "Working in straight mode on files: "
+		unset NEEDEDFILES
+		declare -i AUTOCOUNT=0 IGNCOUNT=0
+		for i in "$@"; do
+			if [[ ! -x "$i" ]]; then
+				echo "$i (queued to be set)"
+				NEEDEDFILES+=( $i )
+				AUTOCOUNT+=1
+			else
+				echo "$i (already executable, skipped)"
+				IGNCOUNT+=1
+			fi			
+		done
+		if [[ $AUTOCOUNT -ge 1 ]]; then
+			set -- "${NEEDEDFILES[@]}"
+		else
+			set --
+		fi
+	fi
+	#for debug, uncomment or add $sudo and $@ to your watches in bashdb
+	#echo "command: $sudo chmod a+x [$@]" 
+	if [[ $# -ge 1 ]]; then
+		if ! $sudo chmod a+x "$@" $exflags; then
+			CM_ERR_LAST_CMD="$_"
+			CM_ERR_LAST=$?
+			let CM_ERR_COUNT++
+		fi
+	else
+		echo "no command called (no files to process)"
+	fi
+
+	if [[ ! -r ~/.config/bashrc/flags/DISABLE_MAKEX_EXPLAIN ]]; then
+		# disables it all together if configured to do so in gxbase's bashrc-setup program!
+		[[ $EXPLAIN -eq 1 ]] && [[ ! -r /tmp/explained-makex ]] && {
+			echo "* Note: Some files might be sourceable, however they are not marked executable unless they have an interpreter specified at the first"
+			echo "        line of the file's textual contents. Traditionally this line starts with #![path/to/binary/interpreter] and a CR or CR/LF."
+			echo "        This is not an error, but a normal message (which will not be repeated on this host for a while)."
+			# put in tmp -- this will get deleted when? when logout, reboot, cron-cleanup, or job clears the tmp (usually 24 hours or so)
+			# this is likely enough time as that there will be no more reminders in this session and a few after that :)
+			touch /tmp/explained-makex
+		}
+	fi
+
+	if [[ $CM_ERR_COUNT -eq 0 ]]; then
+		echo "Completed Without Errors"
+	else
+		rv=$CM_ERR_LAST
+		echo -e "Completed With Errors\nLast error: $CM_ERR_LAST_CMD returned $rv)"
+		(exit $rv)
+	fi
+	if [[ -v AUTOCOUNT ]]; then
+		FINALCOUNT=$(( AUTOCOUNT - CM_ERR_COUNT ))
+		echo "$CM_ERR_COUNT error(s), $FINALCOUNT processed, $IGNCOUNT ignored"
+	else
+		[[ $# != 1 ]] && suff=s || suff=
+		echo "($# item${suff})"
+		unset suff
+	fi
+	exit $?
+else
+	# return code from getopt, truncate to 1, if needed
+	[[ $? -lt 1 ]] && exit 1 ||	exit $?
+fi
+
+function _memory_corruption()
+{ echo "Error $?: this file ($BASH_SOURCE, called by ${BASH_SOURCE[1]}) is corrupted either in memory or on disk."
+  echo "Get a good and secure copy at: http://github.com/osirisgothra/gxbase"; }; _memory_corruption $?
+
+

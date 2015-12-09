@@ -4,8 +4,22 @@ unset AX_FUNCS
 declare -gA AX_FUNCS
 declare -g AX_FUNC_CMPMODE=or
 declare -gA AX_FUNC_CMPMODES=( [and]="&" [or]="|" )
-
 source "$AX_BASE/bootstrap.d/axmacros.ax"
+
+
+isfunc_usage()
+{
+    case $1 in
+        short|long)
+            __isfunc_usage "$@";;
+        *)
+            echo "must be called with either 'short' or 'long'!"
+            return 1;;
+    esac
+    return $?
+}
+
+############# __isfunc_usage [short|long]
 
 __isfunc_usage()
 {
@@ -15,29 +29,29 @@ __isfunc_usage()
         long)
             __isfunc_usage short
             cat <<-EOF
-            
+
             returns whether a function or functions are valid 'func' types
-            
+
             switches
-            
+
             -print      turn on printing for following observations
             -any        turn on anymode, which returns TRUE (0) if any match given
             -unany      turns anymode back off for following observations
             -unprint    turns printing back off for following observations
             -help       this help message
-            
+
             parameters
-            
+
             name        name of 'func' to be checked. this item must exist in
                         AX_FUNCS global array hash. if it is not, then the item
                         is assumed a normal function and fails.
-           
+
             for more info on the autox 'func' feature, please read the
             documentation in AX_BASE/docs folder, or visit the repository
             at http://osirisgothra.github.io/autox
-            
+
             examples
-            
+
                 isfunc  goodfunc -any anothergood anotherbad
                 (returns true because -any matches)
                 isfunc -any goodfunc -unany anothergood anotherbad
@@ -50,21 +64,30 @@ __isfunc_usage()
                 (returns info about somefunc, but not otherfunc nor the totals)
                 isfunc somefunc anotherfunc -print
                 (returns printing of final results ONLY)
-                
+
           defaults
-          
+
             the defaults are '-unany' and '-unprint' at this time
-            
+
           contact
-          
+
             you can contact the developer at osirisgothra@hotmail.com
-            
+
 EOF
             ;;
        *) echo "fatal: bad help usage command, need short or long!"
         ;;
  esac
 }
+
+################## (stub) __isfunc [isfunc arglist] !TODO! stub not currently in use !TODO!
+
+function __isfunc()
+{
+    isfunc "$@"
+}
+
+################## isfunc [[query name/item] [...]]
 
 function isfunc()
 {
@@ -173,6 +196,8 @@ function isfunc()
 	# WARN: end of scriptblock marked for deletion
 }
 
+########### func [[funcname[=[{]| ]codeblock[}]] [...]|]
+
 func()
 {
 	true
@@ -182,6 +207,9 @@ func()
 		*)	for x; do __func "$x"; done;;
 	esac
 }
+
+######### unfunc [[func name] [...]|]
+
 unfunc()
 {
 	true
@@ -191,6 +219,8 @@ unfunc()
 		*) for x; do __unfunc "$x"; done;;
 	esac
 }
+
+######## (stub) __unfunc {func name}
 
 __unfunc()
 {
@@ -255,10 +285,14 @@ __func_loader()
 	shopt -s nullglob
 	for fname in $AX_BASE/func/*.af; do
 		local ftemp=$(mktemp)
+		local FNAME=$(basename $fname | sed 's/\.af$//g' )
+        if [[ ${#BASH_ALIASES[$FNAME]} -gt 0 ]]; then
+            echo "warning: $FNAME is a func which takes precedence over aliases, the alias form will be removed to avoid conflicts."
+            builtin unalias $FNAME
+        fi
 		cat "$fname" |  perl -wne 'print unless /METADATA_START/ .. /METADATA_END/' > "$ftemp"  && true debug echo "parsed from $fname, without any apparent error, on to the executioner..."
 		source "$ftemp" && true debug echo "returned from source $ftemp, no error values reported!"
 		rm "$ftemp" && true debug echo "removed $ftemp from $fname okay"
-		local FNAME=$(basename $fname | sed 's/\.af$//g' )
 		true debug echo "FNAME=$FNAME = $fname"
 		AX_FUNCS[$FNAME]="$fname"
 	done

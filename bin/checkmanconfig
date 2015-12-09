@@ -1,0 +1,79 @@
+#!/bin/bash
+
+# checkmanconfig
+
+# checks config in a sloppy manner! make backups!
+
+# usage: checkmanconfig [file]
+#
+# file
+#   file to be the replacement for the current, the default
+#   is /etc/manpath.config if none presented
+
+if [[ $UID -ne 0 ]]; then
+    echo "you must be root"
+    exit 44
+elif [[ $- =~ i ]]; then
+    echo "this script must be RAN, not SOURCED!"
+    echo "please remove any dots or 'source' keywords, and try again!"
+    return 221
+    echo "fatal: corrupt file/ram! redownload me or check system!"
+    exit 221
+    # failsafe, if corrupted!
+else
+    echo "continuing..."
+fi
+
+AXMANCONF="${1-/etc/manpath.config}"
+shift
+MANCONF="${1-/etc/manpath.config}"
+shift
+
+# main program
+AXTEMPFILE=$(mktemp)
+echo "backing up as $AXTEMPFILE"
+cp "$AXMANCONF" "$AXTEMPFILE" -f
+if [[ "$AXMANCONF" != "$MANCONF" ]]; then
+    echo "writing out file to analyze.."
+    cp "$AXMANCONF" "$MANCONF" -f
+else
+    echo "not writing file, because it IS the $MANCONF file!"
+    echo "surrogate not needed, resuming check..."
+fi
+
+if diff "$AXMANCONF" "$AXTEMPFILE"; then
+    echo "backup verified ok, working..."
+    if man -k test &> /dev/null; then
+        echo "passed!"
+        PASS=1
+    else
+        echo "test FAILED, check your file and try again!"
+        PASS=0
+    fi
+    echo "restoring system files to original state..."
+    if cp "$AXTEMPFILE" "$AXMANCONF"; then
+        echo "system restored"
+    else
+        echo "fatal: system not restored, keeping backups and stopping"
+        exit $(( 4 + $PASS ))
+    fi
+    echo "removing backup"
+    if rm "${AXTEMPFILE}" -f; then
+        echo "backup removal failed, remove $AXTEMPFILE yourself then!"
+    else
+        echo "backup removed"
+    fi
+    echo "analysis complete!"
+    if [[ $PASS -eq 0 ]]; then
+        echo "result: FAILED"
+        exit 1
+    else
+        echo "result: PASSED (yay!)"
+        exit 0
+    fi
+    echo "result: CORRUPTED FILE"
+    exit 79
+else
+    echo "fatal: copied/used files corrupted (not verifiable), stopping!"
+    exit 96
+fi

@@ -1,0 +1,1 @@
+alias ax.dynamica.ls.wide='ax.dynamica.ls.base -l --color | perl -ne '\''printf "%20.20s",$_;$n=$n+1;if ($n > 2) { $n=0; print '\''\n'\''; }; BEGIN { $n=0; }'\'''

@@ -1,0 +1,1 @@
+alias ax.xorg.wm.clearname='wmname "";true;echo "window manager name cleared"'

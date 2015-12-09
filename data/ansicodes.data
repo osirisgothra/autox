@@ -1,0 +1,33 @@
+   ANSI Standard Escape Sequence Chart (click on: http://en.wikipedia.com/wiki/ANSI_escape_code for details)   [ansicodes]
+   -----------------------------------------------------------------------------------------------------------------------
+   CSI(8) Codes                                         SGR Codes
+   Code         Name     Effect                         ## Effect
+   ---------------------------------------------------  ------------------------------------------------------------------
+   CSI n A      CUU      Cursor Up                      0  Reset(5)                             +------------------------+
+   CSI n B      CUD      Cursor Down                    1  Highlight(6)                         |This Text Belongs To The|
+   CSI n C      CUF      Cursor Forward/Right           2  Lowlight(6)                          +--GXBASE-Documentation--+
+   CSI n D      CUB      Cursor Back/Left               3  Italic/Emphasis                      | GNU Extensions for the |
+   CSI n E      CNL      Cursor Next n Line             4  Underlined                           | BASH Shell Environment |
+   CSI n F      CPL      Cursor Previous n Line         5  Blinking                             | (C)2009-2013 Paradisim |
+   CSI n G      CHA      Cursor Abs Column n            7  Inverse                              | Enterprises, L.L.C., & |
+   CSI n ; m H  CUP      Cursor Abs Position(1)         8  Hidden                               | Gabriel  Thomas  Sharp |
+   CSI n J      ED       Erase Display(2)               9  Strikeout                            | (gabriel@paradisim.tk) |
+   CSI n K      EL       Erase Line(2)                  10 Reset Font                           | (osirisgothra@hotmail) |
+   CSI n S      SU       Scroll Up Page                 1x Select Font          x=1-9           | at http://paradisim.tk |
+   CSI n T      SD       Scroll Down Page               2x Attribute Off        x=2-9(6)        +------------------------+
+   CSI n ; m f  HVP      Horiz/Vert Pos(1)              3x Foreground Color(7)  4bit=0-7 def=8 8bit=9;n (n=0-255)
+   CSI n m      SGR      Select Graphic Rendition       4x Background Color(7)  (same as above)
+   CSI 6 n      DSR      Echo Cursor Position(3)        51 Framed                
+   CSI s        SCP      Save Cursor Position           52 Encircled             
+   CSI u        RCP      Restore Cursor Position        53 Overlined                            
+   CSI ?25l     DECTCEM  Hide Cursor Position(4)        54 Unframed/encircled    
+   CSI ?25h     DECTCEM  Show Cursor Position(4)        55 Overlined Off         
+                                                        
+   Sequence Code Notes (1-4)                            Select Graphic Rendition Code Notes (5-8)                
+   ---------------------------------------------------  ------------------------------------------------------------------
+   (1) One-Based Indexes: n=1 m=1 is top/left(default)  (5) All Attributes to "Normal" Usually Defaults                   
+   (2) Erases To 0=End 1=Start 2=Entire (Line/Screen)   (6) Highlight/Lowlight: Both Are Turned off by SGR Code \\x1b[22m 
+   (3) Dev Stat Report Echoes: \\x1b[n;mR (n=X m=Y)     (7) See color tables for exact codes for terminals                
+   (4) The Cursor Indicator, Not Textual Position       (8) CSI=Control Sequence Introducer (Usually Always "\\x1b[")     
+   ---------------------------------------------------  ------------------------------------------------------------------
+   [updated 15 aug, 2013]                               [command ansicodes.sh or ansicodes alias]            [page 1 of 1]

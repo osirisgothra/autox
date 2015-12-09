@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+#======================================================================================================================
+#
+#          FILE: dynalias.ax
+#
+#         USAGE: dynalias [arguments]
+#
+#   DESCRIPTION:
+#
+#       OPTIONS: ---
+#  REQUIREMENTS: ---
+#          BUGS: ---
+#         NOTES: ---
+#        AUTHOR: Gabriel Thomas Sharp (gts), osirisgothra@hotmail.com
+#  ORGANIZATION: Paradisim Enterprises, LLC, PA, USA
+#       CREATED: 11/28/2015 13:30
+#      REVISION:  ---
+#  HELP CONTENT:
+#					usage: automatic by BSL
+#
+#					This script (C) Copyright 2014-2015 Paradisim Enterprises, LLC, PA, USA, Licensed under GNU GPL v3
+#					You may get a copy of this LICENSE at the website: http://gpl.gnu.org
+#					For more info, contact the author Gabriel Thomas Sharp osirisgothra@hotmail.com
+#======================================================================================================================
+
+# <ax><attributes><nocommand/></attributes></ax>
+
+__dynalias_loader()
+{
+	echo -ne "* Dynamic Alias Init Call Generators ["
+	if [[ -z $AX_DYN_ALIAS_DISABLE ]]; then
+        local IFS=$'\n'
+        local n=0
+        # TODO: possibly move assignment of AX_DYN_ALIASES to autox
+        #       when/if needed by other parts of the autox source
+        #       tree.
+        # TODO: remove these TODOs if move did not happen within
+        #       at least 6 months (11/2015, expires in 5/2016)
+        AX_DYN_ALIASES=( $(cat $AX_BASE/data/dynaliases.data) )
+        for x in "${AX_DYN_ALIASES[@]}"; do
+            if [[ $n > 0 ]]; then
+                echo -ne " "
+            fi
+            let n++
+            echo -ne "$x=["
+            local TMPFILE=$(mktemp)
+            cat "$AX_BASE/alias/$x" | sed -r 's/^alias [^=]+=[[:punct:]](.*)[[:punct:]]$/\1/g' > $TMPFILE
+            source "$TMPFILE" | tr '\n' '|'
+            echo -ne "]"
+            rm -f "$TMPFILE"
+            unset TMPFILE
+        done
+        let n--
+        if [[ n < 1 ]]; then
+            n="none"
+        fi
+        echo -ne " (\e[1m$n were ran\e[0m)"
+    else
+        echo "Dynamic Aliases Disabled"
+    fi
+    echo -e "]"
+	unset -f $FUNCNAME
+}
+
+# entry point
+# TODO: add a simmilar disabler to other items
+# TODO: this is cumbersome, make it automatic in a flag
+#       and move check to autox's BSL code
+if [[ $AX_DYNALIAS_LOADER_DISABLE_FORCE -eq 1 ]]; then
+    echo "WARNING: AX_DYNALIAS_LOADER_FORCE set to 1, not running this ($BASH_SOURCE)"
+else
+    __dynalias_loader
+fi

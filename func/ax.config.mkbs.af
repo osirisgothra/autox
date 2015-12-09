@@ -1,0 +1,43 @@
+ax.config.mkbs() 
+{ 
+    local REPLY=""
+    [[ $# -gt 1 ]] && echo "warning: too many arguments-one argument, the name, will be used [$1]-"
+    [[ $# -ne 1 ]] && read -p "new template name:" || REPLY="$1";
+    local TEMPLATENAME=$REPLY
+    local NEWTEMPLATE="$AX_BASE/bootstrap.d/$REPLY.ax"
+    perl -wpe "s/BOOTSTRAPNAME/$REPLY/g" "$AX_BASE/etc/templates/template.ax" | tee "$NEWTEMPLATE"
+    if EDITORPATH=$(which $EDITOR); then
+        echo "found editor (defaulted from EDITOR variable)"
+    elif EDITORPATH=$(which editor); then
+        echo "found editor (the editor binary usually from update-alternatives)"
+    elif EDITORPATH=$(which vi); then
+        echo "found editor (the vi editor, the default of the defaults)"
+        echo "hint: you may want to configure EDITOR environment variable"
+        echo "      or use update-alternatives if you have it to select an editor!"
+    else
+        echo "an editor is not configured"
+        echo "mkbs figures the editor in this order:"
+        echo " 1) the EDITOR environment variable"
+        echo " 2) the editor binary, usually set by update-alternatives"
+        echo " 3) the binary name 'vi' which is almost guarenteed to be on any linux based os installation"
+        echo " 4) gives up because the environment is obviously invalid or unpredictable to us"
+        echo "please type the name of the editor you want to use"
+        echo "or press ENTER to not edit the new file:"
+        REPLY=""
+        read
+        if [[ $REPLY == "" ]]; then
+            echo "aborting editing, you can edit this file later"
+            echo "it is located at: $NEWTEMPLATE"
+            return 0
+        fi
+        while ! EDITORPATH=$(which $REPLY); do
+            echo "file does not exist in path, enter full path or press"
+            echo "ctrl-c to abort entering it's name:"
+            read
+        done
+    fi
+    echo "editor configured, launching now."
+    echo "running $EDITORPATH $NEWTEMPLATE"
+    "$EDITORPATH" "$NEWTEMPLATE"
+    echo "editor returned with code ($?)"         
+}

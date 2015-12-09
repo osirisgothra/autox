@@ -1,0 +1,60 @@
+
+Terminal: Behavior of fbterm([0m1[0m) and non-fbterm(xterm(1)) Codes Within fbterm([1m1[0m)
+----------------------------------------------------------------------------------------------------------
+
+NORMAL ANSI COLOR CODES
+[0m
+    [2;37mBack [4?m   [1;37m0   [40m[1;31;2m   1[40m[1;32;2m   2[40m[1;33;2m   3[40m[1;34;2m   4[40m[1;35;2m   5[40m[1;36;2m   6[40m[1;37;2m   7[40m[0m
+    Fore [3?m   [0;30;47m0   [40m[0m[0;31m   1[40m[32m   2[40m[33m   3[40m[34m   4[40m[35m   5[40m[36m   6[40m[37m   7[40m[0m
+    [1;37m  Hi ]x;1m  [1;30m0   [40m[1;31m   1[40m[1;32m   2[40m[1;33m   3[40m[1;34m   4[40m[1;35m   5[40m[1;36m   6[40m[1;37m   7[40m[0m
+
+[0m
+  [0   None [0m  [37;2m Lowlight [x;2m [0m [37;3m Emphasis [x;3m [0m [37;4m Underlined [x;4m [0m
+[37;5m Blink [x;5m [0m [37;7m Reverse [x;7m  [0m [37;8m  Hidden [x;8m  [0m [37;9m Strikeout [x;9m  [0m
+
+
+XTERM Compatibility
+
+There isn't. On fbterm, 256-xterm color codes do not show. If you use so if you use ESC]38;5;32m, for example
+you will get the same result as if you used ESC[38m ESC[5m ESC[32m on any color terminal. Which usually
+gives you: 38 = Nothing 5 = blink (or bright background bit) and 32 = green the result is: [38;5;2mTHIS[0m
+which should look the same as [38m[5m[32mTHIS[0m. If it doesn't then you could have problems! If you need
+it to be xterm-compatible you'll have to compile it to do so, which isn't to hard. I recommend using the xterm
+patch to do this.
+
+FBTERM Codes
+
+Here are the fbterm-specific colors for the 256-color colortable. You can, however, use true color (24-bit)
+color codes like this: [2;r;g;b} r,g,b being 0-255 (8-bit) so html #202040 [2;32;32;64}looks like this.[0m You can however,
+use the regular ESC[0m to reset these attributes to their default (ESC[0m usually is  = to ESC[0;37;40m).
+
+Important
+
+The 256 color attribute is assigned like this: ESC[2;index} or ESC[1;index} for background and foreground, respectively.
+The 256 color indexes can be from 0-255 and are identical to their xterm counterparts. It's not sure what good that
+does since the code isn't the same at all and it isn't even an SGR and therefore not real ANSI. It's not even listed
+on the wikipedia ANSI page anywhere. Nonstandard use such as this is not recommended as a primary practice. If you need
+these values please make sure you make your primary focus on 16-color terminals first, then 256-color, then true-color,
+and lastly, fbterm and other nonstandard terminal codes. Of exclusive use, probably 40% use 16-bit, 55% use 256-color,
+and 4% use true color, and 1% use fbterm. Exclusive means that user uses no other type of terminal. Exclusive users
+usually are limited to that terminal type by force of their hardware environment.
+
+[2;16}  16[40m[2;17}  17[40m[2;18}  18[40m[2;19}  19[40m[2;20}  20[40m[2;21}  21[40m    [2;100} 100[40m[2;101} 101[40m[2;102} 102[40m[2;103} 103[40m[2;104} 104[40m[2;105} 105[40m  [2;184} 184[40m[2;185} 185[40m[2;186} 186[40m[2;187} 187[40m[2;188} 188[40m[2;189} 189[40m [0m
+[2;22}  22[40m[2;23}  23[40m[2;24}  24[40m[2;25}  25[40m[2;26}  26[40m[2;27}  27[40m    [2;106} 106[40m[2;107} 107[40m[2;108} 108[40m[2;109} 109[40m[2;110} 110[40m[2;111} 111[40m  [2;190} 190[40m[2;191} 191[40m[2;192} 192[40m[2;193} 193[40m[2;194} 194[40m[2;195} 195[40m [0m
+[2;28}  28[40m[2;29}  29[40m[2;30}  30[40m[2;31}  31[40m[2;32}  32[40m[2;33}  33[40m    [2;112} 112[40m[2;113} 113[40m[2;114} 114[40m[2;115} 115[40m[2;116} 116[40m[2;117} 117[40m  [2;196} 196[40m[2;197} 197[40m[2;198} 198[40m[2;199} 199[40m[2;200} 200[40m[2;201} 201[40m [0m
+[2;34}  34[40m[2;35}  35[40m[2;36}  36[40m[2;37}  37[40m[2;38}  38[40m[2;39}  39[40m    [2;118} 118[40m[2;119} 119[40m[2;120} 120[40m[2;121} 121[40m[2;122} 122[40m[2;123} 123[40m  [2;202} 202[40m[2;203} 203[40m[2;204} 204[40m[2;205} 205[40m[2;206} 206[40m[2;207} 207[40m [0m
+[2;40}  40[40m[2;41}  41[40m[2;42}  42[40m[2;43}  43[40m[2;44}  44[40m[2;45}  45[40m    [2;124} 124[40m[2;125} 125[40m[2;126} 126[40m[2;127} 127[40m[2;128} 128[40m[2;129} 129[40m  [2;208} 208[40m[2;209} 209[40m[2;210} 210[40m[2;211} 211[40m[2;212} 212[40m[2;213} 213[40m [0m
+[2;46}  46[40m[2;47}  47[40m[2;48}  48[40m[2;49}  49[40m[2;50}  50[40m[2;51}  51[40m    [2;130} 130[40m[2;131} 131[40m[2;132} 132[40m[2;133} 133[40m[2;134} 134[40m[2;135} 135[40m  [2;214} 214[40m[2;215} 215[40m[2;216} 216[40m[2;217} 217[40m[2;218} 218[40m[2;219} 219[40m [0m
+[2;52}  52[40m[2;53}  53[40m[2;54}  54[40m[2;55}  55[40m[2;56}  56[40m[2;57}  57[40m    [2;136} 136[40m[2;137} 137[40m[2;138} 138[40m[2;139} 139[40m[2;140} 140[40m[2;141} 141[40m  [2;220} 220[40m[2;221} 221[40m[2;222} 222[40m[2;223} 223[40m[2;224} 224[40m[2;225} 225[40m [0m
+[2;58}  58[40m[2;59}  59[40m[2;60}  60[40m[2;61}  61[40m[2;62}  62[40m[2;63}  63[40m    [2;142} 142[40m[2;143} 143[40m[2;144} 144[40m[2;145} 145[40m[2;146} 146[40m[2;147} 147[40m  [2;226} 226[40m[2;227} 227[40m[2;228} 228[40m[2;229} 229[40m[2;230} 230[40m[2;231} 231[40m [0m
+[2;64}  64[40m[2;65}  65[40m[2;66}  66[40m[2;67}  67[40m[2;68}  68[40m[2;69}  69[40m    [2;148} 148[40m[2;149} 149[40m[2;150} 150[40m[2;151} 151[40m[2;152} 152[40m[2;153} 153[40m  [0m
+[2;70}  70[40m[2;71}  71[40m[2;72}  72[40m[2;73}  73[40m[2;74}  74[40m[2;75}  75[40m    [2;154} 154[40m[2;155} 155[40m[2;156} 156[40m[2;157} 157[40m[2;158} 158[40m[2;159} 159[40m  [2;232} 232[40m[2;233} 233[40m[2;234} 234[40m[2;235} 235[40m[2;236} 236[40m[2;237} 237[40m [0m
+[2;76}  76[40m[2;77}  77[40m[2;78}  78[40m[2;79}  79[40m[2;80}  80[40m[2;81}  81[40m    [2;160} 160[40m[2;161} 161[40m[2;162} 162[40m[2;163} 163[40m[2;164} 164[40m[2;165} 165[40m  [2;238} 238[40m[2;239} 239[40m[2;240} 240[40m[2;241} 241[40m[2;242} 242[40m[2;243} 243[40m [0m
+[2;82}  82[40m[2;83}  83[40m[2;84}  84[40m[2;85}  85[40m[2;86}  86[40m[2;87}  87[40m    [2;166} 166[40m[2;167} 167[40m[2;168} 168[40m[2;169} 169[40m[2;170} 170[40m[2;171} 171[40m  [2;244} 244[40m[2;245} 245[40m[2;246} 246[40m[2;247} 247[40m[2;248} 248[40m[2;249} 249[40m [0m
+[2;88}  88[40m[2;89}  89[40m[2;90}  90[40m[2;91}  91[40m[2;92}  92[40m[2;93}  93[40m    [2;172} 172[40m[2;173} 173[40m[2;174} 174[40m[2;175} 175[40m[2;176} 176[40m[2;177} 177[40m  [2;250} 250[40m[2;251} 251[40m[2;252} 252[40m[2;253} 253[40m[2;254} 254[40m[2;255} 255[40m [0m
+[2;94}  94[40m[2;95}  95[40m[2;96}  96[40m[2;97}  97[40m[2;98}  98[40m[2;99}  99[40m    [2;178} 178[40m[2;179} 179[40m[2;180} 180[40m[2;181} 181[40m[2;182} 182[40m[2;183} 183[40m  [0m
+
+*  Not true ANSI, and not SGR (ends with `}` not `m`)
+** fbterm(1) is the only official implementor of these codes
+   xterm(1) codes do not work on it, read the fbterm(1) manpage for details
+

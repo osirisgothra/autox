@@ -1,0 +1,1 @@
+alias ax.xorg.wm.getname='echo "AX_CURRENT_WMNAME=\"$(wmname)\""'

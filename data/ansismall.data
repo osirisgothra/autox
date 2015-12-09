@@ -1,0 +1,24 @@
+80x25 Compact ANSI Code List                  (use "ansicodes" for full details)   
+--------------------------------------------------------------------------------
+Code  Effect     | Code  Effect      | Code  Effect       | Code  Effect
+A     CursorUp   | B     CursorDown  | C     CursorRight  | D     CursorLeft
+E     Down&Col0  | F     Up&Column0  | G     MoveToColumn | H     MoveToPos
+J     EraseScr   | K     EraseLine   | S     ScrlPageUp   | T     ScrlPageDown
+f     CursorPos  | m     CharAttr    | 6n    EchoPos      | s     SavePos
+u     RestorePos | ?25l  HideCursor  | ?25h  ShowCursor   | I     GXBASE Code
+--------------------------------------------------------------------------------
+Attr  Effect     | Attr  Effect      | Attr  Effect       | Attr  Effect
+0     unset all  | 1     highlight   | 2     lowlight     | 3     italic/emph.
+4     underlined | 5     blinking    | 7     inverse      | 8     hidden
+9     strikeout  | 10    reset font  | 11-19 set font 1-9 | 20-29 unset attr 
+30-37 text color | 40-47 back color  | 51    framed       | 52    encircled
+53    overlined  | 54-55 unset 51-53 | 48;5; 256-color-bg | 38;5; 256-color fg
+--------------------------------------------------------------------------------
+Code  Dim/Bright | Code  Dim/Bright  | Code  Dim/Bright   | Code  Dim/Bright
+0     Black/Grey | 1     Maroon/Red  | 2     Green/Lime   | 3     Brown/Yellow
+4     Navy/Blue  | 5     Purple/Pink | 6     Teal/Cyan    | 7     Silver/White
+8/9   Reset Hue  | 8;5;x 256color x  | A     Gxb Macro 1  | B     Gxb Macro 2
+--------------------------------------------------------------------------------
+Code  Value/Action Result              Code  Value/Action   Result
+8;5;x +1           Increase Red Hue    8;5;x +6             Increase Green Hue
+8;5;x +36          Increase Blue Hue   8;5;x 252/(+1)(<256) Greyscale Colors

@@ -1,0 +1,4 @@
+ax.process.detail () 
+{ 
+    ps --format "${@: 2}" --no-header --pid `ax.process.idof "$1"` | tr -d " " | tr "\\n" " "
+}

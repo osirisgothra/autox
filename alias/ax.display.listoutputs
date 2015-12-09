@@ -1,0 +1,1 @@
+alias ax.display.listoutputs='xrandr | perl -wne '\''if (/^\S+\s(connected)\s\S+/) { s/(^\S+)(.*$)/$1/g; print; }'\'''

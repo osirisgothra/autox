@@ -492,6 +492,238 @@ function gexport()
 		echo
 	fi
 }
+function tubby2() {
+	tubby
+	tubby
+	tubby
+}
+function tubby()
+{
+	__generic_use my feet hurt cause im fat...
+}
+function __generic_use()
+{
+	[[ -z $1 ]] && set "(no arguments)"
+	echo "usage: $(caller 0) $1"		
+	shift
+	for x do echo "       $x"; done	
+}
+function cpalias()
+{
+    #1# argcount checks
+	case $# in
+		0) echo "usage: $FUNCNAME [srcaliasname] [dstaliasname]";;
+		1) echo "Not enough arguments, please specify both an srcaliasname AND a dstaliasname!!";;
+		2)
+		
+		# $ ` " ' 
+		# |  & ; ( ) < > space tab
+				
+		#2# sanity checks
+		    function failing() { echo "failed: ERROR, $*, please check and try again!"; unset -f "$FUNCNAME"; return 2; }
+		    local SRCEXISTS=1 DSTNOEXISTS=1 LEGALNAMES=1
+		    [[ "$1$2" =~ [\]\[$\`\"\'\|\&\;\(\)\<\>{}\#\*\?\/\\=]+ ]] && LEGALNAMES=0		    		   
+	        [[ -r $AX_BASE/alias/$1 ]] || SRCEXISTS=0
+	        [[ -r $AX_BASE/alias/$2 ]] && DSTNOEXISTS=0
+	        # failing on any of:
+	        [[ $SRCEXISTS -eq 0 ]] && failing "source alias doesnt exist!"; return
+	        [[ $DSTNOEXISTS -eq 0 ]] && failing "destination alias already exists!"; return
+	        [[ $LEGALNAMES ]] && failing "the name \"$1\" and \"$2\" must BOTH be legal alias names, but they are not!"
+	    #3# gathering of data, perparation to copy
+	        perl -wpe "s/(?<=alias )$1(?==)/$2/g" "$AX_BASE/alias/$1" > $AX_BASE/alias/$2
+	    #4# verification thereof, using sha1sum [reverse conversion]
+	        echo 'verifing alias copied via reverse checksum...'	        
+	        echo 'generating tempfile...'
+	        TMPFILE=$(mktemp)
+	        echo 'generating checksum file...'
+	        perl -wpe "s/(?<=alias )$2(?==)/$1/g" "$AX_BASE/alias/$2" | sha1sum | perl -wpe "s/-/${AX_BASE//\//\\/}\/alias\/$1/g" > $TMPFILE
+	        echo 'checking regent against original...'
+	        if ! sha1sum -c "$TMPFILE"; then
+	            echo "check failed!"
+	            echo "this could be due to low disk space or insufficient permissions"
+	            echo "or, in extreme cases, memory or hard disk failure."
+	            echo "Please resolve this problem with your administrator, and try again!"
+	            echo "check failed, no copy should be considered viable!"
+	            echo "system unstable, no further action will be taken,"
+	            echo "Stop."
+	            echo "giving bad status 3 and three second pause."
+	            sleep 3
+	            return 3
+	        fi
+	        echo "regent checks out okay...(good!)"
+	        sleep 0.5
+	        echo "removing regent tempfile..."
+	        rm -f "$TMPFILE"
+	        echo "copy process completed - giving good status code 0"
+	        return 0	        
+	        ;;
+		
+		*) 
+		echo ""
+		echo ""
+		echo "Fatal Error: Too many arguments provided. "
+		echo ""
+		echo "Be advised that $FUNCNAME does not work "
+		echo "on dangling lists of items nor does it allow"
+		echo "more than one to be renamed from many, or vice-versa!"
+		;;		
+	esac
+	
+	echo "giving not-good status 2 and second pause"
+    for r in 2; do
+    sleep $r; return $r; done
+    
+}
+function rmalias()
+{
+    let AX_MRM_CA++
+    case $# in
+        1)  echo "single alias deletion"
+            if [[ -r $AX_BASE/alias/$1 ]]; then
+                declare -i n=0
+                echo "global alias exists..."
+                echo "removing local alias entry..."
+                builtin unalias $1 && let n++
+                echo "removing global physical data..."              
+                rm "$AX_BASE/alias/$1" -f && let n++
+                [[ $n -eq 2 ]] && echo "all removed ok." || { echo "failed (Stop(3))"; return 3; }
+                echo "checking command-name for any new/default meanings..."
+                [[ -r $AX_BASE/func/$1.af ]] && echo "- An autox.func with same name still exists" && let r++
+                builtin hash -r
+                which $1 && echo "- Command is registered to preceeding binary/script(s)" && let r++
+                whatis --section 1 $1 2>/dev/null && echo "- Name is registered to the following additional program(s) (may not be in PATH)" && let r++
+                [[ $r -lt 1 ]] && echo "no other association (a free command name)"
+                [[ $r -ge 1 ]] && echo "$r other usage(s)"
+            else
+                echo "Alias \"$1\" not defined globally"                
+                if [[ ${#BASH_ALIASES[$1]} -eq 0 ]]; then
+                    echo "Alias \"$1\" not defined locally"
+                else
+                    echo "removing local-only alias \"$1\"..."
+                    if builtin unalias "$1"; then
+                        echo "remove succeeded"
+                        if [[ ${#BASH_ALIASES[$1]} -eq 0 ]]; then
+                            echo "remove re-verified OK, giving status 0"
+                            let AX_MRM_CT++
+                            return 0
+                        else
+                            echo "remove cannot be verified"
+                            echo "giving status 1, but succeeding"
+                            return 1
+                        fi
+                    else
+                        echo "remove NOT okay, giving status 2, failing..."
+                        return 2
+                    fi
+               fi
+         fi
+         echo "remove function unstable (code reached unreachable point)"
+         echo "giving status 4, failing..."
+         return 4
+         ;;
+    *)
+        echo "Incorrect number of arguments ($#)"
+        echo "use mrmalias to remove more than one alias at a time!"        
+        echo "usage: $FUNCNAME [alias]"
+        echo "removes alias [alias] from local and/or global alias table entries"
+        echo "return values:"
+        echo " 0 = removed, fully verified "
+        echo " 1 = removed, unverifiable"
+        echo " 2 = unremoved"
+        echo " 3 = incorrect # of args (here)"
+        echo " 4 = unstable/corrupt function state (bad!)"
+        echo " ? = should NEVER get these!"
+        echo
+        echo "returning state 3 (inoa $#)"
+        return 3
+        ;;
+    esac                
+    echo "returning function state bad, 4, failed!"
+    return 4
+
+}
+function iswildcard()
+{
+    # TODO: right now depends on isregex() is false as well, maybe we shouldn't
+    if [[ "$*" =~ (\*|\?) ]]; then
+        if ! isregex "$@"; then
+            return 0
+        fi
+    fi
+    return 1
+
+}
+function isregex()
+{
+    # TODO: make a bit more elaborate with some taintchecking??
+    # NOTE: dont call iswildcard() because this would introduce a cycle
+    ls | perl -wne '/'$1'/'
+    case $? in
+        0)  return 0;;
+        *)  return 1;;
+    esac
+}
+
+function mrmalias()
+{
+    declare -gi AX_MRM_CT=0 AX_MRM_CA=0
+    case $# in
+        0)  echo "usage: $FUNCNAME [alias] [...] | <wildcards> | <regular expressions>"        
+            return 2
+            ;;            
+            
+        1)  if [[ $1 == "--help" || $1 == "-?" ]]; then
+                mrmalias
+                return
+            fi
+            ;&
+            
+        *)  
+            for i in "$@"; do  
+                # GAZE UPON SECT              
+                ISWC=0 ISREGEX=0 ISNORMAL=0
+                if isregex "$i"; then
+                    ISREGEX=1                    
+                elif iswildcard "$i"; then
+                    ISWC=1
+                else
+                    ISNORMAL=1
+                fi
+                
+                # ACT UPON SECT                                
+                if (( ! ISNORMAL )); then                    
+                    if (( ISWC )); then
+                        # perform wildcard expansion on item
+                        mapfile -t SUBITEMS < <(find "$AX_BASE/alias" -iname "$i" -printf '%f\n' )
+                    else
+                        # perform regex expansion on item
+                        mapfile -t SUBITEMS < <(find "$AX_BASE/alias" -regex "$i" -printf '%f\n' )
+                    fi
+                    if [[ ${#SUBITEMS[@]} -gt 0 ]]; then
+                        echo "added ${#SUBITEMS[@]} more matches from wild/regex entry..."
+                        for si in "${SUBITEMS[@]}"; do
+                            rmalias "$si"
+                            echo "$si"
+                        done
+                    else                                                           
+                        echo "no matches from $i: sorry, wilcard/regex feature may not fully currently available... but will try"
+                    fi
+                    continue
+                else                    
+                    rmalias "$i"
+                    echo "$i"
+                fi                                                        
+            done
+            echo "Process Completed."
+            echo "After calling for $AX_MRM_CA aliases to be removed, we are"
+            echo "done, having removed $AX_MRM_CT alias(es) in all."
+           
+        ;; #<## END OF "*)" block in "case $# in"      
+    esac                   
+      
+        
+}
+
 
 function alias()
 {

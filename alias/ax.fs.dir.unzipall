@@ -1,0 +1,1 @@
+alias ax.fs.dir.unzipall='unzip *;true debug echo extraparams='

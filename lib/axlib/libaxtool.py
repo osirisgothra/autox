@@ -3,7 +3,7 @@ axlib.libaxtool (residing in libaxtool.py)
 main class for the axtool command
 
 this class is created, and ran
-it returns a single value that is passed
+it retur    ns a single value that is passed
 back to the operating system in the form
 of a numeric error code:
 

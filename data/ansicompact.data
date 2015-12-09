@@ -1,0 +1,48 @@
+[0m[1;32m80x25[36m [0;32mCompact ANSI Code List             [1;30m([0;33mtype[1;30m [33m"[37mansicodes[33m"[30m [0;33mfor detailed info[1;30m)[0;37m  
+[A[79C 
+[1;30m-----------------.-------------------.--------------------.--------------------
+[A[79C-
+[37mCode  Effect[0m     [1;30m|[0;37m [1mCode [0m [1mEffect      [30m|[37m Code  Effect       [30m|[37m Code  Effect       
+[A[79C 
+[0mA     CursorUp   [1;30m|[0;37m B     CursorDown  [1;30m|[0;37m C     CursorRight  [1;30m|[0;37m D     CursorLeft   
+[A[79C 
+E     Down&Col0  [1;30m|[0;37m F     Up&Column0  [1;30m|[0;37m G     MoveToColumn [1;30m|[0;37m H     MoveToPos    
+[A[79C 
+J     EraseScr   [1;30m|[0;37m K     EraseLine   [1;30m|[0;37m S     ScrlPageUp   [1;30m|[0;37m T     ScrlPageDown 
+[A[79C 
+f     CursorPos  [1;30m|[0;37m m     CharAttr    [1;30m|[0;37m 6n    EchoPos      [1;30m|[0;37m s     SavePos      
+[A[79C 
+u     RestorePos [1;30m|[0;37m ?25l  HideCursor  [1;30m|[0;37m ?25h  ShowCursor   [1;30m|[0;37m I     GXBASE Code  
+[A[79C 
+[1;30m-----------------+-------------------+--------------------+--------------------
+[A[79C-
+[37mAttr  Effect     [30m|[37m Attr  Effect      [30m|[37m Attr  Effect       [30m|[37m Attr  Effect     [0m  
+[A[79C 
+0     unset all  [1;30m|[0;37m 1     [1mhighlight[0m   [1;30m|[0;37m 2     lowlight     [1;30m|[0;37m 3     italic/emph. 
+[A[79C 
+4     underlined [1;30m|[0;37m 5     [5mblinking[0m    [1;30m|[0;37m 7     [30;47minverse[40m [37m     [1;30m|[0;37m 8     hidden       
+[A[79C 
+9     strikeout  [1;30m|[0;37m 10    reset font  [1;30m|[0;37m 11-19 set font 1-9 [1;30m|[0;37m 20-29 unset attr   
+[A[79C 
+30-37 [31mt[32me[33mx[34mt[37m [35mc[36mo[37ml[1;30mo[31mr[0;37m [1;30m|[0;37m 40-47 [41mb[1;42ma[0;43mc[44mk[40m [45mc[30;46mo[47ml[1;37;41mo[42mr[0;40m  [1;30m|[0;37m 51   [1;41m[[0;40mframed[1;41m][0;40m      [1;30m|[0;37m 52   [1;41m([0;40mencircled[1;41m)[0;40m   
+[A[79C 
+53    overlined  [1;30m|[0;37m 54-55 unset 51-53 [1;30m|[0;37m 48;5; [1;33;42m2[41m5[43m6[46m-[44mc[45mo[41ml[42mo[46mr[45m-[44mb[41mg[0;37;40m [1;30m|[0;37m 38;5; [31m2[32m5[33m6[34m-[35mc[36mo[37ml[1;31mo[32mr[35m-[33mf[34mg[0;37m 
+[A[79C 
+[1;30m-----------------+-------------------+--------------------+--------------------
+[A[79C-
+[37mCode  Dim[0m/[1mBright [30m|[37m Code  Dim[0m/[1mBright  [30m|[37m Code  Dim[0m/[1mBright   [30m|[37m Code  Dim[0m/[1mBright  [0m 
+[A[79C 
+0     [30;47mBlack[37;40m/[1;30mGrey[0;37m [1;30m|[0;37m 1     [31mMaroon[37m/[1;31mRed[0;37m  [1;30m|[0;37m 2     [32mGreen[37m/[1;32mLime[0;37m   [1;30m|[0;37m 3     [33mBrown[37m/[1;33mYellow[0;37m 
+[A[79C 
+4     [34mMavy[37m/[1;34mBlue[0;37m  [1;30m|[0;37m 5     [35mPurple[37m/Pink [1;30m|[0;37m 6     [36mTeal[37m/[1;36mCyan[0;37m    [1;30m|[0;37m 7     Silver/[1mWhite[0m 
+[A[79C 
+8[33m/[37m9   [1;35mR[36me[33ms[31me[0;35mt[37m [1;34mH[33mu[31me[0;37m  [1;30m|[0;37m 8;5;[1mx[0m [31m2[32m5[34m6[37mcolor [1mx[0m  [1;30m|[0;37m A     [1;31mG[0;31mx[1mb[0;37m [31mM[1ma[0;31mc[1mr[0;31mo[37m [1;31m1[0;37m  [1;30m|[0;37m B     [1;32mG[0;32mx[1mb[0;37m [32mM[1ma[0;32mc[1mr[0;32mo[37m [1;32m2[0;37m  
+[A[79C 
+[1;30m-----------------^-------------------+--------------------^--------------------
+[A[79C-
+[37mCode  Value/Action Result            [30m|[37m Code  Value/Action   Result  [0m           
+[A[79C 
+8;5;x +1           [31mI[1mn[0;31mc[1mr[0;31me[1ma[0;31ms[1me[0;31m Red Hue[37m  [1;30m|[0;37m 8;5;x +6             [32mI[1mn[0;32mc[1mr[0;32me[1ma[0;32ms[1me[0;32m Green Hue[37m 
+[A[79C 
+8;5;x +36          [34mI[1mn[0;34mc[1mr[0;34me[1ma[0;34ms[1me[0;34m Blue Hue[37m [1;30m|[0;37m 8;5;x 252/(+1)(<256) [1mG[0mr[1;30me[0;37my[1ms[0mc[1;30ma[0;37ml[1me[0m [1mC[0mo[1;30ml[0;37mo[1mr[0ms   
+[0m

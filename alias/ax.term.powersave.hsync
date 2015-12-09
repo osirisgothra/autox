@@ -1,0 +1,1 @@
+alias ax.term.powersave.hsync='setterm --powersave hsync'
