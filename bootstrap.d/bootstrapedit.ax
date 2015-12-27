@@ -24,7 +24,7 @@ __axbe_loader()
 			if ! perl -we 'use v5.16' &> /dev/null; then
 				echo "$msghdr perl version is less than 5.16, please upgrade your perl to use it!"
 			else
-				echo "* AX Blind Edit Feature Enabled (type axbe --help for more)"
+				echo "\e[1m*\e[0m AX Blind Edit Feature Enabled (type axbe --help for more)"
 				NOUNSET=1
 			fi
 		else

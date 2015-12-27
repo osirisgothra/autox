@@ -1,0 +1,1 @@
+alias ax.dynamic.generators.nano="if [[ \$TERM == linux ]]; then alias nano='nano --syntax=none'; else alias nano='env TERM=xterm-256color nano'; fi; echo ok"

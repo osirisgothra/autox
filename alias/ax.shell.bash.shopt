@@ -1,0 +1,1 @@
+alias ax.shell.bash.shopt='builtin shopt | perl -wpe '\''s/^(\S{1,11})(\S{12,})?/$1/g'\'' | column'

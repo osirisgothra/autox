@@ -1,1 +1,1 @@
-alias nano='nano'
+alias nano='env TERM=xterm-256color nano'

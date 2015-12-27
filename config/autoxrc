@@ -59,4 +59,6 @@ prefixer_warnings=0
 weatherlocation=/US/PA/Pittsburgh
 
 [templates]
-masterheader=filetemplate-header
+
+[sudo]
+warn_sudo_duplicate=2

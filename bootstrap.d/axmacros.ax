@@ -29,9 +29,9 @@
 
 if [[ $AX_MACROS_LOADED -eq $$ ]]; then
 	[[ -v AX_DEBUG_LOG ]] && echo "$BASH_SOURCE not reloading macros on same process (PID=$$)" >> $AX_DEBUGLOG
-	return 0;
+	return 0
 else
-	echo "* Bash Extended Environmental Macros"
+	echo "\e[1m*\e[0m Bash Extended Environmental Macros"
 	if [[ ! -d $AX_BASE || ! -r $AX_BASE || ! -w $AX_BASE ]]; then
 		echo "Error: AX_BASE is not fully acessible in $BASH_SOURCE"
 	fi
@@ -104,7 +104,7 @@ else
 		local CHARITEM=${1:--}
 		if (( (CAPS < 1) + (CAPS % 2) == 0 )); then
             # caps are valid (a nonzero even positive integer)
-            true IN DEVELOPMENT PLACEHOLDER        
+            true IN DEVELOPMENT PLACEHOLDER
         else
             true IN DEVELOPMENT PLACEHOLDER
         fi
@@ -122,19 +122,22 @@ else
 		[[ $COLORFG == NONE ]] || echo -ne '[0m'
 		return $R
 	 }
-	 clear()
+	 #TODO: from clear() to ax.term.clear.failsafe() due to func overlap
+	 function ax.term.clear.failsafe()
 	 {
-		if tput sgr0 &&	tput clear; then
+		if ((AX_CLEAR_DIRECT<1)) && tput sgr0 && tput clear; then
+		    export AX_CLEAR_DIRECT=0
 			return 0
 		else
-			if infocmp | grep clear; then
+			if [[ $AX_CLEAR_DIRECT == 1 ]] || infocmp | grep clear; then
+			    export AX_CLEAR_DIRECT=1
 				echo -ne "\e[2J\e[0m"
 			else
+			    export AX_CLEAR_DIRECT=2
 				# last resort old fashioned way
 				for ((i=0;i<1000;i++)); do echo; done
 			fi
 		fi
-
 	 }
 
 fi

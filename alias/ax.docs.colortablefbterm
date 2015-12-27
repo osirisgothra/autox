@@ -1,0 +1,1 @@
+alias ax.docs.colortablefbterm='cat $AX_BASE/data/colortablefbterm.data'

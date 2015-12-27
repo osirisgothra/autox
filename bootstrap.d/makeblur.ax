@@ -44,9 +44,16 @@
 
 # do not run outside of X sessions
 [[ $AX_ON_XSESSION != yes ]] && return 1
+if xprop -root &> /dev/null; then
+    function xprop()
+    {
+        return 1
+    }
+fi
 
 function makeblur()
 {
+
 unset -f $0
 unset PICK_WINDOW IGNORE_NOKDE
 unset DO_UNBLUR
@@ -147,7 +154,7 @@ fi
 # entry point
 function __makeblur_loader()
 {
-	echo -n "* Terminal Blur (type makeblur) for KDE Terminals - "
+	echo -n "\e[1m*\e[0m Terminal Blur (type makeblur) for KDE Terminals - "
 	if xprop -root | grep KDE -qn || [[ $(ax.config makeblur_no_kde_test) == yes ]]; then
 		local AXLOG=$AX_BASE/logs/${FUNCNAME//_/}.log
 		whoami
@@ -167,7 +174,7 @@ function __makeblur_loader()
 			
 		fi
 	else
-		echo "Standby (KDE Session Not Running)"
+		echo "(unavailable)"
 	fi
 	if ! ax.config.has makeblur_disable; then
 		# first time run, set up default setting(s)

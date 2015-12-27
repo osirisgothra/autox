@@ -27,10 +27,11 @@
 
 __dynalias_loader()
 {
-	echo -ne "* Dynamic Alias Init Call Generators ["
+	echo -e "\e[1m*\e[0m Dynamic Alias Init Call Generators:"
+	echo -ne "\e[s"
 	if [[ -z $AX_DYN_ALIAS_DISABLE ]]; then
         local IFS=$'\n'
-        local n=0
+        local ncount=0
         # TODO: possibly move assignment of AX_DYN_ALIASES to autox
         #       when/if needed by other parts of the autox source
         #       tree.
@@ -38,27 +39,28 @@ __dynalias_loader()
         #       at least 6 months (11/2015, expires in 5/2016)
         AX_DYN_ALIASES=( $(cat $AX_BASE/data/dynaliases.data) )
         for x in "${AX_DYN_ALIASES[@]}"; do
-            if [[ $n > 0 ]]; then
-                echo -ne " "
-            fi
-            let n++
-            echo -ne "$x=["
+            let ncount++
+            echo -ne "\e[0;32m\t$x\e[30;1m=[\e[1;32m"
             local TMPFILE=$(mktemp)
             cat "$AX_BASE/alias/$x" | sed -r 's/^alias [^=]+=[[:punct:]](.*)[[:punct:]]$/\1/g' > $TMPFILE
-            source "$TMPFILE" | tr '\n' '|'
-            echo -ne "]"
+            source "$TMPFILE" | tr '\n' '|' | sed 's/|$//g'
+            echo -e "\e[30;1m]\e[0m"
             rm -f "$TMPFILE"
             unset TMPFILE
         done
-        let n--
-        if [[ n < 1 ]]; then
-            n="none"
+        if [[ $ncount < 1 ]]; then
+            $ncount="no"
         fi
-        echo -ne " (\e[1m$n were ran\e[0m)"
+        if [[ $ncount == 1 ]]; then
+            S=""
+        else
+            S=s
+        fi
+        echo -ne "\t\e[1m${ncount}\e[0m generator${S} were ran\e[1;30m.\e[0m"
     else
         echo "Dynamic Aliases Disabled"
     fi
-    echo -e "]"
+    echo -e "\e[u"
 	unset -f $FUNCNAME
 }
 

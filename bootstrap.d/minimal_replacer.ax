@@ -1,6 +1,6 @@
 #!/bin/bash -c 'echo dont execute this in this manner!' --
 
-echo -n "* Minimalist Completions Replaced by LongOpt Scanner"
+echo -n "\e[1m*\e[0m Minimalist Completions Replaced by LongOpt Scanner"
 if ! ax.isreadonlyfunc _minimal; then
 	echo " - Defined"
 	_minimal() { _longopt "$@"; }

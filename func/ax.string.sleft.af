@@ -1,0 +1,7 @@
+ax.string.sleft () 
+{ 
+    local l=${1- 0};
+    shift;
+    local s="$*";
+    echo "${s: 0:$l}"
+}

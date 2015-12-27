@@ -1,14 +1,20 @@
 #!/bin/bash
-if xprop --root &> /dev/null; then
+if xprop -root &> /dev/null; then
 	AX_ON_XSESSION=yes
 else
 	AX_ON_XSESSION=no
 	return 1
 fi
 
-if KDE_SESSION_VERSION=`xprop -notype -root KDE_SESSION_VERSION 2>/dev/null | grep -P '[0-9]+' -o 2> /dev/null`; then
+if xprop -notype -root KDE_SESSION_VERSION 2 &> /dev/null; then
+    export AX_KDE_SESSION_ACTIVE=NO
+else
+    export AX_KDE_SESSION_ACTIVE=YES
+fi
 
-	echo "* KDE Session (Version $KDE_SESSION_VERSION) Detected"
+if [[ $AX_KDE_SESSION_ACTIVE == YES ]] &&  KDE_SESSION_VERSION=`xprop -notype -root KDE_SESSION_VERSION 2>/dev/null | grep -P '[0-9]+' -o 2> /dev/null`; then
+
+	echo "\e[1m*\e[0m KDE Session (Version $KDE_SESSION_VERSION) Detected"
 	export AX_KDE_SESSION=TRUE
 	# TODO: soft-set the following - these are just 'placehodlers'
 	export GS_LIB="$HOME/.fonts"

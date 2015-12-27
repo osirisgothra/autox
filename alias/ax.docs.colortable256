@@ -1,0 +1,1 @@
+alias ax.docs.colortable256='cat $AX_BASE/data/colortable256.data'

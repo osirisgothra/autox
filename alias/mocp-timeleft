@@ -1,0 +1,1 @@
+alias mocp-timeleft='echo $[ `mocp --format "%ts"` - `mocp --format "%cs"` ]'

@@ -60,6 +60,20 @@
 #      REVISION: 09/04/2015 10:54
 #===============================================================================
 
+#### 0. shopt pre-set (temporary)
+
+# TODO: if more than one of these get set, please then move
+#       this operation into a function of some sort, because
+#       it will be a LOT of typing if you dont!
+#       the first 3 lines are for foolproof cleanup of what happens on line 4:
+#       and, remember each AX_SHOPT_?? that gets created must be run and unset
+
+export AX_SHOPT_PRESET_XPGECHO="$(mktemp)"
+shopt -p xpg_echo >> "$AX_SHOPT_PRESET_XPGECHO"
+echo "rm $AX_SHOPT_PRESET_XPGECHO -f" >> "$AX_SHOPT_PRESET_XPGECHO"
+echo "unset AX_SHOPT_PRESET_XPGECHO" >> "$AX_SHOPT_PRESET_XPGECHO"
+shopt -s xpg_echo
+
 
 ####
 #### 1. GLOBALLY ACCESSABLE VARIABLES
@@ -76,6 +90,7 @@ declare -gixa AX_RUN_COUNT[$$]=$(( ${AX_RUN_COUNT[$$]} + 1))
 ###
 ### 2. FUNCTIONS
 ###
+
 
 function ax.config()
 {
@@ -504,9 +519,9 @@ function tubby()
 function __generic_use()
 {
 	[[ -z $1 ]] && set "(no arguments)"
-	echo "usage: $(caller 0) $1"		
+	echo "usage: $(caller 0) $1"
 	shift
-	for x do echo "       $x"; done	
+	for x do echo "       $x"; done
 }
 function cpalias()
 {
@@ -515,24 +530,24 @@ function cpalias()
 		0) echo "usage: $FUNCNAME [srcaliasname] [dstaliasname]";;
 		1) echo "Not enough arguments, please specify both an srcaliasname AND a dstaliasname!!";;
 		2)
-		
-		# $ ` " ' 
+
+		# $ ` " '
 		# |  & ; ( ) < > space tab
-				
+
 		#2# sanity checks
 		    function failing() { echo "failed: ERROR, $*, please check and try again!"; unset -f "$FUNCNAME"; return 2; }
 		    local SRCEXISTS=1 DSTNOEXISTS=1 LEGALNAMES=1
-		    [[ "$1$2" =~ [\]\[$\`\"\'\|\&\;\(\)\<\>{}\#\*\?\/\\=]+ ]] && LEGALNAMES=0		    		   
+		    [[ "$1$2" =~ [\]\[$\`\"\'\|\&\;\(\)\<\>{}\#\*\?\/\\=]+ ]] && LEGALNAMES=0
 	        [[ -r $AX_BASE/alias/$1 ]] || SRCEXISTS=0
 	        [[ -r $AX_BASE/alias/$2 ]] && DSTNOEXISTS=0
 	        # failing on any of:
-	        [[ $SRCEXISTS -eq 0 ]] && failing "source alias doesnt exist!"; return
-	        [[ $DSTNOEXISTS -eq 0 ]] && failing "destination alias already exists!"; return
+	        [[ $SRCEXISTS -eq 0 ]] && { failing "source alias doesnt exist!"; return; }
+            [[ $DSTNOEXISTS -eq 0 ]] && { failing "destination alias already exists!"; return; }
 	        [[ $LEGALNAMES ]] && failing "the name \"$1\" and \"$2\" must BOTH be legal alias names, but they are not!"
 	    #3# gathering of data, perparation to copy
 	        perl -wpe "s/(?<=alias )$1(?==)/$2/g" "$AX_BASE/alias/$1" > $AX_BASE/alias/$2
 	    #4# verification thereof, using sha1sum [reverse conversion]
-	        echo 'verifing alias copied via reverse checksum...'	        
+	        echo 'verifing alias copied via reverse checksum...'
 	        echo 'generating tempfile...'
 	        TMPFILE=$(mktemp)
 	        echo 'generating checksum file...'
@@ -555,10 +570,10 @@ function cpalias()
 	        echo "removing regent tempfile..."
 	        rm -f "$TMPFILE"
 	        echo "copy process completed - giving good status code 0"
-	        return 0	        
+	        return 0
 	        ;;
-		
-		*) 
+
+		*)
 		echo ""
 		echo ""
 		echo "Fatal Error: Too many arguments provided. "
@@ -566,13 +581,13 @@ function cpalias()
 		echo "Be advised that $FUNCNAME does not work "
 		echo "on dangling lists of items nor does it allow"
 		echo "more than one to be renamed from many, or vice-versa!"
-		;;		
+		;;
 	esac
-	
+
 	echo "giving not-good status 2 and second pause"
     for r in 2; do
     sleep $r; return $r; done
-    
+
 }
 function rmalias()
 {
@@ -584,7 +599,7 @@ function rmalias()
                 echo "global alias exists..."
                 echo "removing local alias entry..."
                 builtin unalias $1 && let n++
-                echo "removing global physical data..."              
+                echo "removing global physical data..."
                 rm "$AX_BASE/alias/$1" -f && let n++
                 [[ $n -eq 2 ]] && echo "all removed ok." || { echo "failed (Stop(3))"; return 3; }
                 echo "checking command-name for any new/default meanings..."
@@ -595,7 +610,7 @@ function rmalias()
                 [[ $r -lt 1 ]] && echo "no other association (a free command name)"
                 [[ $r -ge 1 ]] && echo "$r other usage(s)"
             else
-                echo "Alias \"$1\" not defined globally"                
+                echo "Alias \"$1\" not defined globally"
                 if [[ ${#BASH_ALIASES[$1]} -eq 0 ]]; then
                     echo "Alias \"$1\" not defined locally"
                 else
@@ -623,7 +638,7 @@ function rmalias()
          ;;
     *)
         echo "Incorrect number of arguments ($#)"
-        echo "use mrmalias to remove more than one alias at a time!"        
+        echo "use mrmalias to remove more than one alias at a time!"
         echo "usage: $FUNCNAME [alias]"
         echo "removes alias [alias] from local and/or global alias table entries"
         echo "return values:"
@@ -637,7 +652,7 @@ function rmalias()
         echo "returning state 3 (inoa $#)"
         return 3
         ;;
-    esac                
+    esac
     echo "returning function state bad, 4, failed!"
     return 4
 
@@ -668,30 +683,30 @@ function mrmalias()
 {
     declare -gi AX_MRM_CT=0 AX_MRM_CA=0
     case $# in
-        0)  echo "usage: $FUNCNAME [alias] [...] | <wildcards> | <regular expressions>"        
+        0)  echo "usage: $FUNCNAME [alias] [...] | <wildcards> | <regular expressions>"
             return 2
-            ;;            
-            
+            ;;
+
         1)  if [[ $1 == "--help" || $1 == "-?" ]]; then
                 mrmalias
                 return
             fi
             ;&
-            
-        *)  
-            for i in "$@"; do  
-                # GAZE UPON SECT              
+
+        *)
+            for i in "$@"; do
+                # GAZE UPON SECT
                 ISWC=0 ISREGEX=0 ISNORMAL=0
                 if isregex "$i"; then
-                    ISREGEX=1                    
+                    ISREGEX=1
                 elif iswildcard "$i"; then
                     ISWC=1
                 else
                     ISNORMAL=1
                 fi
-                
-                # ACT UPON SECT                                
-                if (( ! ISNORMAL )); then                    
+
+                # ACT UPON SECT
+                if (( ! ISNORMAL )); then
                     if (( ISWC )); then
                         # perform wildcard expansion on item
                         mapfile -t SUBITEMS < <(find "$AX_BASE/alias" -iname "$i" -printf '%f\n' )
@@ -705,23 +720,23 @@ function mrmalias()
                             rmalias "$si"
                             echo "$si"
                         done
-                    else                                                           
+                    else
                         echo "no matches from $i: sorry, wilcard/regex feature may not fully currently available... but will try"
                     fi
                     continue
-                else                    
+                else
                     rmalias "$i"
                     echo "$i"
-                fi                                                        
+                fi
             done
             echo "Process Completed."
             echo "After calling for $AX_MRM_CA aliases to be removed, we are"
             echo "done, having removed $AX_MRM_CT alias(es) in all."
-           
-        ;; #<## END OF "*)" block in "case $# in"      
-    esac                   
-      
-        
+
+        ;; #<## END OF "*)" block in "case $# in"
+    esac
+
+
 }
 
 
@@ -1105,7 +1120,7 @@ if [[ -r ~/.ax_lowlevel_debug_messages ]]; then
             # pass to builtin, maybe
             if enable | grep -Pnqw $1; then
                 builtin "$@"
-            fi 
+            fi
         fi
         if ax.config.has debug_pause; then
             echo "[Press Any Key]"
@@ -1218,6 +1233,19 @@ if ax.config.has hatewhitespace; then
 else
 	echo "";
 fi
+
+# Z. shopt post-set (cleanup temp)
+#    the good news is each cleanup stub sets the value
+#    to it's original state, removes the stub file, and
+#    frees the variables in memory referring to it, no
+#    additional action must be taken, and no reference will
+#    be left behind after the execution of each item.
+#    TODO: see counter-part section 0. where we explain the
+#          meanings of these items. Also, the multi-storage
+#          will mean yet another variable, AX_SHOPT_PRESET_VALUES[@]
+#          not now though!
+
+source "$AX_SHOPT_PRESET_XPGECHO"
 
 
 # END OF SCRIPT

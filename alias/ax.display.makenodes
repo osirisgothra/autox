@@ -1,1 +1,1 @@
-alias ax.display.makenodes='n=0;for i in $(ax.display.listoutputs); do     let n++;    alias ax.display.$n="ax.display.xr $i";     echo "dev$n: $i";     alias ax.display.$n.setmode="ax.display.setmode $i"; done'
+alias ax.display.makenodes='xprop -root &> /dev/null && { echo "ok"; n=0;for i in $(ax.display.listoutputs); do     let n++;    alias ax.display.$n="ax.display.xr $i";     echo "dev$n: $i";     alias ax.display.$n.setmode="ax.display.setmode $i"; done; } || echo "nohires"'

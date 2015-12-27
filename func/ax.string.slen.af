@@ -1,0 +1,4 @@
+ax.string.slen () 
+{ 
+    ax.string.len "$*"
+}

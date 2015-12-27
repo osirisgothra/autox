@@ -1,0 +1,21 @@
+sudo()
+{
+    if [[ "$1" != "--AX_HARD_SKIP" ]]; then           
+        if ! ax.config.has warn_sudo_duplicate; then
+            ax.config.set warn_sudo_duplicate 1
+        fi
+        local wsv=$(ax.config.get warn_sudo_duplicate || echo 1)
+        if [[ $wsv -ne 0 ]]; then
+            if alias $1 |& grep -oqn sudo || declare -pf $1 |& grep sudo; then
+                echo "warning: the command \"$1\" seems to already use sudo, use of sudo probably not needed!"        
+                if [[ $wsv -ne 2 ]]; then
+                    echo "         (you can set warn_sudo_duplicate=0 if you want to disable this message"
+                    echo "          or warn_sudo_duplicate=2 to remove this sidenote)"
+                fi
+            fi
+        fi
+    fi
+    # be transparent
+    `which sudo` "$@" 
+    return $?       
+}

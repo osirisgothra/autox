@@ -1,0 +1,9 @@
+ax.task.command () 
+{ 
+    echo "[2A[2K[0G[1mbuiltin[32m command[34m $*[0m"
+    builtin command "$@"
+    local r=$?
+    declare -ax AX_TASK_COMMAND_RETVAL
+    AX_TASK_COMMAND_RETVAL+=( $r )
+    return $r
+}

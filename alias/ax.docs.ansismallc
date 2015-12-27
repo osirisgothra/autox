@@ -1,0 +1,1 @@
+alias ax.docs.ansismallc='cat $AX_BASE/data/ansismallc.data'

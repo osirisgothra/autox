@@ -39,7 +39,7 @@ source $AX_BASE/bootstrap.d/axmacros.ax
 
 if [[ $- =~ i ]]; then
 	if ax.isreadonlyfunc command_not_found_handle; then
-		echo "* Skipping Prefixer, Already Claimed"
+		echo "\e[1m*\e[0m Skipping Prefixer, Already Claimed"
 	else
 		let AX_PREFIXER_LOAD_COUNT++
 
@@ -50,8 +50,8 @@ if [[ $- =~ i ]]; then
 		# cannot use ! prefixes w/o
 		set +H
 
-		echo -e "* Added Shell Feature: Rename Shell Function (mvfunc)"
-		echo -e "* Enabling Special Prefixes \e[1m!\e[0m and \e[1m@\e[0m for \e[1msudo\e[0m and \e[1mcoproc\e[0m +more"
+		echo -e "\e[1m*\e[0m Added Shell Feature: Rename Shell Function (mvfunc)"
+		echo -e "\e[1m*\e[0m Enabling Special Prefixes \e[1m!\e[0m and \e[1m@\e[0m for \e[1msudo\e[0m and \e[1mcoproc\e[0m +more"
 		TMPFILE=$(mktemp)
 
 		# renames command_not_found_handle to cnfh_stub

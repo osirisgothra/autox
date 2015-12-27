@@ -1,0 +1,7 @@
+ax.string.len () 
+{ 
+    for s in "$@";
+    do
+        echo "${#s}";
+    done
+}

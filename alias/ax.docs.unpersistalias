@@ -1,0 +1,1 @@
+alias ax.docs.unpersistalias='cat $AX_BASE/data/unpersistalias.data'

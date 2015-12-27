@@ -4,7 +4,7 @@ function ax.tests.whitespace()
 { 
     if [[ -z "" ]] && [[ -n " " ]] && [[ ! -r "/dev/not a filename" ]]; then
         if [[ -n "$AX_WHITESPACE" ]]; then
-            echo "* Whitespace Handling OK"
+            echo "\e[1m*\e[0m Whitespace Handling OK"
             unset AX_WHITESPACE
         fi
         return 0

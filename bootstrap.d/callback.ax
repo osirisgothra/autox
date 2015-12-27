@@ -50,7 +50,7 @@ __callback()
 __callback_loader()
 {
 	# TODO: Change to dynamic when development is done
-	echo "* Callback Hooking: Not Enabled (in development!)"
+	echo "\e[1m*\e[0m Callback Hooking: Not Enabled (in development!)"
 	# TODO: enable this line when development is finished
 	# __callback ENABLE_CALLBACK_HOOK
 	unset -f $FUNCNAME

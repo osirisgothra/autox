@@ -1,1 +1,0 @@
-alias xprop2='_xprop2() { unset -f _xprop2; command xprop $@ | grep -vP '\''^(\s|\t|$|_NET_SUPPORTED|_NET_WM_ICON|_?QT|RESOURCE).*'\''; };_xprop2'

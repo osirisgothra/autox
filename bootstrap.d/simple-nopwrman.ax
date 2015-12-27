@@ -8,14 +8,14 @@ BUL="${BOLD}*${OFF}"
 
 echo -n "$BUL DPMS/X Power Manager Functions: "
 
-if xprop -root &> /dev/null; then
+if command xprop -root &> /dev/null; then
 	if [[ $1 == on ]]; then
 		SCREEN_OFF_ENABLE=1
 		echo -n " (explicit-on) "
 	elif [[ $1 == off ]]; then
 		unset SCREEN_OFF_ENABLE
 		echo -n " (explicit-off) "
-	fi	
+	fi
 	if [[ -v SCREEN_OFF_ENABLE ]]; then
 		echo "mstr/blank/dpms: ON"
 		xset s on
@@ -26,7 +26,7 @@ if xprop -root &> /dev/null; then
 		xset s off
 		xset s noblank
 		xset -dpms
-	fi	
-else	
+	fi
+else
 	echo "None (not connected to X server)"
 fi

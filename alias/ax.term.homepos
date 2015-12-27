@@ -1,0 +1,1 @@
+alias ax.term.homepos='$(echo "[${AX_CURHOME_X};${AX_CURHOME_Y}H")'

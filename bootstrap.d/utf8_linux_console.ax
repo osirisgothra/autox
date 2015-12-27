@@ -28,7 +28,7 @@
 __utf8_linux_console_loader()
 {
 	if [[ $TERM == linux ]] && [[ $TTY =~ /dev/tty ]]; then
-		echo "* utf8 console support loaded"
+		echo "\e[1m*\e[0m utf8 console support loaded"
 		
 		# TODO utf8 specific resources
 		

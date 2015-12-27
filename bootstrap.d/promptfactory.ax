@@ -161,12 +161,12 @@ promptfactory_loader()
 {
 
 	if [[ $(declare -p PS1) =~ -r ]]; then
-		echo "* Bypassing PromptFactory Init (init already happened)"
+		echo "\e[1m*\e[0m Bypassing PromptFactory Init (init already happened)"
 	else
 		declare -gr PS1='$(ax.promptfactory PS1 $?)'	PS2='$(ax.promptfactory PS2 $?)'			
 	   	declare -g  PS3="select: "						PS3_CACHE=$PS3	
 	   	# see notes on header(1) for PS3 special case
-		echo "* Prompt Factory Feature Enabled, use 'promptfactory' to edit your Prompts"
+		echo "\e[1m*\e[0m Prompt Factory Feature Enabled, use 'promptfactory' to edit your Prompts"
 	fi
 	unset -f $FUNCNAME
 }

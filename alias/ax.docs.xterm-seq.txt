@@ -1,0 +1,1 @@
+alias ax.docs.xterm-seq.txt='cat $AX_BASE/data/xterm-seq.txt'
