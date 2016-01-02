@@ -1,1 +1,0 @@
-alias ax.term.setup.raw='setterm -init; stty -ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr -icrnl -ixon -ixoff -iuclc -ixany -imaxbel -opost -isig -icanon -xcase min 1 time 0'

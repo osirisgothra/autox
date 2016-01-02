@@ -1,1 +1,1 @@
-alias systemctl='echo systemctl is dangerous;echo press ENTER to confirm;read -sn1;sudo -H$REPLY systemctl'
+alias systemctl='echo systemctl is dangerous;echo press ENTER to confirm;read -sn1;${AX_SUDO_PATH} -H$REPLY systemctl'

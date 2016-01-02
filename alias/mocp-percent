@@ -1,1 +1,0 @@
-alias mocp-percent='echo $[ (`mocp --format "%cs"` * 100) / ( `mocp --format "%ts"` * 1) ]'

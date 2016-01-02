@@ -1,1 +1,0 @@
-alias ax.term.unbold='setterm -bold off'

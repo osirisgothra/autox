@@ -1,1 +1,0 @@
-alias bluron='AX_BLUR=ON; makeblur -i; dialog --colors --nook --nocancel --pause "Blur Has Been Enabled, Please Redraw The Display For Changes To Take Effect." $((LINES/4 > 8?LINES/4:8)) $((COLUMNS/2)) 0; clear;true'

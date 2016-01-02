@@ -1,1 +1,0 @@
-alias mem='echo -e "\n$(cat /proc/meminfo | column)\n"'

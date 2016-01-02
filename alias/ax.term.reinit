@@ -1,1 +1,1 @@
-alias ax.term.reinit='setterm --reset; setterm --init; sudo clear'
+alias ax.term.reinit='setterm --reset; setterm --init; ${AX_SUDO_PATH} clear'

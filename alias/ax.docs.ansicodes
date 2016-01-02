@@ -1,1 +1,0 @@
-alias ax.docs.ansicodes='cat $AX_BASE/data/ansicodes.data'

@@ -1,1 +1,0 @@
-alias ax.service.restart='ax.service.action restart'

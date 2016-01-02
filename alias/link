@@ -1,4 +1,0 @@
-METADATA_START
-    a simple alias to the 'elinks' program
-METADATA_END   
-alias link='elinks'

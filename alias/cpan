@@ -1,1 +1,1 @@
-alias cpan='sudo -H cpan'
+alias cpan='${AX_SUDO_PATH} -H cpan'

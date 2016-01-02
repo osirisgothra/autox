@@ -1,1 +1,0 @@
-alias ax.term.hrule.solid='_hrule $(printf "[]")'

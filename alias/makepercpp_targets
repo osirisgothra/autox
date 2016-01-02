@@ -1,1 +1,0 @@
-alias makepercpp_targets='( for i in *.cpp; do echo -n "${i%%.cpp} "; done )'

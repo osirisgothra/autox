@@ -1,1 +1,1 @@
-alias normal='_normal() { PID=`pidof $1`; sudo renice -n 0 -p $PID; sudo ionice -c none -p $PID; echo "Normal (No Special Priority) on $PID ($1)"; shift; if [[ $1 ]]; then _normal "$@"; fi; unset -f _normal; }; _normal'
+alias normal='_normal() { PID=`pidof $1`; ${AX_SUDO_PATH} renice -n 0 -p $PID; ${AX_SUDO_PATH} ionice -c none -p $PID; echo "Normal (No Special Priority) on $PID ($1)"; shift; if [[ $1 ]]; then _normal "$@"; fi; unset -f _normal; }; _normal'

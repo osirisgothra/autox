@@ -1,0 +1,104 @@
+function _detect_terminal()
+{
+    function _fok()
+    {
+        # preserve $? (and global R)
+        local -i R=$?
+        case $1 in
+
+            y)
+                #TODO: I will be changing this when the configuration parcel loader 
+                #      comes into play, change to $AX_CONFIG[no_failterm_msg] instead
+                #      but since it requires dynamic allocation, keeping it offline right now.
+                if ax.config.has no_failterm_msg && [[ $(ax.config.get no_failterm_msg) == 1 ]]; then
+                    true debug echo "config ok no_failterm_msg=1, not showing message even though configured"
+                else
+
+                    if [[ $PREFERRED_TERM ]]; then
+                        echo "*** WARNING, PREFERRED_TERM SET AND IGNORED BECAUSE WE AUTODETECTED OKAY *** (use no_failterm_msg=1 in config to disable warning)"
+                    fi
+                fi
+                ;;
+            n)
+                true debug echo "unsetting _fok (but NOT ok!) :)"
+                ;;
+            *)
+                # dont tolerate rogue values
+                echo "FAILURE: _fok called with a bad value, stop!!!!!"
+                echo "not really, but press ENTER to continue..."
+                read -sn1
+                return 1
+                ;;
+
+        esac
+
+        unset -f _fok
+        return $R
+    }
+    echo -e "\e[1m*\e[0m Detecting Terminal"
+    if whatis $AX_TERMINAL |& grep '\bX\b' | grep 'terminal' | grep 'emulator' &> /dev/null; then
+        echo -e "\e[1m*\e[0m 256color/X-based Terminal (emu=$AX_TERMINAL)"
+        _fok y
+    elif infocmp &>/dev/null; then
+        echo -e "\e[1m*\e[0m Terminal OK (already set and needs no upgrade)"
+        _fok y
+    else
+        echo "WARNING: \$TERM not set, and process under PPID not known, forcing manual detection..."
+	    echo -n "\e[1m*\e[0m Manual Terminal Detection Forced (automatic failed)"
+        # in this day and age, its pretty easy to guess a user's term
+	    # if this is not right for you, please add your own into the config
+    	if ax.config.has custom_terminal; then
+	    	local NEWTERM="$(ax.config.get custom_terminal)"
+    		case $NEWTERM in
+			    keep)	echo "Left Untouched ($TERM)";;
+		    	*) 		echo "Usera-Defined ($NEWTERM)"; TERM="$NEWTERM";;
+	    	esac
+    	else
+    	    # fallback to 256-color when in X11, an emulated X environment,
+    	    # unity8+(mir), or, weston(wayland)
+		    if xprop -root &> /dev/null; then
+	    		TERM="xterm-256color"
+
+    		else
+    			case $(tty) in
+			    	*/*tty*[0-9])
+		    			if [[ -L /vmlinuz ]]; then
+	    					TERM=linux;
+    					else
+						    TERM=cons25;
+					    fi
+				    	;;
+			    	*/pt*)
+	    				if [[ ! -z "$PREFERRED_TERM" ]]; then
+	    				    echo "PREFERRED_TERM variable set: honoring its setting no matter what: $PREFERRED_TERM"
+	    				    export TERM="$PREFERRED_TERM"
+	    				else
+	    				    echo "non-console virtual terminal, with no TERM variable set"
+	    				    echo "failing back to \"ansi\" because it has the best"
+	    				    echo "chance of compatibility and is still readable if not."
+	    				    echo ""
+	    				    echo "hint: set PREFERRED_TERM in your .bashrc if you know"
+	    				    echo "      what your terminal is, or want to force it on fallback"
+	    				    echo "      note that this only works for FAILED detections!"
+	    				    echo ""
+	    				    export TERM=ansi
+	    				fi
+    					# for safety and maximum compatibility
+					    ;;
+				    *)
+			    		# 80-column, no line len, with
+		    			# limited support for Bell, Carriage Returns,
+	    				# Delete,and/or Backspace
+    					TERM=dumb
+				    	;;
+			    esac
+		    fi
+	    	echo " [detected as $TERM]"
+	        _fok n
+    	fi
+	fi
+	# notice: do NOT return anywhere in this function except the last line
+	# because it will cause a memory leak from not cleaning up _fok
+	
+
+}

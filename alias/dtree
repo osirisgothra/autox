@@ -1,0 +1,1 @@
+alias dtree='${AX_SUDO_BIN} tree -d'

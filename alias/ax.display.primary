@@ -1,2 +1,0 @@
-alias ax.display.primary='xrandr | grep primary | sed -r '\''s/^(\S+)(.*)/\1/g'\''
-'

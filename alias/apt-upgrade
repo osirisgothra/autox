@@ -1,1 +1,1 @@
-alias apt-upgrade='sudo nice apt-get update; sudo nice apt-get dist-upgrade --no-remove --yes'
+alias apt-upgrade='${AX_SUDO_PATH} nice apt-get update; ${AX_SUDO_PATH} nice apt-get dist-upgrade --no-remove --yes'

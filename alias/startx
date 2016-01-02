@@ -1,1 +1,0 @@
-alias startx='command startx& disown; logout'

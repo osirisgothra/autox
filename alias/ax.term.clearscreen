@@ -1,1 +1,0 @@
-alias ax.term.clearscreen='echo -ne [0\;0H[3J[2J'

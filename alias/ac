@@ -1,1 +1,0 @@
-alias ac='a_c() { command ls -l --author --color "$@" | less -F -raw --no-init --prompt "$(printf %${COLUMNS}s\ $PWD\ [$*]\ $USER\ $UID)"; };a_c'

@@ -1,1 +1,1 @@
-alias cpln='echo "about to copy 1[source] to 2[dest], as link..."; sleep 2; sudo ln -vs'
+alias cpln='echo "about to copy 1[source] to 2[dest], as link..."; sleep 2; ${AX_SUDO_PATH} ln -vs'

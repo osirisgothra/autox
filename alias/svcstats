@@ -1,1 +1,1 @@
-alias svcstats='echo * | s "s/\.(conf|sh)/\n/g" | while read -a SVC; do [[ $SVC ]] && { printf "%-40s" "$SVC:"; sudo service $SVC status | grep -Po "Active: .+ \(.+\)( since.+ago)?"; }; done'
+alias svcstats='echo * | s "s/\.(conf|sh)/\n/g" | while read -a SVC; do [[ $SVC ]] && { printf "%-40s" "$SVC:"; ${AX_SUDO_PATH} service $SVC status | grep -Po "Active: .+ \(.+\)( since.+ago)?"; }; done'

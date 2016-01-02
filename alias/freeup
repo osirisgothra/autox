@@ -1,1 +1,0 @@
-alias freeup='for i in 1 2 3 4; do echo $i > /proc/sys/vm/drop_caches; sleep 1; echo "$i/4 done";done'

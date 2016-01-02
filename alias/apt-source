@@ -1,1 +1,1 @@
-alias apt-source='sudo apt-get source'
+alias apt-source='${AX_SUDO_PATH} apt-get source'

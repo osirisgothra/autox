@@ -1,1 +1,0 @@
-alias ax.xorg.compositor='xcompmgr -n -c -l -4 -t -4 -r 8 -o 1 &> /dev/console'

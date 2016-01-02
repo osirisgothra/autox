@@ -1,1 +1,1 @@
-alias modin='sudo modprobe'
+alias modin='${AX_SUDO_PATH} modprobe'

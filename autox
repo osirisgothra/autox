@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "$SECONDS/$SECOND: enter autox startup (before here is non-autox startup -- your own stuff)"
 # shellcheck disable=2030
 # [SublimeLinter: exclude="2031,2086"]
 # vim: tw=0:noet:hls:nospell:sw=4:ts=4:fdc=2:fcl=all:fdo=hor:fen:vbs=0:cf:aw
@@ -78,6 +79,10 @@ shopt -s xpg_echo
 ####
 #### 1. GLOBALLY ACCESSABLE VARIABLES
 ####
+
+eval declare -gxA AX_IGNORED_DUPLICATES=( `grep -P '^[^#].*' /ax/data/ignoreduplicates.dat --word-regexp | sed 's/.*/[\0]="1"/g'` )
+declare -gx AX_SUDO_BIN="$(which sudo)"
+[[ -x "$AX_SUDO_BIN" ]] || { echo "SEVERE: sudo binary not executable!! please check settings! STOP"; break; };
 
 declare -gx AX_BASHSOURCE_REAL=$(readlink -e "$BASH_SOURCE" 2> /dev/null || echo none)
 declare -gx AX_BASHSOURCE_LINK="$BASH_SOURCE"
@@ -566,7 +571,7 @@ function cpalias()
 	            return 3
 	        fi
 	        echo "regent checks out okay...(good!)"
-	        sleep 0.5
+	        #sleep 0.5
 	        echo "removing regent tempfile..."
 	        rm -f "$TMPFILE"
 	        echo "copy process completed - giving good status code 0"

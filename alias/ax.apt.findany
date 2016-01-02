@@ -1,0 +1,1 @@
+alias ax.apt.findany='${AX_SUDO_PATH} apt-cache search'

@@ -1,1 +1,0 @@
-alias goto='_goto(){ if ITM=$(readlink -e `which $* || locate -n1 $*`); then R=$?; [[ -d $ITM ]] && cd "$ITM" || cd "$(dirname $ITM)"; else echo "No matches in which(1) or nlocate(1): $ITM"; R=127; fi;unset -f $FUNCNAME; return $R; };_goto'

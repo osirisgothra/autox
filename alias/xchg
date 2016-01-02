@@ -1,1 +1,0 @@
-alias xchg='_xchg(){ local -i R=0; mv "$1" "__xchg_temp__"; let R+=$?; mv "$2" "$1"; let R+=$?; mv "__xchg_temp__" "$2"; let R+=$?; unset -f $FUNCNAME; return $R; }; _xchg'

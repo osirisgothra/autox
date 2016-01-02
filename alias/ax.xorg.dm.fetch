@@ -1,1 +1,0 @@
-alias ax.xorg.dm.fetch='mapfile -t AX_XORG_DEFDM <  /etc/X11/default-display-manager; export AX_XORG_DEFDM; echo -ne "Current Default Display Manager: \n\t\e[1m"; declare -p AX_XORG_DEFDM;echo -e "\e[0m";true'

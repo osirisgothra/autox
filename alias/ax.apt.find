@@ -1,0 +1,1 @@
+alias ax.apt.find='${AX_SUDO_PATH} apt-cache search --names-only'

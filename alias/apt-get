@@ -1,1 +1,1 @@
-alias apt-get='sudo apt-get --no-remove --yes'
+alias apt-get='${AX_SUDO_PATH} apt-get --no-remove --yes'

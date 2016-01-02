@@ -1,0 +1,34 @@
+# 
+# NAME:     ignoredefaults.dat
+# FORMAT:   text, encoded, UTF-8, no BOM signature (compatibility mode)
+#           eol=unix(lf), tab=every 4, zero based(0,3,7,etc)
+#           eof=hardware-dependant (no eof marker (dec(26))
+# CONTENT:  created=jan 2 2016, 5:00am
+#           author=Gabriel Sharp(osirisgothra@hotmail.com):authors.dat[0]
+#           creator=author[0]
+# META:     language=rcfile-list, locale=en_US|en(universal)
+#           tags=0, lists=1, items=variable
+# EDIT:     add="echo ITEM >> filename"
+#           rm="perl -i.bak -wne 'print unless /\AITEM\s*\z/'
+#           change="rm ITEM;add NEWVALUE"
+#           
+# PURPOSE:  items that are allowed to exist as a func and, ana alias
+#           there is usually also an external command in the path. These are done this way
+#           on purpose in order to create seamless use cases for each individual command
+# (ie, sudo runs alias sudo from user, but \sudo via an alias so user
+#  is warned its not needed since the alias ran sudo anyway, and, the command is hidden but called by the func, which was called by the alias
+#  so that when running as root, the entire process can be short-circuted to a single command (the original)
+#
+#  USER: sudo apt-get install (gets warning about sudo)
+# ALIAS: \sudo apt-get install (bypassed, called as func)
+#  FUNC: /bin/sudo apt-get install (binary is executed  directly by func, making sure not to short-circut to itself's alias)
+
+sudo
+nice
+ionice
+env
+exec
+eval
+fork
+sync
+help

@@ -1,0 +1,6 @@
+ax.file.perform () 
+{ 
+    perfcmd="$1";
+    shift;
+    which $perfcmd && find -iname "$@" -exec bash --norc -c $perfcmd "{}" ";"
+}

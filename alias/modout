@@ -1,1 +1,1 @@
-alias modout='sudo modprobe -r'
+alias modout='${AX_SUDO_PATH} modprobe -r'

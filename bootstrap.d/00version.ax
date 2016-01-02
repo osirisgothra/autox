@@ -1,0 +1,7 @@
+echo "autox version $(cat "$AX_BASE/data/version.dat")"
+echo "(C)Copyright 2012-$(date +%Y) Gabriel T. Sharp, All Rights Reserved"
+echo "Authored By: $(cat "$AX_BASE/data/authors.dat")"
+echo "All Rights Reserved"
+echo "Protected by the GNU GPL3 License, please read it in LICENSE"
+echo "or on the web at http://www.gnu.org/licenses/gpl-3.0.en.html"
+echo "(replace en with your language if you speak a different one)"

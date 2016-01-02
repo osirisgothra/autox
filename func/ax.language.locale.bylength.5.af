@@ -1,0 +1,4 @@
+ax.language.locale.bylength.5 () 
+{ 
+    locale | grep --color=auto "LANG" --word-regexp | grep --color=auto -Po "(?<==).{5}" | cat
+}

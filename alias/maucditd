@@ -1,1 +1,1 @@
-alias maucditd='for x in [A-Z]*/; do mount $x; done'
+alias maucditd='/usr/bin/find /home/osirisgothra -maxdepth 1  -name "[A-Z][a-z]*[a-z]" -type d -exec /usr/bin/${AX_SUDO_PATH} /bin/mount "{}" ";"'

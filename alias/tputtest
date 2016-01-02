@@ -1,3 +1,0 @@
-alias tputtest='__tt(){ stty "$@"; echo "Lorem ipsum dolar... 123"; unset -f __tt;stty sgr0;}
-;
-__tt()'

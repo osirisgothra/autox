@@ -1,0 +1,1 @@
+alias umount='$(which sudo) umount'

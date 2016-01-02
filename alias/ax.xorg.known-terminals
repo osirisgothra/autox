@@ -1,1 +1,0 @@
-alias ax.xorg.known-terminals='update-alternatives --list x-terminal-emulator'

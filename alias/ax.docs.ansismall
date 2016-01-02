@@ -1,1 +1,0 @@
-alias ax.docs.ansismall='cat $AX_BASE/data/ansismall.data'

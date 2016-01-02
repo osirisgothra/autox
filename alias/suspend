@@ -1,1 +1,1 @@
-alias suspend='sudo pm-suspend'
+alias suspend='${AX_SUDO_PATH} pm-suspend'

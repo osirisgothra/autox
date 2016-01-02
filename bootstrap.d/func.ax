@@ -287,8 +287,13 @@ __func_loader()
 		local ftemp=$(mktemp)
 		local FNAME=$(basename $fname | sed 's/\.af$//g' )
         if [[ ${#BASH_ALIASES[$FNAME]} -gt 0 ]]; then
-            echo "warning: $FNAME is a func which takes precedence over aliases, the alias form will be removed to avoid conflicts."
-            builtin unalias $FNAME
+            if [[ ${AX_IGNORED_FUNCS[$FNAME]} == 1 ]]; then
+                echo "assert: ignoring $FNAME because its dual use is intended!"
+            else
+                echo "warning: $FNAME is a func which takes precedence over aliases, the alias form will be removed to avoid conflicts."
+                echo "(hint: new item on purpose?? great! just add $FNAME to $AX_BASE/data/ignoreduplicates.dat to avoid this message!)"
+                builtin unalias $FNAME
+            fi
         fi
 		cat "$fname" |  perl -wne 'print unless /METADATA_START/ .. /METADATA_END/' > "$ftemp"  && true debug echo "parsed from $fname, without any apparent error, on to the executioner..."
 		source "$ftemp" && true debug echo "returned from source $ftemp, no error values reported!"

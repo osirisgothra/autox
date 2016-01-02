@@ -1,1 +1,1 @@
-alias ax.desktop.charmap='?sudo charmap &'
+alias ax.desktop.charmap='?${AX_SUDO_PATH} charmap &'

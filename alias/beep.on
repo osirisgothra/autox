@@ -1,1 +1,1 @@
-alias beep.on='sudo modprobe pcspkr; beep -l 1;echo beep: on'
+alias beep.on='${AX_SUDO_PATH} modprobe pcspkr; beep -l 1;echo beep: on'

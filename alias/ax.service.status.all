@@ -1,1 +1,0 @@
-alias ax.service.status.all='service --status-all |& tr -d "[]" | sed -re "s/\+/[0;1;32mrunning[0;2;32m/g;s/\s\-\s/ [0;1;30mstopped[0;2m /g;s/\?/[0;1;31munknown[0;2;31m/g"; echo "[0m"'

@@ -1,1 +1,0 @@
-alias ax.docs.terminalcodes-linux='cat $AX_BASE/data/terminalcodes-linux'

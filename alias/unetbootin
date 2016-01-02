@@ -1,1 +1,1 @@
-alias unetbootin='sudo unetbootin & which unetbootin && { disown %; echo "okay!"; } || echo you dont have it or its broken'
+alias unetbootin='${AX_SUDO_PATH} unetbootin & which unetbootin && { disown %; echo "okay!"; } || echo you dont have it or its broken'

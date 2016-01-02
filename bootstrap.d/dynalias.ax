@@ -27,7 +27,7 @@
 
 __dynalias_loader()
 {
-	echo -e "\e[1m*\e[0m Dynamic Alias Init Call Generators:"
+	echo -e "\e[1m*\e[0m Dynamic Alias Init Call Generators"
 	echo -ne "\e[s"
 	if [[ -z $AX_DYN_ALIAS_DISABLE ]]; then
         local IFS=$'\n'
@@ -45,8 +45,9 @@ __dynalias_loader()
             cat "$AX_BASE/alias/$x" | sed -r 's/^alias [^=]+=[[:punct:]](.*)[[:punct:]]$/\1/g' > $TMPFILE
             source "$TMPFILE" | tr '\n' '|' | sed 's/|$//g'
             echo -e "\e[30;1m]\e[0m"
-            rm -f "$TMPFILE"
+            rm -f "$TMPFILE" || { echo "Can't Delete $TMPFILE, adding to AX_UNDELETABLES, you may try to delete these files later."; AX_UNDELETABLES+="${AX_UNDELETABLES+:}$TMPFILE"; }
             unset TMPFILE
+            true debug sleep 0.33 "NONPRINT#pausing for view debug purposes"
         done
         if [[ $ncount < 1 ]]; then
             $ncount="no"
@@ -60,7 +61,14 @@ __dynalias_loader()
     else
         echo "Dynamic Aliases Disabled"
     fi
-    echo -e "\e[u"
+    if [[ $ncount > 0 ]]; then
+        sleep 0.33
+        while [[ $ncount != 0 ]]; do
+            let ncount--
+            echo -ne "\e[2A\e[1B\e[2K\e[0G"
+        done
+    fi
+    echo -e "\e[u\e[A\e[0G"
 	unset -f $FUNCNAME
 }
 

@@ -1,1 +1,0 @@
-alias ax.media.convert.any='FMT\=\"${1-wav}\";shift;DEST=\"${1-.}/\";shift;[[ $* ]] \|\| { echo not'

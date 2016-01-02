@@ -1,1 +1,0 @@
-alias ax.xorg.wm.setname='function _w() { if [[ $# -lt 1 ]]; then ax.xorg.wm.clearname; else { wmname "$@"; echo "set new name: $@"; } ; fi; unset -f _w; return 0; }; _w'

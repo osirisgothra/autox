@@ -1,1 +1,0 @@
-alias ax.xorg.dm.unfetch='[[ -v AX_XORG_DEFDM ]] && { unset AX_XORG_DEFDM;echo "removed AX_XORG_DEFDM"; } || { echo "use ax.xorg.dm.fetch first."; }'

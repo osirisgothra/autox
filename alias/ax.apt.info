@@ -1,0 +1,1 @@
+alias ax.apt.info='${AX_SUDO_PATH} apt-cache show'

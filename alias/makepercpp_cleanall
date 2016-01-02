@@ -1,1 +1,0 @@
-alias makepercpp_cleanall='echo -e "clean:\n\trm -f $(makepercpp_targets)\n\nall: $(makepercpp_targets)\n\n.PHONY: clean all\n"'

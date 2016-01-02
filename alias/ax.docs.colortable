@@ -1,1 +1,0 @@
-alias ax.docs.colortable='cat $AX_BASE/data/colortable.data'

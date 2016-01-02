@@ -1,1 +1,1 @@
-alias rootls='sudo ls -l /root'
+alias rootls='${AX_SUDO_PATH} ls -l /root'
