@@ -5,6 +5,16 @@ WHATSNEW
     first writing).
 
 ALMOST!    
+0.0.210216 - updated for 2016 roll over new year stuff, copyright updated to
+             automatically show the current year (no more updating cpyrds!!)
+             
+             more ax. namespace orginization
+             bugfixes, too many to list
+             some features changed, etc, as in the planned lists below
+             this one goes live to git/dev on autox
+
+0.0.123115 - fast-forward catchuping
+
 0.0.102115
     - This is the last bit of additions before the FIRST RELEASE, happening
       in NOVEMBER OR DECEMBER!!
