@@ -1,1 +1,1 @@
-alias htop='${AX_SUDO_PATH} htop'
+alias htop='/usr/bin/{sudo,htop}'

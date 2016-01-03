@@ -1,0 +1,4 @@
+ax.params.listify.pargs.helper () 
+{ 
+    ax.params.listify "${@: -1:1}" "${@: -$#:$#-1}"
+}

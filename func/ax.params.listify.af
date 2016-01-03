@@ -1,0 +1,14 @@
+ax.params.listify () 
+{ 
+    [[ $# -eq 0 ]] && LCHAR="," || { 
+        local LCHAR=$1;
+        shift
+    };
+    unset y;
+    for x in "$@";
+    do
+        printf "${y+$LCHAR}$x";
+        y=x;
+    done;
+    return 0
+}

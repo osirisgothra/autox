@@ -1252,5 +1252,6 @@ fi
 
 source "$AX_SHOPT_PRESET_XPGECHO"
 
+ax.apport.crashsummary.parse
 
 # END OF SCRIPT

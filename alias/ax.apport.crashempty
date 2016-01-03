@@ -1,0 +1,1 @@
+alias ax.apport.crashempty='sudo find /var -type d -name crash -empty -exec echo 1 '\'';'\'''
