@@ -1,63 +1,148 @@
 #!/bin/bash
 
-#set -xET
+# a quiet, installer-friendly version of tput (actually, its a filter of it, not a version of it)
+# calls tput ONLY if:
+# 	1) it exists	2) the TERM variable is set
+#	and it...
+#	3) upgrades the terminal to 'xterm-256color' if it is set to 'xterm'
+#	else...
+#       4) silently echos nothing, so it 'feels' like its working to me... :)
+#
+function tput()
+{
+	# we...
+	# set ISLOC to indicate a bottom (no color) mode, so it is cached and we dont have to keep checking
+	# we set ISHIC to indicate a top (hi color) mode, so it is cached .....
+	# no middle cache, we dont do that because this is not something that should happen very often!
+	# linux and consoles will have no cache, but thats because we want constant checking in those
+	# situations anyway (most times we are doing testing and such when in console, or not supposed to
+	# be there anyway, please use xterm-compatibles!!!)
+	# note that xterm has been 256 color for more than a decade now, upping to 256color should be fine
+	#           monitors have had 256 color for nearly 30 years now!!! ditto above!
 
-if [[ $- =~ i ]]; then
-	"$BASH_SOURCE" "$@"
-	return $?
-elif ! tty -s; then
-	TERMINAL=`which x-terminal-emulator` || TERMINAL=`which xterm` || exit 127
-	"$TERMINAL" "$BASH_SOURCE" "$@"
-	exit 0
-else
-	D=( dialog --backtitle "autox install program v1.0" --output-fd 1 )
-	S=( 0 0 )
-	mbox() { "${D[@]}" --msgbox "$*" "${S[@]}"; }
-	yn() { "${D[@]}" --yesno "$*" "${S[@]}"; }
-	menu() { MENUDOUBLER=0; MENUFLAGS=( ); _menustub "$@"; }
-	dmenu() { MENUDOUBLER=1; MENUFLAGS=( --no-tags ); _menustub "$@"; }
-	_menustub()
-	{
-		TXT="$1";
-		shift
-		local ITEMS=(  )
-		local IFS=$'\n'
-		if [[ $MENUDOUBLER == 1 ]]; then
-			for i do
-				ITEMS+=( "$i" "$i" )
-			done
-			set -- "${ITEMS[@]}"
-		fi
-		"${D[@]}" ${MENUFLAGS[@]} --menu "$TXT" "${S[@]}" 0 "$@";
-	}
-
-	if ANSWER=$(dmenu "Tagless.." "t shirt" gloves pants underwear); then
-		exit 1
-	fi
-	# TODO FINISH WRITING ME
-	mbox "Finish writing me!"
-	if	yn "Asking a question"; then
-		mbox "Yes?"
-		if ANSWER=$(menu "Pick something already..." "Have a nice day" "nice_day" "Have a bad day" "bad_day"); then
-			mbox "You chose to $ANSWER"
-			mbox "Now for a tagless menu..."
-			if ANSWER=$(dmenu "Tagless.." "t shirt" gloves pants underwear); then
-				mbox "You are wearing (a) tagless $ANSWER"
-			else
-				mbox "What are you, naked?"
-			fi
-		else
-			mbox "You picked your nose..(didnt answer)"
-		fi
+	if [[ $ISLOC -ne 1 ]]; then
+	if [[ $ISHIC -eq 1 ]] || which tput &> /dev/null && [[ -v TERM ]] && [[ $TERM =~ ^xterm ]]; then
+		command tput -T xterm-256color "$@" 2>/dev/null
+		export ISHIC=1
 	else
-		mbox "No?"
+		if [[ -v TERM ]] && which tput &> /dev/null; then
+			command tput -T xterm-256color "$@" 2> /dev/null
+		else
+			# fail silently!! (and set ISLOC)
+			export ISLOC=1
+			return $?
+		fi
 	fi
-	mbox "Thanks for playing!"
+	else
+		return $?
+	fi
+}
+
+declare -i GID=$(id -g || echo 1234567)
+declare TMPFILE="$(mktemp)"
+
+function bailout()
+{
+	tput setaf 1
+	tput bold
+	echo "fatal: $1"
+	echo "$2"
+	echo "Stop"
+	tput sgr0
+	exit $[ 127 + ${3-0} ]
+	return 126
+}
+
+tput sgr0
+clear
+# if we have 256color, if not nothing..
+tput setaf 6
+tput bold
+
+echo "autox installer 1.0 (backport-nondev)"
+echo "(C)2016 Paradisim/Gabriel Sharp, All Rights Reserved"
+echo "PLEASE READ THE INCLUDED LICENSE FOR LICENSE DETAILS AND AMMENDMENTS, IF ANY!"
+echo "Licensed currently under the GNU GPL v3 at http://gpl.gnu.org"
+tput setaf 4
+echo "press a key to automatically set the links (can be destructive, be sure!)"
+echo "press CTRL+C to abort"
+tput sgr0
+
+function checkpoint()
+{
+case $1 in
+1) echo "completion link checking autox...";;
+2) echo "installer files check...";;
+3) echo "data signature check...";;
+4) echo "bash version check...";;
+5) echo "user UID check...";;
+6) echo "appropriate group primary GID check...";;
+7) echo "detectable (id) check...";;
+8) echo "not running autox already check...";;
+9) echo "filesystem writability check...";;
+10) echo "broken autox link from a missing install check...";;
+*) echo "additional check...";;
+esac
+declare -gxi MCP=${1-0}
+sleep 0.$RANDOM
+return 0;
+}
 
 
+read -sn1
 
+if checkpoint 1 && [[ -r ~/.bash_completion.ax ]]; then
+	bailout "~/.bash_completion.ax exists" "appears to already have been installed once, please uninstall first" 1
+elif checkpoint 2 && [[ ! -r autox ]]; then
+	bailout "autox not found" "autox must be in the current directory or findable in the bash source variable" 2
+elif checkpoint 3 && [[ $(cat data/data.id) != "379a922a-242a-11e5-9429-00196605e97c" ]]; then
+	bailout "autox data signature verification failure" "the data signatures are UUIDs stored throughout autox structure to verify a non-corrupt installation, please verify your installation is in tact and complete or download it again from a reliable source (such as the main author)" 3
+elif checkpoint 4 && [[ ${BASH_VERSINFO[0]} -lt 4 ]]; then
+	bailout "bash version is too old" "you should at least have bash version 4 to install this program, it runs on even some the slowest and oldest of machines!" 4
+elif  checkpoint 5 && [[ $UID -eq root ]]; then
+	bailout "root UID detect" "you must install autox manually as root, read the INSTALLING file" 5
+elif  checkpoint 6 && [[ $GID -eq root ]]; then
+	bailout "root GID detect" "why is your primary gid root?? being careful and stopping" 6
+elif  checkpoint 7 && [[ $GID -eq 1234567 ]]; then
+	bailout "undetectable GID" "(crazy eight) please either set GID yourself or install the id program that comes with nearly all linux installations" 7
+elif  checkpoint 8 && [[ -r $AX_BASE/autox ]]; then
+	bailout "AX_BASE and autox present" "autox is already installed AND it has been started! you must UNINSTALL it first!!!" 8
+elif checkpoint 9 &&  [[ ! -w ~ ]] || [[ ! -w $TMPFILE ]]; then
+	# TODO: using install TEMP writable for future versions
+	bailout "HOME/TEMP not writable!" "both your HOME ($HOME) and TEMP $(dirname $TMPFILE) must be writable in order to install autox!!!" 9
+elif checkpoint 10 &&  [[ -L ~/.bash_completion ]]; then
+	bailout "~/.bash_completion is a (likely broken) symbolic link" "you may have an offline volume, or a missing drive... please fix or delete, then try again" 10
+else
+	# healthy space, random micro delay (for easier reading) --- note hspace does both
+	function hspc() { R=$?;echo;hrdl "$*";return $R; }
+	function hrdl() { R=$?;[[ $* != "" ]] && echo "$*";sleep 0.$RANDOM; return $R; }
+	hspc "success: passed the $MCP-point preinstall checks!!"
+	hrdl "now installing, commands will be verbose so look for error messages, if any..."
+	hrdl "removing tempfile..."
+	rm -f $TMPFILE
+	hrdl "moving ~/.bash_completion to .bash_completion.ax if needed (if it fails, it wasnt needed)..."
+	[[ -r ~/.bash_completion ]] &&  mv ~/.bash_completion ~/.bash_completion.ax
+	hrdl "linking ~/.bash_completion to autox..."
+	ln -s $PWD/autox ~/.bash_completion
+	if diff autox ~/.bash_completion &> /dev/null; then
+		tput setaf 2; tput bold; # green bright if 256
+		hspc "install succeeded!!"
+		tput sgr0
+		if [[ -r ~/.bash_completion.ax ]]; then
+			hrdl "your ~/.bash_completion[.ax] is deferred but still loaded at startup!"
+		else
+			hrdl "there was no need for a ~/.bash_completion.ax defferal (none defined)"
+		fi
+		hspc "to begin using autox, type $(tput bold)exec bash$(tput sgr0) now (or later)!"
+		hrdl "once started, use <F1> to see commands, and <Ctrl+F> to restart the shell anytime!"
+	else
+		tput setaf 1; tput bold; # red if 256c bailouts do red anyway for 16c
+		hspc "oops.. something went wrong!"
+		echo "NOTE: if a check should have caught this: NOTIFY THE AUTHOR TO ADD IT!!! (or add it yourself and submit a pull request!!)"
+		bailout "autox<->bash_completion links mismatch" "the link does not match, there could be problems in the installer, please check these files yourself and submit a bug report if you feel it is a bug, otherwise contact your network adminstrator and request for help." 101
+	fi
 
 fi
 
-
-
+echo "$(tput setaf 2;tput bold)Thank you for using autox!(tput sgr0)"
+tput sgr0

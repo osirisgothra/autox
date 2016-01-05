@@ -27,5 +27,5 @@ replace the original '~/.vimrc' and make sure you rename your .vimrc to .vimrc.a
 so it gets ran too (it could conflict however).
 
 
-
+see INSTALLING for a more detailed run-through
  

@@ -1,0 +1,85 @@
+"INSTALLING" autox (we will use that term loosely)
+
+We'll assume you have a recent copy of 'git' (version control system) installed and an internet
+connection (how else could you be reading this? you happened upon this on some guys old hard drive!)
+anyways, just make a symbolic link that points to ./autox that is called '~/.bash_completion' while
+in bash (the following starts out as if you havent downloaded autox yet):
+
+--- Example (your output WILL differ, you will want to use your own personal directory names)) ---
+	
+myname@mymachine:~# mkdir progs; cd progs <press ENTER>
+
+myname@mymachine:~/progs: git clone https://github.com/osirisgothra/autox
+
+Cloning into 'autox'...
+remote: Counting objects: 1449, done.
+remote: Total 1449 (delta 0), reused 0 (delta 0), pack-reused 1449
+Receiving objects: 100% (1449/1449), 1.84 MiB | 2.58 MiB/s, done.
+Resolving deltas: 100% (466/466), done.
+Checking connectivity... done.
+
+myname@mymachine:~/progs: ln ~/progs/autox/autox ~/.bash_completion
+
+myname@mymachine:~/progs: exec bash
+
+--- End of Example ---
+
+That last line will restart bash, which, as long as bash_completion is installed and enabled for that
+account, will also load autox. If you don't always use bash_completion like when you are strapped for
+resources, dont sweat it! autox will only run when you are using bash_completion too.
+
+the 'root' account
+
+Many vendors of apps will tell you not to run their powershell stuff as root for whatever reasons. You
+may or may not want to use autox with root. If you dont, be glad to know that because bash_completion
+is disabled in root accounts by default, so is autox. autox however does not do any default-disabling
+for root accounts so beware if you have bash_completion already enabled.
+
+Enabling bash_completion
+
+If you use root but dont know how to enable bash_completion, all you have to do is edit your /etc/bash_completion
+script, they usually will have a commented-out section. Be careful, multiple loads caused by the login account
+can happen if you don't do it right. Usually uncommenting the section should do. If not, contact your network
+administrator for more help. You can also drop a line to me at my bugreport site, or in my e-mail. I would
+prefer you use the online automated system provided by github first though.
+
+Manual install
+
+Lastly, not reccomended, you can install it manually of course, just by calling ~/.bash_completion yourself
+from the last line of your ~/.bashrc (only do this if you are SURE you cant do it the other way). You should
+add a guard that checks for the presence of AX_BASE in case later it gets installed the other way:
+
+if [[ ! -v AX_BASE ]]; then
+	source ~/.bash_completion
+fi
+
+About ~/.bash_completion
+
+why do we use that, it seems kinda weird to do that and not use our own file, right? And, you are probably
+thinking why do I have to still use it for manual mode, right, well there are a few reasons I will discuss
+right now:
+
+1) We use it (for auto) because this is a file that is searched for by the package bash_completion (you can check out their package
+on debian, and many other systems in /usr/share/doc/bash_completion), we have standardized this as the
+startup point. This way you dont have to worry about it getting executed at the right time. We HAVE tried
+many many other ways, and in the end they all had problems, caused leaks or duplicate runs. Doing it this
+way is really the best way. And, in the case that you actually have your own bash_completion already, you
+can rename it to ~/.bash_completion.ax and it will run just as if it were still there! You should not forget
+to rename it back if you ever get rid of it.
+
+2) We use this method because bash_completion is installed on almost every linux distribution so its a safe bet it will 
+   be there or at the very least, available for install
+
+3) bash_completion is still used in manual install mode because autox not only checks to see what it's top-
+   level (symbolic link) filename is, it checks to make sure it is a symbolic link to 'autox', also it checks
+   the BASH_SOURCE[] array members for a list of scripts to make sure the script was called in the correct
+   order. If it was not, it does not execute (and displays a warning about it) or just skips silently if it
+   realizes it is trying to be reloaded a second time (like when login shells dupe the login scripts).
+
+See FAQ fore more info
+
+Author's note on running (READ!)
+
+obviously this is a bash driven program so you need bash 4.3+ to use it correctly
+it is also still in development, but i try to have semi-stable releases in main as much as
+i can. 
