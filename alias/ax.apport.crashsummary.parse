@@ -1,1 +1,1 @@
-alias ax.apport.crashsummary.parse='if [[ $(ax.apport.crashempty) == 1 ]]; then echo "crash history: no crashes detected, logs all clean!"; else ax.apport.crashsummary.show; ax.apport.crashsummary.actupon; fi'
+alias ax.apport.crashsummary.parse='pushd .;cd /var/crash;if [[ $(ax.apport.crashempty) == 1 ]]; then echo "crash history: no crashes detected, logs all clean!"; else ax.apport.crashsummary.show; ax.apport.crashsummary.actupon; fi;popd;true'

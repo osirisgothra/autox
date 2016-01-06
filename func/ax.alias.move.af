@@ -1,0 +1,11 @@
+ax.alias.move () 
+{ 
+    while (($# % 2 == 0 && $# > 0)); do
+        src="$1" dst="$2";
+        echo "moving $src to $dst";
+        shift 2;
+        cpalias $src $dst;
+        builtin alias $dst &> /dev/null && rmalias $src || echo "move failed, skipping this one";
+    done;
+    echo "end cycle!"
+}

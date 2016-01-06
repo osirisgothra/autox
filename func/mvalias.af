@@ -1,0 +1,13 @@
+mvalias () 
+{ 
+    alias $2 && { 
+        echo "cant make copy because destination already contains data, aborting."
+    } || { 
+        alias $1 && { 
+            eval "$(alias $1 | sed "s/$1=/$2=/")";
+            alias $2 && unalias $1 || echo "cant verify move success, so not deleting original (check please!)"
+        } || { 
+            echo "cant verify source exists, copy cannot be created!!"
+        }
+    }
+}

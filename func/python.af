@@ -1,8 +1,0 @@
-python () 
-{ 
-    [[ $COLUMNS -lt 70 && $LINES -lt 12 ]] && { 
-        ?ipython qtconsole;
-        return
-    };
-    [[ $# -eq 0 ]] && ?ipython || command python "$@"
-}

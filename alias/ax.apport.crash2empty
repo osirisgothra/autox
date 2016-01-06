@@ -1,1 +1,1 @@
-alias ax.apport.crash2empty='sudo find /var -type d -name crash2 -empty -exec echo 1 '\'';'\'''
+alias ax.apport.crash2empty='find -type f -size 0 -exec rm -v "{}" ";";items=( /var/crash2/*.crash ); [[ -z "$items" ]] && echo "1"'

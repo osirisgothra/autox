@@ -1252,6 +1252,21 @@ fi
 
 source "$AX_SHOPT_PRESET_XPGECHO"
 
-ax.apport.crashsummary.parse
+if sudo true; then
+    pushd .
+    cd /var/crash
+    ax.apport.crashsummary.parse
+    popd
+else
+    if [[ $(ax.config.get no_sudo_complaints) -eq 1 ]]; then
+        true debug "no_sudo_complaints set to: true (skip message)"
+    else
+        echo "* automatic crash management is off because you cannot run commands as root"
+        echo ""
+        echo "  (hint: if this message annoys you, you can set the no_sudo_complaints to 1 using"
+        echo "   ax.config.set)"
+        echo ""
+    fi
+fi
 
 # END OF SCRIPT

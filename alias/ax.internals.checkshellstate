@@ -1,0 +1,1 @@
+alias ax.internals.checkshellstate='$AX_BASE/etc/internal/scripts/shellstate-checker.sh'

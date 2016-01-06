@@ -1,0 +1,1 @@
+alias ax.file.sizeof='sudo stat --format=%'

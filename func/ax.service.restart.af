@@ -1,0 +1,6 @@
+ax.service.restart () 
+{ 
+    while [[ -n \$1 ]]; do
+        eval sudo\ service\ \${1}\ {stop,start,status}\; shift;
+    done
+}

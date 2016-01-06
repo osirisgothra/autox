@@ -1,1 +1,0 @@
-alias idle='_idle() { PID=`pidof $1`; ${AX_SUDO_PATH} renice -n 20 -p $PID; ${AX_SUDO_PATH} ionice -c idle -p $PID; echo "Idle on $PID ($1)"; shift; if [[ $1 ]]; then _idle "$@"; fi; unset -f _idle; }; _idle'
