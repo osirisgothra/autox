@@ -1251,22 +1251,47 @@ fi
 #          not now though!
 
 source "$AX_SHOPT_PRESET_XPGECHO"
+# 3. EXPERIMENTAL: shell resilliance setting, this keeps certain values that cause
+#                  completion to not work properly set to their correct values. If
+#                  it is too intrusive then set it to:
+#                  INTRUSIVE  --- DEBUG <- after every single issued command
+#                       ^         SIGCHLD <- every executable return
+#                       |         SIGTERM <- every executable gracefully terminated (not so often)
+#                       |         RETURN  <- only script returns
+#                       v         SIGKILL <- every executable ungracefully terminated (ie, via xkill or 'kill -KILL')
+#              LEAST INTRUSIVE--- ERR <- only after a source/script error
+# dont set -ET while using or else functions traps will overwrite them!
+function __ax_do_resilliance_checks()
+{
+    # WARNING: dont set things that don't affect programmable completion, else the user will
+    #          not have control over their own system, let THEM decide their settings otherwise
+    # TODO: issue warnings maybe instead of setting back settings, or warn then set, or maybe give a choice? gather some intel first..
+    unset IFS
+    shopt -u nullglob
+    shopt -u dotglob
+    shopt -u globstar
+    shopt -s progcomp
+    shopt -u failglob
+}
 
-if sudo true; then
-    pushd .
-    cd /var/crash
-    ax.apport.crashsummary.parse
-    popd
-else
-    if [[ $(ax.config.get no_sudo_complaints) -eq 1 ]]; then
-        true debug "no_sudo_complaints set to: true (skip message)"
-    else
-        echo "* automatic crash management is off because you cannot run commands as root"
-        echo ""
-        echo "  (hint: if this message annoys you, you can set the no_sudo_complaints to 1 using"
-        echo "   ax.config.set)"
-        echo ""
-    fi
-fi
+trap '__ax_do_resilliance_checks' DEBUG
+
+# TODO: remove ax.apport.crash* and move to bootstrap.d/99crashandler.ax
+#if sudo true; then
+#    pushd .
+#    cd /var/crash
+#    ax.apport.crashsummary.parse
+#    popd
+#else
+#    if [[ $(ax.config.get no_sudo_complaints) -eq 1 ]]; then
+#        true debug "no_sudo_complaints set to: true (skip message)"
+#    else
+#        echo "* automatic crash management is off because you cannot run commands as root"
+#        echo ""
+#        echo "  (hint: if this message annoys you, you can set the no_sudo_complaints to 1 using"
+#        echo "   ax.config.set)"
+#        echo ""
+#    fi
+#fi
 
 # END OF SCRIPT

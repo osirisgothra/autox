@@ -286,6 +286,16 @@ __func_loader()
 	for fname in $AX_BASE/func/*.af; do
 		local ftemp=$(mktemp)
 		local FNAME=$(basename $fname | sed 's/\.af$//g' )
+		# TODO: assign this in autox, and load from /$AX?BASE_data/ignoreduplicates.dat #
+		if [[ ! -v AX_IGNORED_FUNCS ]]; then
+		    declare -Agx AX_IGNORED_FUNCS=( [__placeholder__]="1" )
+		    IFS=$'\n'
+		    # read config file, but dont read empty lines and comment lines (that start with #)
+		    # also it strips spaces while doing this..  .
+		    for x in $(cat $AX_BASE/data/ignoreduplicates.dat | grep -vP '^\s*(#|$)'); do
+		        AX_IGNORED_FUNCS[$x]=1
+		    done
+		fi
         if [[ ${#BASH_ALIASES[$FNAME]} -gt 0 ]]; then
             if [[ ${AX_IGNORED_FUNCS[$FNAME]} == 1 ]]; then
                 echo "assert: ignoring $FNAME because its dual use is intended!"

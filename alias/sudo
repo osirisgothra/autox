@@ -1,1 +1,1 @@
-alias sudo='"${AX_SUDO_BINARY+ $(which sudo)}"'
+alias sudo='${AX_SUDO_BINARY=$(which sudo)}'
