@@ -1,0 +1,17 @@
+ax.man.sect.ls () 
+{ 
+    local QUERY=$1;
+    echo;
+    echo "$QUERY has the following Sections";
+    _hrule =;
+    { 
+        man $QUERY | perl -wne 'print "$1\n" if /^(?:\s*)([A-Z]+)(?:\s*)$/' | sort | while read; do
+            NEWLTR=${REPLY: 0:1};
+            [[ $NEWLTR != $LTR ]] && { 
+                echo -e "\n$NEWLTR| $REPLY";
+                LTR=$NEWLTR
+            } || echo -e " | $REPLY";
+        done
+    } | column | sed -r 's/([A-Z]\|)(\s[A-Z]+)/[7m\1[0m\2/g';
+    _hrule =
+}

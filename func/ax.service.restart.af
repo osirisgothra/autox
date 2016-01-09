@@ -1,6 +1,11 @@
 ax.service.restart () 
 { 
-    while [[ -n \$1 ]]; do
-        eval sudo\ service\ \${1}\ {stop,start,status}\; shift;
+    complete -A service $FUNCNAME;
+    while (($# > 0)); do
+        for s in stop start status;
+        do
+            /usr/bin/sudo service $1 $s;
+        done;
+        shift;
     done
 }

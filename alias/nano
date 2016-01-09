@@ -1,0 +1,1 @@
+alias nano='true reqpkg same;env $([[ -v TERM ]] && TERM=xterm-256color) nano'

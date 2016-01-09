@@ -1,0 +1,4 @@
+ax.tree.diff () 
+{ 
+    diff -r --side-by-side --brief --report-identical-files "$@" | sed -r "s/\b[[:punct:]](\s|$)/[1;30m\0[0m/g;s/(\b(Files|Only|differ|identical|Directories|and|in|are)\b)/[1m\\1[0m/g"
+}

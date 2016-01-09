@@ -1,0 +1,20 @@
+ms () 
+{ 
+    case $# in 
+        0)
+            echo "syntax: $FUNCNAME [page] [sect]";
+            return
+        ;;
+        1)
+            ax.man.sect.ls $1;
+            echo;
+            read -ep "Type Section Name or None To Quit:";
+            [[ \$REPLY == "" ]] && return;
+            set $1 $REPLY
+        ;;&
+        *)
+            ax.man.sect $1 $2
+        ;;
+    esac;
+    return
+}

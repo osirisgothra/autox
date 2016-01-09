@@ -1,0 +1,9 @@
+ax.helpers.axset.af()
+{
+    while true; do
+        _hrule "\e[31;1m▁Normal▁Environment▁▁"
+        echo
+        set | sed 's//[7mESC[0m/g'
+        
+    done
+}

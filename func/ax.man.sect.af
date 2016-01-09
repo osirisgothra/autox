@@ -1,0 +1,5 @@
+ax.man.sect () 
+{ 
+    local SECT="$2";
+    man $1 | perl -wne 'print if /^\s*'$SECT'\s*$/ ... /^\s*[A-Z]+\s*$/; END { print "[A[2K"; };'
+}

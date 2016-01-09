@@ -1,0 +1,4 @@
+ax.service.names () 
+{ 
+    find /etc/init -iname '*conf' -printf '%f\n' | sed 's/\.conf$//g'
+}

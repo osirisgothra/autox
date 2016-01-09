@@ -1,4 +1,39 @@
 function chmog () 
 { 
-    0 ]] && $FUNCNAME --help
-}
+    case $# in
+    0)
+        echo "syntax: chmog <-|ugoa[-|+]rwxSsTt|[octal-digits to:UGO]> <-|user|uid[:group|gid]> <file[s]>"
+        echo " common flags:"
+        echo " -R --recursive          -V --verbose"
+        echo " -f --silent --quiet        --[no-]preserve-root"
+        echo " -c --changes            -h --help"
+        echo " -v --version"
+        echo " examples:"
+        echo "   chmog ug+rwx,o+rx nobody:users /var/ftp/incomming --recursive --verbose"
+        echo "    ^ sets permissions to 775 (rwxrwxr-x) on all files in /var/ftp/incomming, and "
+        echo "      shows the status as it goes - a good demo of how unified flags work here."
+        echo "   chmog 775 - *.file  "
+        echo "    ^ behaves like chmod"
+        echo "   chmog - 1000:1000 *.file "
+        echo "    ^ behaves like chgrp"
+        echo " <> = required part [] = optional part "
+        echo " NOTE: passing dash - to first two params both will cause nothing to happen!"
+        return 0
+        ;;
+    1|2) if config.has ax.chmog.ignore.nomsg; then
+            true debug echo "warning: less than three params are passed directly to both!"  
+        else
+            echo "warning: less than three params are passed directly to both!"  
+        fi
+        chmod $*; chgrp $*
+        return;;
+    *)                  
+        ;;
+    esac
+    MOD=${1}
+    UG=${2}
+    shift 2
+    [[ $MOD != "-" ]] && chmod $MOD "$@"
+    [[ $UG != "-" ]] && chown $UG "$@" || [[ $MOD == - ]] && echo "nothing done successfully!"
+    
+ }
