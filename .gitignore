@@ -8,3 +8,4 @@ a.out
 *.sublime-workspace
 .idea
 .ycm_extra_conf.py
+*-keep-me-safe
