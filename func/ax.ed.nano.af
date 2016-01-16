@@ -1,0 +1,5 @@
+ax.ed.nano () 
+{ 
+    true reqpkg same;
+    env $([[ -v TERM ]] && echo "TERM=xterm-256color" || echo --syntax=none) nano /usr/share/nanorc/$*
+}

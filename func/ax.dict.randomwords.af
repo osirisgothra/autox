@@ -1,0 +1,4 @@
+ax.dict.randomwords () 
+{ 
+    ax.dict.randomwords.stub "$@" | tr -d "\n"
+}

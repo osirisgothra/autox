@@ -1,0 +1,1 @@
+alias gparted='ax.which gparted && sudo gparted || echo "gparted not installed"'

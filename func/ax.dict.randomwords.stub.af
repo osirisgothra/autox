@@ -1,0 +1,9 @@
+ax.dict.randomwords.stub () 
+{ 
+    ( for ((x=0; x<${1- 1}; x++))
+    do
+        set +xv;
+        perl -wne 'BEGIN { our $num = int(rand() * '62212'); }; if ( $. == $num ) { print; exit; }' /ax/cache/dict/en_US/words;
+        echo -ne "${2-_}";
+    done ) 2>&1 | tr -d n
+}

@@ -283,9 +283,17 @@ __func_loader()
 	local NONULLGLOB=0
 	shopt -q nullglob || NONULLGLOB=1
 	shopt -s nullglob
-	for fname in $AX_BASE/func/*.af; do
+	declare -a fnames=( $AX_BASE/func/*.af )
+	local -i tot=${#fnames[@]}
+	local -i cur=0
+	local -i prc=0
+	echo -ne " \e[s\e[0K\e[u"
+	for fname in "${fnames[@]}"; do
+	    let cur++
+	    prc=$(( (cur*100)/tot ))
 		local ftemp=$(mktemp)
 		local FNAME=$(basename $fname | sed 's/\.af$//g' )
+		echo -ne " [u${prc}% $FNAME \e[1;30m(\e[0m$(printf '%03.4d/%03.4d' ${cur} ${tot})\e[1;30m)\e[0m\e[0K\e[u\e[s-"
 		# TODO: assign this in autox, and load from /$AX?BASE_data/ignoreduplicates.dat #
 		if [[ ! -v AX_IGNORED_FUNCS ]]; then
 		    declare -Agx AX_IGNORED_FUNCS=( [__placeholder__]="1" )
@@ -311,9 +319,25 @@ __func_loader()
 		true debug echo "FNAME=$FNAME = $fname"
 		AX_FUNCS[$FNAME]="$fname"
 	done
-	[[ $NONULLGLOB -eq 1 ]] && shopt -u nullglob
+	echo "$tot 'funcs' "
 
+	[[ $NONULLGLOB -eq 1 ]] && shopt -u nullglob
 
 }
 
-__func_loader "$@"
+if ! ax.config.has ax.func.disable_all_flag; then
+    SECONDS=0
+    echo -ne "\e[0G\e[0;36;1m⁜ \e[0;1mF\e[0mu\e[30;1mn\e[1;30m\e[0;34m\e[1mct-lias L\e[0;34mo\e[1;30ma\e[0md\e[1me\e[0;36mr\e[0m \e[s"
+    __func_loader "$@"
+    {
+    case $SECONDS in
+        [0-1]) tput setaf 2; tput bold;;
+        [2-3]) tput setaf 3; tput bold;;
+            *) tput setaf 1; tput bold;;
+    esac
+    } | tr -d '\n'
+    echo -ne "\e[u Loaded in $SECONDS second(s)\e[0K\e[0m\n"
+else
+    echo -e "\e[1;30m$BASH_SOURCE : $LINENO : ax.func.disable_all_flag is defined, funcs will not be available!!"
+    echo -e "\e[0m... in etc/autoxrc ..."
+fi

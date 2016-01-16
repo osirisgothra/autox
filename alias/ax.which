@@ -1,0 +1,1 @@
+alias ax.which='__ax_bin_which() { unset -f $FUNCNAME; which "$@" &> /dev/null; }; __ax_bin_which'

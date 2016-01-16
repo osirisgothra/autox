@@ -1,0 +1,1 @@
+alias rmtree='echo "DELETING DIRECTORY TREE [[O]k, [CTRL+C]ancel]]"; read -sn1;rm -fRv'

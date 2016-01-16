@@ -1,0 +1,1 @@
+alias ax.crisis.files='ls $AX_BASE/etc/offline_tests/zone5 -RC --color --sort time --time ctime | tee /tmp/ttt; grep -c "\b\w+\b" -P /tmp/ttt | tr -d n;echo -e "files to recover";rm /tmp/ttt;true'

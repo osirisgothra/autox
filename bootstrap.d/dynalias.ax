@@ -27,50 +27,71 @@
 
 __dynalias_loader()
 {
-	echo -e "\e[1m*\e[0m Dynamic Alias Init Call Generators"
-	echo -ne "\e[s"
-	if [[ -z $AX_DYN_ALIAS_DISABLE ]]; then
-        local IFS=$'\n'
-        local ncount=0
-        # TODO: possibly move assignment of AX_DYN_ALIASES to autox
-        #       when/if needed by other parts of the autox source
-        #       tree.
-        # TODO: remove these TODOs if move did not happen within
-        #       at least 6 months (11/2015, expires in 5/2016)
-        AX_DYN_ALIASES=( $(cat $AX_BASE/data/dynaliases.data) )
-        for x in "${AX_DYN_ALIASES[@]}"; do
-            let ncount++
-            echo -ne "\e[0;32m\t$x\e[30;1m=[\e[1;32m"
-            local TMPFILE=$(mktemp)
-            cat "$AX_BASE/alias/$x" | sed -r 's/^alias [^=]+=[[:punct:]](.*)[[:punct:]]$/\1/g' > $TMPFILE
-            source "$TMPFILE" | tr '\n' '|' | sed 's/|$//g'
-            echo -e "\e[30;1m]\e[0m"
-            rm -f "$TMPFILE" || { echo "Can't Delete $TMPFILE, adding to AX_UNDELETABLES, you may try to delete these files later."; AX_UNDELETABLES+="${AX_UNDELETABLES+:}$TMPFILE"; }
-            unset TMPFILE
-            true debug sleep 0.33 "NONPRINT#pausing for view debug purposes"
-        done
-        if [[ $ncount < 1 ]]; then
-            $ncount="no"
-        fi
-        if [[ $ncount == 1 ]]; then
-            S=""
-        else
-            S=s
-        fi
-        echo -ne "\t\e[1m${ncount}\e[0m generator${S} were ran\e[1;30m.\e[0m"
+    if [[ "$1" != "c23fa403-c6a5-453e-afef-89d3933ea18a" ]]; then
+        echo "this is an internal function, it must be loaded by $AX_OWNER[$FUNCNAME]"
     else
-        echo "Dynamic Aliases Disabled"
+	    echo -ne "\e[1m*\e[0m Dynamic Alias Subsystem 🎶 "
+	    true fx echo -ne "\e[s"
+	    if [[ -z $AX_DYN_ALIAS_DISABLE ]]; then
+            local IFS=$'\n'
+            local -i ncount=0
+            local -i scount=0
+            # TODO: possibly move assignment of AX_DYN_ALIASES to autox
+            #       when/if needed by other parts of the autox source
+            #       tree.
+            # TODO: remove these TODOs if move did not happen within
+            #       at least 6 months (11/2015, expires in 5/2016)
+            AX_DYN_ALIASES=( $(cat $AX_BASE/data/dynaliases.data) )
+            for x in "${AX_DYN_ALIASES[@]}"; do
+                true fx echo -ne "\e[0;32m\t$x\e[30;1m=[\e[1;32m"
+                local TMPFILE=$(mktemp)
+                if [[ -r "$AX_BASE/alias/$x" ]]; then
+                  let ncount++
+                  cat "$AX_BASE/alias/$x" | sed -r 's/^alias [^=]+=[[:punct:]](.*)[[:punct:]]$/\1/g' > $TMPFILE
+                  source "$TMPFILE" | tr '\n' '|' | sed 's/|$//g'
+                  true fx echo -e "\e[30;1m]\e[0m"
+                else
+                  let scount++
+                fi
+                rm -f "$TMPFILE" || { echo "Can't Delete $TMPFILE, adding to AX_UNDELETABLES, you may try to delete these files later."; AX_UNDELETABLES+="${AX_UNDELETABLES+:}$TMPFILE"; }
+                unset TMPFILE
+                true debug sleep 0.33 "NONPRINT#pausing for view debug purposes"
+            done
+            if [[ $ncount < 1 ]]; then
+                ncount="no"
+            fi
+            if [[ $ncount == 1 ]]; then
+                S=""
+            else
+                S=s
+            fi
+            true fx echo -ne "\t\e[1m${ncount}\e[0m generator${S} were ran\e[1;30m.\e[0m"
+            echo -e "  \e[32;1m${ncount}\e[1;30m/\e[1;31m${scount} \e[0;32mran\e[1;30m/\e[0;31mmiss\e[0m"
+        else
+            true fx echo "Dynamic Aliases Disabled"
+        fi
+        if [[ $ncount > 0 ]]; then
+            true fx sleep 0.33
+            while [[ $ncount != 0 ]]; do
+                let ncount--
+                true fx echo -ne "\e[2A\e[1B\e[2K\e[0G"
+            done
+        fi
+        true fx echo -e "\e[u\e[A\e[0G"
     fi
-    if [[ $ncount > 0 ]]; then
-        sleep 0.33
-        while [[ $ncount != 0 ]]; do
-            let ncount--
-            echo -ne "\e[2A\e[1B\e[2K\e[0G"
-        done
-    fi
-    echo -e "\e[u\e[A\e[0G"
 	unset -f $FUNCNAME
 }
+
+[[ -v AX_OWNER ]] || declare -Agx AX_OWNER=( [PX]="X" )
+AX_OWNER+=( [__dynalias_loader]="$BASH_SOURCE" )
+#TODO: move default behavior to autox later?? or remove this todo if okay
+if (( ${#BASH_SOURCE[@]} > 1)); then
+    AX_OWNER+=( [$BASH_SOURCE]="${BASH_SOURCE[1]}" )
+else
+    AX_OWNER+=( [$BASH_SOURCE]="$AX_BASE/autox" )
+    true debug echo "assert: autox had to guess ${BASH_SOURCE}s owner! [$LINENO:$FUNCNAME]"
+fi
+
 
 # entry point
 # TODO: add a simmilar disabler to other items
@@ -79,5 +100,6 @@ __dynalias_loader()
 if [[ $AX_DYNALIAS_LOADER_DISABLE_FORCE -eq 1 ]]; then
     echo "WARNING: AX_DYNALIAS_LOADER_FORCE set to 1, not running this ($BASH_SOURCE)"
 else
-    __dynalias_loader
+    __dynalias_loader "c23fa403-c6a5-453e-afef-89d3933ea18a"
+    true debug echo "state: __dynalias_loader was passed UUID: {c23fa403-c6a5-453e-afef-89d3933ea18a} for validation and got $? as the return code."
 fi

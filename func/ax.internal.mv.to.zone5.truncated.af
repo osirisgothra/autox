@@ -1,0 +1,4 @@
+ax.internal.mv.to.zone5.truncated () 
+{ 
+    mv "$@" /ax/etc/offline_tests/zone5/truncated-with-inconsistent-refs
+}

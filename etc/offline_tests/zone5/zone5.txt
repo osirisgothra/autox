@@ -1,0 +1,15 @@
+corrupted, errored, or otherwise screwed up or truncated files
+
+Reasoning
+=========
+
+* after CRISIS we needed a place for these
+* this one prompted the making of the tarchive
+* shortly later we found that the trun were almost all intended to be
+  deleted, after reviewing the commit logs in detail!
+
+* zero-length files take up no space :) (but filenames take a *little*)
+
+
+
+

@@ -1,0 +1,1 @@
+alias whatcat='_f() { while [[ $# -gt 0 ]]; do if [[ $(file $1) =~ [Tt]ext ]]; then cat "$(which "$1")"; else hd "$(which "$1")"; fi;  local r=$?; done; unset -f _f; return $r; }; _f'

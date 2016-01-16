@@ -1,9 +1,30 @@
 ax.helpers.axset.af()
 {
-    while true; do
-        _hrule "\e[31;1m▁Normal▁Environment▁▁"
-        echo
-        set | sed 's//[7mESC[0m/g'
-        
-    done
+    local -a PIPE_STATUS=( "$PIPESTATUS" )
+    
+    local -i RV=$?
+    local SMS="$-"
+    local SDS="$$"
+    local -i SNV=$[ $# -1 ]
+    local SUS=${@: -1:1}
+    
+    case $1 in
+    
+    _axhelpercall)
+        shift
+        while true; do
+            _hrule "\e[31;1m▁Normal▁Environment▁Variables▁$(_hrule "▁")"        
+            set | sed 's//[7mESC[0m/g'
+            _hrule "\e[31;1m▁Extra▁Environment▁Variables▁$(_hrule "▁")"        
+            local -A POSITIONAL_PARAMETERS=( "$@" )
+            declare -p  POSITIONAL_PARAMETERS | sed
+            echo 
+        done
+        ;;
+    *)
+        echo "fatal: this must be called by the ax.var.set or other alias attached to it, do not alias directly to this func!"
+        return 127
+        ;;         
+    esac
+    
 }

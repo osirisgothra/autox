@@ -35,7 +35,9 @@ function _detect_terminal()
         unset -f _fok
         return $R
     }
+    # TODO: transfer to ax.config.status() once CRISIS is recovered
     echo -e "\e[1m*\e[0m Detecting Terminal"
+    
     if whatis $AX_TERMINAL |& grep '\bX\b' | grep 'terminal' | grep 'emulator' &> /dev/null; then
         echo -e "\e[1m*\e[0m 256color/X-based Terminal (emu=$AX_TERMINAL)"
         _fok y

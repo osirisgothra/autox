@@ -1,7 +1,39 @@
-echo "autox version $(cat "$AX_BASE/data/version.dat")"
+echo ""
+echo "AutoX version $(cat "$AX_BASE/data/version.dat")"
 echo "(C)Copyright 2012-$(date +%Y) Gabriel T. Sharp, All Rights Reserved"
 echo "Authored By: $(cat "$AX_BASE/data/authors.dat")"
 echo "All Rights Reserved"
 echo "Protected by the GNU GPL3 License, please read it in LICENSE"
 echo "or on the web at http://www.gnu.org/licenses/gpl-3.0.en.html"
 echo "(replace en with your language if you speak a different one)"
+declare -i LCNT=$(grep -Pcn ^ $AX_BASE/data/autoxdescription.dat)
+declare LLASTF="$AX_BASE/data/autoxdescription.dat.last"
+if [[ -s $LLASTF ]]; then
+while true; do
+    true debug echo "roll/count/lastf@ = $LROLL/$LCNT/${LLASTF[@]}"    
+    declare -i LROLL=$(perl -we 'print int(rand() *'${LCNT}');')
+    readarray -t LLAST < "$AX_BASE/data/autoxdescription.dat.last"
+    if [[ ${#LLASTF[@]} -gt 2 ]]; then
+        # dont repeat up to the last two items        
+        LLTST=( ${LLASTF[@]: -2:2} )}
+        for L in "${LLTST[@]}"; do
+            if [[ $LLTST == $LROLL ]]; then
+                true debug echo "except: roll = one of the LLTST's items; $L, re-rolling"
+                continue
+            fi
+        done
+        true debug echo "assert: we made it out alive, roll ok!"
+    fi
+    # if we make it here, we didnt dupe (or couldn't help it), yay
+    break
+    echo "FATALLY WRONG: pausing so admins see it... <hit any key to KILL SHELL, or CTRL+C to STOP SCRIPT>"
+    read -sn1 AX_DISCARD
+    exit 127
+done
+else
+    echo "A:lways U:seless when T:ainted by an technologically O:blivious eXecutor (you)! <- hint: mis-installed :(" 
+    # todo later fixup
+    
+    
+fi
+    

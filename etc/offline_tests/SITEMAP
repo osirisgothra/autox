@@ -1,0 +1,40 @@
+-------------------- -----------------------------------------------------------
+           Zone Name Description(s)      
+        File Listing (Comments)          
+-------------------- -----------------------------------------------------------
+               zone2 CMake Testing Area - small mouse required...
+                 +-- CMakeCache.txt      
+                 +-- CMakeFiles          
+                 +-- cmake_install.cmake 
+                 +-- CMakeLists.txt      
+                 +-- Makefile            
+                 +-- Zone2               
+                 +-- zone2.cpp           
+                 +-- zone2.txt           
+                                         
+               zone4 executable tests, put in your path (i use /etc/environment on my system)
+                 +-- dmt                 
+                 +-- first               
+                 +-- last                
+                 +-- watch               
+                 +-- zone4.id            
+                 +-- zone4.txt           
+                                         
+               zone1 live function field testing, hard hat required!
+                 +-- CONCLUSIONS.md      
+                 +-- zone1.txt           
+                 +-- zonetest.sh         
+                                         
+               zone3 Output Redirection Testing Area
+                 +-- zone3.txt           
+                                         
+               zone5 corrupted, errored, or otherwise screwed up or truncated files
+                 +-- corrupted           
+                 +-- screwed             
+                 +-- truncated-with-inconsistent-refs
+                 +-- up                  
+                 +-- zone5.id            
+                 +-- zone5.txt           
+                                         
+-------------------- -----------------------------------------------------------
+creating/updating manifest...

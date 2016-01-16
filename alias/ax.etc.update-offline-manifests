@@ -1,0 +1,1 @@
+alias ax.etc.update-offline-manifests='pushd .;cd /ax/etc/offline_tests;./generate-manifest.pl > SITEMAP; popd'

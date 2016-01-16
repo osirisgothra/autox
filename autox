@@ -1,5 +1,23 @@
 #!/bin/bash
-echo "$SECONDS/$SECOND: enter autox startup (before here is non-autox startup -- your own stuff)"
+
+# TODO: HI-PRIORITY!: remove the 'temp' profilers b4 next cycle (targeted at jan 31)
+# temp: profiling sleep calls (if any) while speed profiling
+function sleep()
+{
+    if [[ ! -r ~/.dont-like-fast-startups ]]; then
+        true fx sleep "$@";
+    else
+        return $?
+    fi
+    # dont enable this if you like fast startups
+}
+# temp: profiling tattler (otherscript startup times)
+echo "autox: it took your _other_ config files $SECONDS second(s) to run"
+echo "autox: now autox is running it's startup script(s)..."
+echo
+# temp: header WILL be the first thing, as soon as we get the version banner
+#       positioned the way it needs to be...
+
 # shellcheck disable=2030
 # [SublimeLinter: exclude="2031,2086"]
 # vim: tw=0:noet:hls:nospell:sw=4:ts=4:fdc=2:fcl=all:fdo=hor:fen:vbs=0:cf:aw
@@ -74,7 +92,6 @@ shopt -p xpg_echo >> "$AX_SHOPT_PRESET_XPGECHO"
 echo "rm $AX_SHOPT_PRESET_XPGECHO -f" >> "$AX_SHOPT_PRESET_XPGECHO"
 echo "unset AX_SHOPT_PRESET_XPGECHO" >> "$AX_SHOPT_PRESET_XPGECHO"
 shopt -s xpg_echo
-
 
 
 
@@ -974,7 +991,17 @@ function ax.load()
 	local ALIAS_DIRS=( "$AX_BASE/alias" "$AX_USERBASE/alias" )
 	for ALIAS_DIR in ${ALIAS_DIRS[@]}; do
 	    if [[ ! -d $ALIAS_DIR ]]; then
-	        echo "skipping nonexisting directory: $ALIAS_DIR"
+	        if [[ -w $(basename $ALIAS_DIR) ]]; then
+	            echo "(first time pass) creating $ALIAS_DIR.."
+	            if mkdir --parents "$ALIAS_DIR"; then
+	                echo "$ALIAS_DIR has been created, continuing..."
+	            else
+	                echo "$ALIAS_DIR couldn't be created, please check the parent disk for problems ($?)!"
+	            fi
+	        else
+	            # silently ignored because nobody can do anything about it :)
+	            true debug echo "assert: skipped nonexisting directory: $ALIAS_DIR (no create because parent not writable!)"
+	        fi
 	        continue
 	    fi
 		true debug echo "Processing directory: $ALIAS_DIR"		
@@ -982,27 +1009,30 @@ function ax.load()
 		ALIAS_ITEMS=( $(grep -P '^\s*alias \S+=' $ALIAS_DIR/* --line-number 2>/dev/null | grep '^[^:]*(?=:1)' -P -o) )
 		ALIAS_CACHE=$(mktemp)
 		tput setaf 1
-		
 		    TMPZLF=$(mktemp -t autox-zero-files-XXXX)
 		    if find $ALIAS_DIR -size 0 -exec echo "FATAL: zero-length file in alias directory: {}" ';' | tee $TMPZLF; then
-		        echo "POSSIBLE BAD SITUATION: there may be a corrupt disk here, zero length files detected. If you created these files with touch recently, ignore this message!"
-		        echo "the names of all the files affected, logged to $TMPZLF"
-		        echo "<press [C] to continue, [D] to purge tempfile+continue, or the [A] key to abort>"
-		        while true; do		        
-		            read -e -sn1 || { echo "exit signaled; aborting..."; REPLY=A; break; }
-		            [[ ${REPLY^^} =~ [CAD] ]] && break
-		            echo "invalid choice, try again..."
-		            unset REPLY		        	           
-		        done
-		        [[ $REPLY == A ]] && return 127		        
-		        [[ $REPLY == D ]] && { echo -ne "purging tempfile $TMPZLF ..."; rm "$TMPZLF" && echo "ok" || echo "failed($?)"; }
-		        N="?";echo -ne "continuing (\e[s$N seconds)..."; [[ $REPLY == D ]] && N=0 || N=1; while ((N>0)); do sleep 1; let N--; echo -ne "\e[u$N"; done;
-		        unset N REPLY TMPZLF
-		        echo "continue in this dir [y/n]?"
-		        
-		    fi   
-		    
-		tput sgr0
+		        if [[ -s $TMPZLF ]]; then
+    		        echo -e "\e[31;1mPOSSIBLE BAD SITUATION: \e[0;31mthere may be a corrupt disk here, zero length files detected. If you created these files with touch recently, ignore this message!"
+	    	        echo -e "the names of all the files affected, logged to \e[0;5;1m$TMPZLF\e[0m"
+		            echo -e "\e[1;33m<press [C] to continue, [D] to purge tempfile+continue, or the [A] key to abort>\e[0m"
+		            while true; do
+		                read -e -sn1 || { echo "exit signaled; aborting..."; REPLY=A; break; }
+		                [[ ${REPLY^^} =~ [CAD] ]] && break
+    		            echo "invalid choice, try again..."
+	    	            unset REPLY		        	           
+		            done
+		            [[ $REPLY == A ]] && return 127		        
+		            [[ $REPLY == D ]] && { echo -ne "purging tempfile $TMPZLF ..."; rm "$TMPZLF" && echo "ok" || echo "failed($?)"; }
+    		        N="?";echo -ne "continuing (\e[s$N seconds)..."; [[ $REPLY == D ]] && N=0 || N=1; while ((N>0)); do sleep 1; let N--; echo -ne "\e[u$N"; done;
+	    	        unset N REPLY TMPZLF
+		            echo "continue in this dir [y/n]?"
+		         else		            
+		            rm -f "$TMPZLF"
+		            true debug echo "assert: removed zero-length $TMPZLF, this is normal!"
+		            unset N REPLY TMPZLF
+		         fi
+    	    fi   		    
+	    tput sgr0
 		if [[ ${#ALIAS_ITEMS[@]} -gt 0 ]]; then
 			true debug echo "Loading aliases..."
 			true debug echo "$(declare -p ALIAS_ITEMS)"

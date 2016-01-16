@@ -1,0 +1,1 @@
+alias ax.dir.usage.show='sort --human-numeric-sort --temporary-directory=/var/tmp <(du -d 1 -x -h -c -a)'
