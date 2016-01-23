@@ -238,12 +238,18 @@ __unfunc()
 		fi
 		false
 	else
-		if rm "${AX_FUNCS[$1]}" || [[ ! -f ${AX_FUNCS[$1]} ]]; then
+		if rm "${AX_FUNCS[$1]}" && [[ ! -f ${AX_FUNCS[$1]} ]]; then
 			unset -f $1
 			unset AX_FUNCS[$1]
 			echo "func $1 deleted"
 			true
-		else
+		elif [[ ! -f ${AX_FUNCS[$1]} ]]; then
+			echo "warning: func's link (persistent storage) is missing, cannot remove persistent version, if it has one, check your permissions!"
+			unset -f $1
+			unset AX_FUNCS[$1]
+			echo "func $1 delted (locally only)"
+			true
+		else	
 		    if [[ $FORCE -eq 1 ]]; then
 		        # force/semiquiet with * indicating removal error
 		        echo "func $1 deleted*"
@@ -278,6 +284,28 @@ EOF
 
 
 }
+__func_defer_load()
+{
+	declare -gA AX_FUNCS
+	if [[ ${1: -3} != '.af' ]]; then
+		set "${1}.af"
+	fi
+	if [[ $1 =~ "/" ]]; then
+		echo "please do not include directories with the func, it's location is controlled by the AX_BASE variable."
+		false
+		return
+	fi
+	fname="$AX_BASE/func/$1"
+	ftemp="$(mktemp)"
+
+	cat "$fname" |  perl -wne 'print unless /METADATA_START/ .. /METADATA_END/' > "$ftemp"  && true debug echo "parsed from $fname, without any apparent error, on to the executioner..."
+	source "$ftemp" && true debug echo "returned from source $ftemp, no error values reported!"
+	rm "$ftemp" && true debug echo "removed $ftemp from $fname okay"
+	true debug echo "FNAME=$FNAME = $fname"
+	truefname="$(basename ${fname%%.af})"
+	AX_FUNCS[$truefname]="$fname"
+}
+
 __func_loader()
 {
 	local NONULLGLOB=0
@@ -287,14 +315,7 @@ __func_loader()
 	local -i tot=${#fnames[@]}
 	local -i cur=0
 	local -i prc=0
-	echo -ne " \e[s\e[0K\e[u"
-	for fname in "${fnames[@]}"; do
-	    let cur++
-	    prc=$(( (cur*100)/tot ))
-		local ftemp=$(mktemp)
-		local FNAME=$(basename $fname | sed 's/\.af$//g' )
-		echo -ne " [u${prc}% $FNAME \e[1;30m(\e[0m$(printf '%03.4d/%03.4d' ${cur} ${tot})\e[1;30m)\e[0m\e[0K\e[u\e[s-"
-		# TODO: assign this in autox, and load from /$AX?BASE_data/ignoreduplicates.dat #
+	echo -ne " \e[s\e[0K\e[u"	
 		if [[ ! -v AX_IGNORED_FUNCS ]]; then
 		    declare -Agx AX_IGNORED_FUNCS=( [__placeholder__]="1" )
 		    IFS=$'\n'
@@ -304,22 +325,41 @@ __func_loader()
 		        AX_IGNORED_FUNCS[$x]=1
 		    done
 		fi
-        if [[ ${#BASH_ALIASES[$FNAME]} -gt 0 ]]; then
-            if [[ ${AX_IGNORED_FUNCS[$FNAME]} == 1 ]]; then
-                echo "assert: ignoring $FNAME because its dual use is intended!"
-            else
-                echo "warning: $FNAME is a func which takes precedence over aliases, the alias form will be removed to avoid conflicts."
-                echo "(hint: new item on purpose?? great! just add $FNAME to $AX_BASE/data/ignoreduplicates.dat to avoid this message!)"
-                builtin unalias $FNAME
-            fi
-        fi
-		cat "$fname" |  perl -wne 'print unless /METADATA_START/ .. /METADATA_END/' > "$ftemp"  && true debug echo "parsed from $fname, without any apparent error, on to the executioner..."
-		source "$ftemp" && true debug echo "returned from source $ftemp, no error values reported!"
-		rm "$ftemp" && true debug echo "removed $ftemp from $fname okay"
-		true debug echo "FNAME=$FNAME = $fname"
-		AX_FUNCS[$FNAME]="$fname"
+	local ftemp="$(mktemp)"
+	for fname in "${fnames[@]}"; do
+		[[ $tot -eq 0 ]] && break
+		
+		
+					
+	    let cur++
+	    prc=$(( ( cur*100) / tot ))
+		true debug echo "PERC=$prc CUR=$cur TOT=$tot"
+		
+		local FNAME=$(basename $fname | sed 's/\.af$//g' )
+		echo -ne "[u${prc}% $FNAME \e[1;30m(\e[0m$(printf '\e[1m%3d\e[11m of \e[1m%3d\e[11m' ${cur} ${tot})\e[1;30m)\e[0m\e[0K\e[u\e[s "
+		# TODO: assign this in autox, and load from /$AX?BASE_data/ignoreduplicates.dat #
+
+        	if [[ ${#BASH_ALIASES[$FNAME]} -gt 0 ]]; then
+			if [[ ${AX_IGNORED_FUNCS[$FNAME]} == 1 ]]; then
+                		echo "assert: ignoring $FNAME because its dual use is intended!"
+        		else
+	        	        echo "warning: $FNAME is a func which takes precedence over aliases, the alias form will be removed to avoid conflicts."
+	        	        echo "(hint: new item on purpose?? great! just add $FNAME to $AX_BASE/data/ignoreduplicates.dat to avoid this message!)"
+                		builtin unalias $FNAME
+        		fi
+		fi
+		tfname="$(basename ${fname%%.af})"
+		echo -e "\nfunction $tfname\n{\n\t__func_defer_load $tfname;\n\t$tfname \"\$@\";\n} " >> "$ftemp"
+#		cat "$fname" |  perl -wne 'print unless /METADATA_START/ .. /METADATA_END/' > "$ftemp"  && true debug echo "parsed from $fname, without any apparent error, on to the executioner..."
+#		source "$ftemp" && true debug echo "returned from source $ftemp, no error values reported!"
+#		true debug echo "FNAME=$FNAME = $fname"
+#		AX_FUNCS[$FNAME]="$fname"
 	done
-	echo "$tot 'funcs' "
+
+	source "$ftemp"
+	rm "$ftemp" && true debug echo "removed $ftemp from $fname okay"
+
+	echo "[1m$tot [30;1m'[0mfuncs[30;1m'[0m loaded[30;1m![0m[K"
 
 	[[ $NONULLGLOB -eq 1 ]] && shopt -u nullglob
 
@@ -327,7 +367,7 @@ __func_loader()
 
 if ! ax.config.has ax.func.disable_all_flag; then
     SECONDS=0
-    echo -ne "\e[0G\e[0;36;1m⁜ \e[0;1mF\e[0mu\e[30;1mn\e[1;30m\e[0;34m\e[1mct-lias L\e[0;34mo\e[1;30ma\e[0md\e[1me\e[0;36mr\e[0m \e[s"
+    echo -ne "\e[0G\e[0;36;1m⁜ \e[0;1mF\e[0mu\e[30;1mn\e[1;30m\e[0;34m\e[1mct-lias L\e[0;34mo\e[1;30ma\e[0md\e[1me\e[0;36mr\e[0m, \e[s"
     __func_loader "$@"
     {
     case $SECONDS in
@@ -341,3 +381,4 @@ else
     echo -e "\e[1;30m$BASH_SOURCE : $LINENO : ax.func.disable_all_flag is defined, funcs will not be available!!"
     echo -e "\e[0m... in etc/autoxrc ..."
 fi
+

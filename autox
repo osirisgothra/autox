@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # TODO: HI-PRIORITY!: remove the 'temp' profilers b4 next cycle (targeted at jan 31)
+PATH=$(dirname $(readlink -e $BASH_SOURCE))/bin:$PATH
+
 # temp: profiling sleep calls (if any) while speed profiling
 function sleep()
 {
@@ -15,6 +17,19 @@ function sleep()
 echo "autox: it took your _other_ config files $SECONDS second(s) to run"
 echo "autox: now autox is running it's startup script(s)..."
 echo
+echo -ne "\e[1mAutoX alpha 1"
+if which axkbhit &> /dev/null; then
+	echo -e ", tap the [s] key to enter a minimal session (bash --norc)...\e[0m"
+	trap 'R=$?;axkbhit; if [[ $? -gt 0 ]]; then read -sn1 AX_TAP; if [[ ${AX_TAP^^} == S ]]; then bash --norc; fi; fi; (exit $?)' DEBUG
+
+else
+
+	echo -e ", starting, please wait a moment..."
+	echo "warning: axkbhit not found in path, extended key pooling will NOT be available"
+	echo "         you can either copy axkbhit (or compile it) yourself, or install it"
+	echo "         using the provided installer! -- however this is not critical"
+	echo
+fi
 # temp: header WILL be the first thing, as soon as we get the version banner
 #       positioned the way it needs to be...
 
@@ -99,7 +114,7 @@ shopt -s xpg_echo
 #### 1. GLOBALLY ACCESSABLE VARIABLES
 ####
 
-eval declare -gxA AX_IGNORED_DUPLICATES=( `grep -P '^[^#].*' /ax/data/ignoreduplicates.dat --word-regexp | sed 's/.*/[\0]="1"/g'` )
+eval declare -gxA AX_IGNORED_DUPLICATES=( `grep -P '^[^#].*' $(dirname $(readlink -e $BASH_SOURCE))/data/ignoreduplicates.dat --word-regexp | sed 's/.*/[\0]="1"/g'` )
 declare -gx AX_SUDO_BIN="$(which sudo)"
 [[ -x "$AX_SUDO_BIN" ]] || { echo "SEVERE: sudo binary not executable!! please check settings! STOP"; break; };
 
@@ -1362,7 +1377,8 @@ function __ax_do_resilliance_checks()
     shopt -s progcomp
     shopt -u failglob
 }
-
+echo "keyfilter removed"
+trap DEBUG
 trap '__ax_do_resilliance_checks' DEBUG
 
 # TODO: remove ax.apport.crash* and move to bootstrap.d/99crashandler.ax
