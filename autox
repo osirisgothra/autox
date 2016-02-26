@@ -1,5 +1,21 @@
 #!/bin/bash
 
+rr=$?
+if [[ $AX_SKIPAX -ge 1 ]]; then
+    let AX_SKIPAX++
+    export AX_SKIPAX
+    if [[ $AX_SKIPAX -le 2 ]]; then
+        printf "%-"${COLUMNS-80}"s " "\e[1;30m(not running autox, AX_SKIPAX is defined [subsequent calls will be logged in /tmp if possible])\e[0m\n" 
+    else
+        # trivial log if possible
+        echo "additional session depth of $AX_SKIPAX-1 called on $(date)" >> /tmp/ax.session.$HOSTNAME.$USER.log
+    fi
+    (exit $rr)
+    return $?
+else
+    true debug echo "verified non skip session or LTZ value of skip, which is [$AX_SKIPAX] at this time."
+fi
+
 # TODO: HI-PRIORITY!: remove the 'temp' profilers b4 next cycle (targeted at jan 31)
 PATH=$(dirname $(readlink -e $BASH_SOURCE))/bin:$PATH
 
@@ -18,9 +34,10 @@ echo "autox: it took your _other_ config files $SECONDS second(s) to run"
 echo "autox: now autox is running it's startup script(s)..."
 echo
 echo -ne "\e[1mAutoX alpha 1"
+# TODO: rewrite kbhit so it is not dependant on a compiler, autox is supposed to be compile-free
 if which axkbhit &> /dev/null; then
-	echo -e ", tap the [s] key to enter a minimal session (bash --norc)...\e[0m"
-	trap 'R=$?;axkbhit; if [[ $? -gt 0 ]]; then read -sn1 AX_TAP; if [[ ${AX_TAP^^} == S ]]; then bash --norc; fi; fi; (exit $?)' DEBUG
+	echo -e ", you can interrupt startup to drop into:\n\t [\e[1ms\e[0m] = minimal session (bash --norc) \n\t [\e[1mr\e[0m] = stock session (as if new installed os)\n...\e[0m"
+	trap 'R=$?;axkbhit; if [[ $? -gt 0 ]]; then read -sn1 AX_TAP; if [[ ${AX_TAP^^} == S ]]; then bash --norc; elif [[ ${AX_TAP^^} == r ]]; then env AX_SKIPAX=1 bash --rcfile /etc/skel/.bashrc; fi; fi; (exit $?)' DEBUG
 
 else
 
@@ -1367,20 +1384,48 @@ source "$AX_SHOPT_PRESET_XPGECHO"
 # dont set -ET while using or else functions traps will overwrite them!
 function __ax_do_resilliance_checks()
 {
+    if declare -pF __ax_disable_resilliance_checks &> /dev/null; then
+        if [[ -v AX_DISABLE_RCHECKS ]]; then
+            unset -f __ax_disable_resilliance_checks
+            unset -f __ax_do_resilliance_checks
+            trap DEBUG
+        fi
+    else
+        function __ax_disable_resilliance_checks()
+        {
+            export AX_DISABLE_RCHECKS=1
+        }
+    fi
     # WARNING: dont set things that don't affect programmable completion, else the user will
     #          not have control over their own system, let THEM decide their settings otherwise
     # TODO: issue warnings maybe instead of setting back settings, or warn then set, or maybe give a choice? gather some intel first..
-    unset IFS
-    shopt -u nullglob
-    shopt -u dotglob
-    shopt -u globstar
-    shopt -s progcomp
-    shopt -u failglob
+    [[ $AX_RCHECK_IFS -ne 0 ]] && unset IFS
+    [[ $AX_RCHECK_GLOBS ]] && {
+        shopt -u nullglob
+        shopt -u dotglob
+        shopt -u globstar
+        shopt -u failglob
+    }
+    [[ $AX_RCHECK_PROGCOMP ]] && { shopt -s progcomp; }
 }
-echo "keyfilter removed"
-trap DEBUG
-trap '__ax_do_resilliance_checks' DEBUG
 
+# remove the "[s] for emergency session" keypress checker
+# because the user will be typing after this!
+true debug echo "keyfilter removed"
+trap DEBUG
+
+if ax.config.has no_shell_checking; then
+    true debug echo "no_shell_checking is present, we will not check the shell (default for normal users, ie; non-developers of autox)"
+else
+    [[ -z $AX_RCHECK_SNAME ]] && declare -gx AX_RCHECK_SNAME=DEBUG
+    # TODO: attach a reference for easy access (all mnenomics must start with AXM_ instead of AX_!)
+    declare -nrg AXM_RCSN=AX_RCHECK_SNAME
+    true debug echo "attaching shell checks to $AXM_RCSN signals"
+    trap '__ax_do_resilliance_checks' $AXM_RCSN
+    true debug echo "attachment to $AXM_RCSN complete, use 'trap $AXM_RCSN' to clear trap"
+fi
+
+# TODO: rewrite crash handler code in a child language, like perl or python
 # TODO: remove ax.apport.crash* and move to bootstrap.d/99crashandler.ax
 #if sudo true; then
 #    pushd .

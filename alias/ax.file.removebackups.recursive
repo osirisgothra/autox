@@ -1,0 +1,1 @@
+alias ax.file.removebackups.recursive='find -iname "*~" -exec rm "{}" ";"'

@@ -1,0 +1,4 @@
+ax.service.systemd.stop () 
+{ 
+    ${AX_SUDO_BINARY=$(which sudo)} service "$@" stop
+}

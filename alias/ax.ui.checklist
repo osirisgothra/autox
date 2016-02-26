@@ -1,0 +1,1 @@
+alias ax.ui.checklist='dialog --checklist'

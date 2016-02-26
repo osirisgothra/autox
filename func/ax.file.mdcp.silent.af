@@ -1,0 +1,6 @@
+ax.file.mdcp.silent () 
+{ 
+    [[ ! -d "${@: -1}" && ! -f "${@: -1}" ]] && { 
+        mkdir --parents "${@: -1}" && cp --no-clobber "$@" || echo "one of the operations failed, not doing anything else" > /dev/stderr
+    } || echo "${@: -1} Already Exists, Must Be NON EXISTING!" > /dev/stderr
+}

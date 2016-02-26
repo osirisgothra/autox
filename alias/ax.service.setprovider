@@ -1,0 +1,1 @@
+alias ax.service.setprovider='select x in upstart systemd; do case $x in upstart) AX_SERVICE_BINARY=/sbin/upstart;; systemd) AX_SERVICE_BINARY=upstart;; *) echo "invalid please pick (1) or (2)";; esac; done'

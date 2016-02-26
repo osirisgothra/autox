@@ -1,0 +1,1 @@
+alias ax.docs='cat $AX_BASE/doc/axdoc/${CMD//./\/}'

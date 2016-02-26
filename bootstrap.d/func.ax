@@ -286,24 +286,59 @@ EOF
 }
 __func_defer_load()
 {
+    true debug echo "$FUNCNAME: arguments=${@} ($# argument[s] total)"
 	declare -gA AX_FUNCS
+	declare -ga ORIGARGS=( "$@" )
+	true debug echo "$FUNCNAME: caller=$(caller)"
+	true debug echo "$FUNCNAME: sources=${BASH_SOURCE[@]} (${#BASH_SOURCE[@]} source(s) total)"
+	true debug echo "$FUNCNAME: detail follows..."
+	true debug echo "AX_FUNCS CONTENT: DATA=[$(declare -p AX_FUNCS)]"
 	if [[ ${1: -3} != '.af' ]]; then
-		set "${1}.af"
+	    true debug echo ".af extension was not provided in first argument, adding it now (original = $1)" 
+	    if [[ $# -gt 1 ]]; then
+		    set "${1}.af" "${2: -1}"
+		    true debug echo "$# > 1; modified arguments: $@ ($# total)"
+		elif [[ $# -lt 1 ]]; then
+		    echo "ERROR: not enough arguments, need at least a function name!"
+		    true debug echo "exiting with 127 out of $FUNCNAME"
+		    return 127
+		else
+		    true debug echo "setting cmdline to ${1}.af alone."
+		    set "${1}.af"
+		fi
 	fi
 	if [[ $1 =~ "/" ]]; then
 		echo "please do not include directories with the func, it's location is controlled by the AX_BASE variable."
+		true debug echo "returning early due to bad name with / in it ($1)?"
 		false
 		return
 	fi
 	fname="$AX_BASE/func/$1"
 	ftemp="$(mktemp)"
-
+	true debug echo "vars set: fname=$fname  ftemp=$ftemp"
+	true debug echo "debugging next few lines ------------"
+	#true debug set -x
 	cat "$fname" |  perl -wne 'print unless /METADATA_START/ .. /METADATA_END/' > "$ftemp"  && true debug echo "parsed from $fname, without any apparent error, on to the executioner..."
 	source "$ftemp" && true debug echo "returned from source $ftemp, no error values reported!"
 	rm "$ftemp" && true debug echo "removed $ftemp from $fname okay"
-	true debug echo "FNAME=$FNAME = $fname"
+	true debug echo "FNAME=$fname"
 	truefname="$(basename ${fname%%.af})"
 	AX_FUNCS[$truefname]="$fname"
+	true debug echo "truefname=${truefname}"
+	# note: it is the caller's responsibility to reset/unset these BEFORE calling the
+	# function that might be deferred!!
+	declare -gi AX_DEFER_LOAD_RETURN=$?
+	declare -gi AX_LAST_CALL_DEFERRED=1
+	declare -ga AX_DEFER_PIPESTATUS=( "${PIPESTATUS[@]}" )
+	# green light, call with remaining arguments (and strip the .af from the first argument)
+	local CALLNAME="${1%.af}"
+    true debug echo "about to: \"$CALLNAME\" ARGS=[$@] ARGC=$#"
+    # restore original arguments
+    set -- "${ORIGARGS[@]}"
+    # use callname and shift off first arg
+    shift
+	"$CALLNAME" "$@"
+	return $?
 }
 
 __func_loader()
@@ -315,7 +350,7 @@ __func_loader()
 	local -i tot=${#fnames[@]}
 	local -i cur=0
 	local -i prc=0
-	echo -ne " \e[s\e[0K\e[u"	
+	echo -ne " \e[s\e[0K\e[u"
 		if [[ ! -v AX_IGNORED_FUNCS ]]; then
 		    declare -Agx AX_IGNORED_FUNCS=( [__placeholder__]="1" )
 		    IFS=$'\n'
@@ -349,11 +384,12 @@ __func_loader()
         		fi
 		fi
 		tfname="$(basename ${fname%%.af})"
-		echo -e "\nfunction $tfname\n{\n\t__func_defer_load $tfname;\n\t$tfname \"\$@\";\n} " >> "$ftemp"
+#		echo -e "\nfunction $tfname\n{\n\t__func_defer_load $tfname \"\$@\";\n} " >> "$ftemp"
+		echo -e "\nfunction $tfname\n{\n\t__func_defer_load \$FUNCNAME \"\$@\";\n} " >> "$ftemp"
 #		cat "$fname" |  perl -wne 'print unless /METADATA_START/ .. /METADATA_END/' > "$ftemp"  && true debug echo "parsed from $fname, without any apparent error, on to the executioner..."
 #		source "$ftemp" && true debug echo "returned from source $ftemp, no error values reported!"
 #		true debug echo "FNAME=$FNAME = $fname"
-#		AX_FUNCS[$FNAME]="$fname"
+		AX_FUNCS[$FNAME]="$fname"
 	done
 
 	source "$ftemp"

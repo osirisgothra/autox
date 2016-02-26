@@ -4,13 +4,14 @@ function ax.tests.whitespace()
 { 
     if [[ -z "" ]] && [[ -n " " ]] && [[ ! -r "/dev/not a filename" ]]; then
         if [[ -n "$AX_WHITESPACE" ]]; then
-            echo "\e[1m*\e[0m Whitespace Handling OK"
+        
+            echo "\e[1m*\e[0m Whitespace Handler"   
             unset AX_WHITESPACE
         fi
         return 0
     else
-        axtool warn $BASH_SOURCE "Whitespace apparently failed test, please use vanilla shopt settings in your main environment"
-        axtool hint $BASH_SOURCE "You might consider using ax.env.push/pop for your operations!"
+        true warn echo $BASH_SOURCE "Whitespace apparently failed test, please use vanilla shopt settings in your main environment"
+        true hint echo $BASH_SOURCE "You might consider using ax.env.push/pop for your operations!"
         return 1
     fi
 }

@@ -1,0 +1,1 @@
+alias ax.term.clear='ax.term.setterm.stub --clear'

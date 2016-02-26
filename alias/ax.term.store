@@ -1,0 +1,1 @@
+alias ax.term.store='ax.term.setterm.stub --store'

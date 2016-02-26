@@ -1,0 +1,1 @@
+alias ax.func.listdeferred='set | fgrep "__func_defer_load \$FUNCNAME" -B2 | grep "^[^[:punct:] ]\\S*" -Po | column'

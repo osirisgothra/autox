@@ -1,0 +1,5 @@
+ax.dir.parent () 
+{ 
+    [[ $# -eq 0 ]] && T=1 || T=$1;
+    readlink -e "$(echo "$PWD$(while ((T>0)); do let T--; printf '/..'; done)")"
+}

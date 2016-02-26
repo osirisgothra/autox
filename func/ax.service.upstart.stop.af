@@ -1,0 +1,4 @@
+ax.service.upstart.stop () 
+{ 
+    ${AX_SUDO_BINARY=$(which sudo)} initctl stop "$@"
+}

@@ -1,0 +1,1 @@
+alias ax.term.hbcolor='ax.term.setterm.stub --hbcolor'

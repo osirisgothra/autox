@@ -1,0 +1,20 @@
+ax.videos.catalog () 
+{ 
+    echo "Please wait a minute calculating file-list...";
+    rm -f ~/video-list.txt;
+    shopt -s globstar;
+    for i in /media/gate/ur/Videos/**;
+    do
+        if [[ -d $i ]] || [[ ! -r $i ]]; then
+            continue;
+        fi;
+        echo -ne "\e[s$i\e[K\e[u";
+        mimetype $i | grep --color=auto -q video && { 
+            echo "$i" >> ~/video-list.txt
+        } || echo -e "\e[32;1mNOT ADDING $i BECAUSE ITS NOT A VIDEO!\e[0m";
+    done;
+    shopt -u globstar;
+    cat ~/video-list.txt | sort | uniq > ~/videoplay.lst;
+    rm ~/video-list.txt;
+    true
+}

@@ -1,0 +1,1 @@
+alias ax.term.reset='ax.term.setterm.stub --reset'

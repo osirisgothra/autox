@@ -1,0 +1,48 @@
+ax.math.rand () 
+{ 
+    case $* in 
+        --help)
+            echo "help text"
+        ;;
+        *)
+            local BRK=0;
+            case $# in 
+                1)
+                    set 0 $1
+                ;;
+                0)
+                    set 0 255
+                ;;
+                2)
+                    true
+                ;;
+                *)
+                    while [[ $# -gt 0 ]]; do
+                        if [[ $# -eq 1 ]]; then
+                            ax.math.rand $1;
+                            shift;
+                        else
+                            ax.math.rand $1 $2;
+                            shift 2;
+                        fi;
+                    done;
+                    BRK=1
+                ;;
+            esac;
+            if [[ $BRK != 1 ]]; then
+                [[ $2 -lt $1 ]] && set $2 $1;
+                for X in "$@";
+                do
+                    [[ $X -eq 0 ]] && [[ $X != "0" ]] && ERR=1;
+                done;
+                if [[ $ERR -gt 0 ]]; then
+                    echo "expected: one or two integers of different values!";
+                else
+                    RANGE=$(( $2 - $1 ));
+                    VAL=$(( $RANDOM / (32768 / RANGE ) + $1 ));
+                    echo $VAL;
+                fi;
+            fi
+        ;;
+    esac
+}

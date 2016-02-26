@@ -1,0 +1,1 @@
+alias ax.term.background='ax.term.setterm.stub --background'

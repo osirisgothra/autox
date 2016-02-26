@@ -1,0 +1,1 @@
+alias ax.term.ulcolor='ax.term.setterm.stub --ulcolor'

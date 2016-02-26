@@ -1,1 +1,1 @@
-alias ax.dict.randomword='set +xv;perl -wne '\''BEGIN { our $num = int(rand() * '\''62212'\''); }; if ( $. == $num ) { print; exit; }'\'' /ax/cache/dict/en_US/words'
+alias ax.dict.randomword='set +xv;perl -wne '\''BEGIN { our $num = int(rand() * '\''62212'\''); }; if ( $. == $num ) { print; exit; }'\'' $AX_BASE/cache/dict/en_US/words'

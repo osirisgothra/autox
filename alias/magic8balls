@@ -1,0 +1,1 @@
+alias magic8balls='clear; RR=${RANDOM:0:3}; echo -e "\e[1mPress CTRL-C to End Your Magic 8-Ball Session\e[0m";while [[ $RR -ne ${RANDOM:0:3} ]]; do magic8ball; done; echo -e "\e[1mI am tired of questions please let me rest a while....(SESSION ENDED BY COMPUTER INSTEAD)\e[0m"'

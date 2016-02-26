@@ -1,0 +1,1 @@
+alias ax.file.removebackups='find -maxdepth 0 -iname "*~" -exec rm "{}" ";"'

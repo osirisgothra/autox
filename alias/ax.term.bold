@@ -1,0 +1,1 @@
+alias ax.term.bold='ax.term.setterm.stub --bold'

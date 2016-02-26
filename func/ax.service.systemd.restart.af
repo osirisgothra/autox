@@ -1,0 +1,4 @@
+ax.service.systemd.restart () 
+{ 
+    ${AX_SUDO_BINARY=$(which sudo)} service "$@" restart
+}

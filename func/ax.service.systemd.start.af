@@ -1,0 +1,4 @@
+ax.service.systemd.start () 
+{ 
+    ${AX_SUDO_BINARY=$(which sudo)} service "$@" start
+}

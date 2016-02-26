@@ -1,0 +1,4 @@
+ax.service.upstart.restart () 
+{ 
+    ${AX_SUDO_BINARY=$(which sudo)} initctl restart "$@"
+}

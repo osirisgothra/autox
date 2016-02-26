@@ -1,0 +1,1 @@
+alias ax.term.appcursorkeys='ax.term.setterm.stub --appcursorkeys'

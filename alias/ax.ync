@@ -1,0 +1,1 @@
+alias ax.ync='echo -ne "[Y]es [N]o, or [C]ancel? [N]:" | perl -wpe "s/(\\p{PosixPunct})/[30;1m\$1[0;32m/g;s/([YNC])/[1m\$1/g;s/$/[0m/g"; declare -gxi AX_CANCEL=0; REPLY=""; until [[ ${REPLY^^} =~ [YNC] ]]; do read -sn1; done; case ${REPLY^^} in Y) true;; N) false;; C) false;AX_CANCEL=1;; esac'

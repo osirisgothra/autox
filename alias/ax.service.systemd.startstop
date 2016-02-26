@@ -1,0 +1,1 @@
+alias ax.service.systemd.startstop='function _f() { eval sudo\ service\ ${1}\ {stop,start,status}\; unset -f _f; }; _f'

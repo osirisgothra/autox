@@ -1,0 +1,4 @@
+ax.service.upstart.status () 
+{ 
+    ${AX_SUDO_BINARY=$(which sudo)} initctl status "$@"
+}

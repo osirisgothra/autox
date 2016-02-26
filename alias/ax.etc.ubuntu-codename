@@ -1,0 +1,1 @@
+alias ax.etc.ubuntu-codename='perl -wne '\''if (/^deb(?!-src).*main$/) { s/.*(\b.+\b) (?:main)$/$1/g; print; }'\'' /etc/apt/sources.list'

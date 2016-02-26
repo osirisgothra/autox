@@ -1,0 +1,6 @@
+foreach () 
+{ 
+    while read x; do
+        "$@" "$x";
+    done
+}

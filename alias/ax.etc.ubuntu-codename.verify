@@ -1,0 +1,1 @@
+alias ax.etc.ubuntu-codename.verify='if [[ $(lsb_release -cs) == $(ax.etc.ubuntu-codename) ]]; then echo "codename matches apt sources list"; else echo "error: codename does NOT match sources list, system may be in a corrupt state!"; false; fi'

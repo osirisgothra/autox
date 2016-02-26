@@ -1,0 +1,1 @@
+alias ax.term.underline='ax.term.setterm.stub --underline'

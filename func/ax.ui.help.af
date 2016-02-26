@@ -1,0 +1,4 @@
+ax.ui.help () 
+{ 
+    dialog --help | grep --color=auto -P -- \s+--$*
+}

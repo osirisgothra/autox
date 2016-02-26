@@ -1,0 +1,14 @@
+ax.led.scrl.flash () 
+{ 
+    [[ $4 != "" ]] && EQ=$4 || EQ="* 1";
+    unset V;
+    local V=$1;
+    [[ $V -le 0 ]] && V=1;
+    until [[ $V == 0 ]]; do
+        xset led named "Scroll Lock";
+        command sleep $2;
+        xset -led named "Scroll Lock";
+        let V--;
+        [[ $3 != "" ]] && command sleep $3 || command sleep $2;
+    done
+}

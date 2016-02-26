@@ -1,0 +1,4 @@
+chromium-browser () 
+{ 
+    chromium-browser "${1+http://www.google.com/search?q=${*// /+}&btnI=l}"
+}

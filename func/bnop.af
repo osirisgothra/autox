@@ -1,0 +1,5 @@
+bnop () 
+{ 
+    item="$(ax.dir.parent $1)";
+    echo "$(basename "$item")"
+}

@@ -28,10 +28,9 @@
 #       or even autox itself
 
 if [[ $AX_MACROS_LOADED -eq $$ ]]; then
-	[[ -v AX_DEBUG_LOG ]] && echo "$BASH_SOURCE not reloading macros on same process (PID=$$)" >> $AX_DEBUGLOG
+	echo "\e[1m*\e[0m Bash Extended Environmental Macros"
 	return 0;
 else
-	echo "\e[1m*\e[0m Bash Extended Environmental Macros"
 	if [[ ! -d $AX_BASE || ! -r $AX_BASE || ! -w $AX_BASE ]]; then
 		echo "Error: AX_BASE is not fully acessible in $BASH_SOURCE"
 	fi
@@ -40,9 +39,25 @@ else
 
 	BOLD="$(tput bold)"
 	OFF="$(tput sgr0)"
-	BUL="${BOLD}*${OFF} "
+	BUL="[${BOLD}Ὼ${OFF}]"
 	FG="tput setaf" # $($FG code)
 	BG="tput setab" # $($BG code)
+	
+	__bootstrap_banner_n()
+	{
+	    R=$?
+	    local -i MSGCLR=$1
+	    shift
+	    echo -ne "$BUL $($FG $MSGCLR)$*$OFF"
+	    return $R
+	}
+	__bootstrap_banner()
+	{
+	    R=$?
+	    __bootstrap_banner_n "$@"
+	    echo ""
+	    return $R
+	}
 
 	single_pass_func()
 	{

@@ -1,0 +1,6 @@
+ax.ln () 
+{ 
+    OPTS=("$@");
+    getopts;
+    echo "$@"
+}

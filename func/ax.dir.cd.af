@@ -1,0 +1,23 @@
+ax.dir.cd () 
+{ 
+    ORG=$1;
+    shift;
+    for CCMD in "$@";
+    do
+        echo "processing $CCMD";
+        case $1 in 
+            /subsys/shells/perl)
+                perlconsole
+            ;;
+            /apt)
+                aptsh
+            ;;
+            /sysctl)
+                ax.shells.sysctl
+            ;;
+            *)
+                builtin cd "$1"
+            ;;
+        esac;
+    done
+}

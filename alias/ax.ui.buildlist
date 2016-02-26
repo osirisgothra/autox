@@ -1,0 +1,1 @@
+alias ax.ui.buildlist='_b() { unset -f $FUNCNAME; T=$1; declare -a items; shift;C=$#;for x do items+=( "$x" "$x" 0 ); done; set "${items[@]}"; dialog --output-fd 1 --buildlist "$T" 0 0 "$C" "$@"; }; _b'

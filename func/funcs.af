@@ -1,0 +1,4 @@
+funcs () 
+{ 
+    declare -pf "$@" 2>&1 | sed -r "s/bash: declare/funcs/g"
+}

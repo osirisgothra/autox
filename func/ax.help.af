@@ -1,0 +1,16 @@
+ax.help () 
+{ 
+    if [[ -n ${AX_FUNC_HELP[$1]} ]]; then
+        echo ${AX_FUNC_HELP[$1]};
+    else
+        if ! builtin help $1; then
+            man $1 || { 
+                if info -w $1 | grep --color=auto -q .; then
+                    info $1;
+                else
+                    false;
+                fi
+            } || echo "Ran out of items to seek help with, please try again.";
+        fi;
+    fi
+}

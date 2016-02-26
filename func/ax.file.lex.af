@@ -1,0 +1,15 @@
+ax.file.lex () 
+{ 
+    echo "searching everything, please wait...";
+    { 
+        set -vx;
+        locate "$@";
+        which "$@";
+        command man -k "$@";
+        find -iname "$@";
+        apt-cache search --names-only "$@";
+        whereis "$@"
+    } 2>&1 | sed "s/^+.*/[32;1;7m\0[0m/g" > lex.txt;
+    cat lex.txt | less -raw;
+    set +v +x
+}

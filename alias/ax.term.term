@@ -1,0 +1,1 @@
+alias ax.term.term='ax.term.setterm.stub --term'

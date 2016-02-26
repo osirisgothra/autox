@@ -1,0 +1,1 @@
+alias ax.debug.traceon='true() { case $1 in debug) shift; echo -ne "\e[1mDBG\e[31m$?\e[32m$#\e[1;30m"; "$@";; edebug) shift; echo -ne "\e[1mE-DBG\e[31m$?\e[32m$#\e[1;30m"; "$@";; *) builtin true;; esac; }; echo "autox trace messages enabled, use traceoff to turn them back off"'

@@ -1,0 +1,1 @@
+alias ax.led.scrl.off='xset -led named "Scroll Lock"'

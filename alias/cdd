@@ -1,0 +1,1 @@
+alias cdd='cd "$(dialog --output-fd 1 --dselect "$PWD" 0 0)"'

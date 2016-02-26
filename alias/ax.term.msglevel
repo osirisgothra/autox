@@ -1,0 +1,1 @@
+alias ax.term.msglevel='ax.term.setterm.stub --msglevel'

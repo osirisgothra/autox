@@ -1,0 +1,4 @@
+ax.disk.usage () 
+{ 
+    du "${@---max-depth=1}"
+}

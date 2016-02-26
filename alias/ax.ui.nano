@@ -1,0 +1,1 @@
+alias ax.ui.nano='nano $(ax.ui.buildlist "Pick Files You Wish To Edit In This Directory" `ls -C1`)'

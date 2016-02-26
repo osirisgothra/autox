@@ -1,0 +1,8 @@
+ax.file.mdcp () 
+{ 
+    echo -e "\e[0;32mcopy\e[1;32m \"${@: 1:$#-1}\"\e[0;32m into directory \e[1m\"${@: -1}\"\e[0;32m, press any key to proceed or \e[1mCTRL+C\e[0;32m to change your mind:\e[0m";
+    read -sn1;
+    [[ ! -d "${@: -1}" && ! -f "${@: -1}" ]] && { 
+        mkdir --parents --verbose "${@: -1}" && cp --verbose --no-clobber "$@" || echo "one of the operations failed, not doing anything else"
+    } || echo "${@: -1} Already Exists, Must Be NON EXISTING!"
+}

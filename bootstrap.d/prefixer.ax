@@ -190,9 +190,33 @@ if [[ $- =~ i ]]; then
 			cat $TMPFILE
 			if grep -q apt-get $TMPFILE; then
 			while true; do
+			    echo "preparing to select package for targeting..."
 				PKGLINE=`grep -P '^(sudo\s)?apt-get' $TMPFILE`
 				PKGNAME=`echo "$PKGLINE" | grep -Po '(?<=apt-get install\s)\S+'`
-
+                if [[ $PKGNAME == "<selected package>" ]]; then
+                    # MULTIPLE PACKAGES, NEED TO ASK WHICH ONE FIRST!
+                    echo "multiple packages found, loading names..."
+                    declare -a PKGNAMES=( $(cnfh_stub patchage 2>&1 | grep '(?<=\*\s)(.+)' -Po --color=always | tr '\n' ' ') )
+                    if [[ ${#PKGNAMES} -eq 0 ]] || [[ ${PIPESTATUS[1]} != 0 ]]; then
+                        echo "fatal: could not get a list of packages to install, aborting!"
+                        return 126
+                    else
+                        echo "found ${#PKGNAMES} package(s)"
+                        select pn in ${PKGNAMES[@]}; do
+                            echo -ne '\e[s'
+                            if [[ $pn ]]; then
+                                PKGNAME=$pn
+                                echo
+                                break
+                            else
+                                echo -e '\e[uInvalid Choice, Try Again!\e[u'
+                            fi
+                        done
+                        echo "switching to package $PKGNAME..."
+                    fi
+                else
+                    echo "list contains single package, selecting it automatically..."
+                fi
 				echo -n "You want to install [1m$PKGNAME[0m? [y]es [n]o e[x]amine <ENTER=[n]o>:"
 				TMPRES=$(mktemp)
 				unset REPLY
@@ -208,8 +232,23 @@ if [[ $- =~ i ]]; then
 					if [[ $UID -ne 0 ]]; then
 						SUDO=sudo
 					fi
-					${SUDO+ $SUDO }apt-get install $PKGNAME
-
+					AX_NO_SUGGESTS=0
+					if apt-cache show $PKGNAME | grep --color=always Suggests | sed 's/31/32/g'; then
+					    echo -ne "Install Suggested Packages Too?"
+                        ax.ync || AX_NO_SUGGESTS=1
+                    else
+                        echo "Package Contains No Suggests, Skipping Suggest Query..."
+                    fi
+					if [[ $AX_NO_SUGGESTS == 0 ]]; then
+					    ${SUDO+ $SUDO }apt-get install --install-suggests $PKGNAME
+					else
+					    if [[ $AX_CANCEL -eq 0 ]]; then
+					        ${SUDO+ $SUDO }apt-get install $PKGNAME
+					    else
+					        echo "User Cancelled Operation!"
+					        return 127
+					    fi
+					fi
 				elif [[ $REPLY == x ]]; then
 					echo -e "\e[1;44m\e[2K$PKGNAME\e[0m"
 					apt-cache show $PKGNAME

@@ -62,3 +62,4 @@ weatherlocation=/US/PA/Pittsburgh
 
 [sudo]
 warn_sudo_duplicate=2
+test=1

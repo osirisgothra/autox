@@ -1,0 +1,4 @@
+ax.service.systemd.status () 
+{ 
+    ${AX_SUDO_BINARY=$(which sudo)} service "$@" status
+}

@@ -1,1 +1,0 @@
-alias ax.service.startstop='function _f() { eval sudo\ service\ ${1}\ {stop,start,status}\; unset -f _f; }; _f'
