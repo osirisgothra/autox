@@ -1,0 +1,4 @@
+tvlc () 
+{ 
+    [[ $# -eq 2 ]] && vlc --start-time=$[ ( ${1%%:*}*60 ) + ${1##*:} ] --stop-time=$[ ( ${2%%:*} * 60 ) + ${2##*:} ] || echo "need exactly 2 arguments in format of min:sec (example: tvlc 1:00 30:00)"
+}

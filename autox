@@ -1,4 +1,87 @@
-#!/bin/bash
+#!/bin/bash -r # will fail, please dont run as an executable - please edit with atom or sublime text
+
+if [[ ${AX_BANNERS} =~ ax_compile ]]; then
+    true debug echo skipping_ax_compile_message_not_first_time
+else
+    echo "[30;1mautox compint™ aglorithim v1.0-1 boot[0m"
+    AX_BANNERS+=".ax_compile"
+fi
+
+if [[ $AX_ENTRYCONTROL -eq $$ ]]; then
+    echo "starting autox..."
+else
+    declare -xirg AX_ENTRYCONTROL=$$
+    declare -gxr AX_USERTMP="$(dirname $(mktemp -u))"
+    declare -gxr AX_MANIFEST="$AX_USERTMP/$USER.$HOSTNAME.axmanifest"
+    declare -gxr AX_SNAPSHOT="$AX_USERTMP/$USER.$HOSTNAME.axsnapshot"
+    # TODO: add -r when COMPILED is done
+    declare -gx  AX_OP_MODE=INTERPRETER
+    if [[ -r ~/.config/autox/flags/no_compile_mode ]]; then
+        echo "not checking manifest, compile mode is disabled (no_compile_mode flag is set)"
+    else
+        echo -n "searching for manifest ($AX_MANIFEST)..."
+        if [[ -r $AX_MANIFEST ]]; then
+            if shasum -c "$AX_MANIFEST" -s; then
+                echo "compiled checksum ok"
+                AX_OP_MODE=COMPILED
+            else
+                rm "$AX_MANIFEST" -f
+                echo "checksum out of date"
+            fi
+        else
+            echo "not found"
+        fi
+    fi
+
+    case $AX_OP_MODE in
+        COMPILED)
+            echo -n "loading compiled environment from $AX_SNAPSHOT..."
+            if [[ -r $AX_SNAPSHOT ]]; then
+                if source $AX_SNAPSHOT &> /tmp/last.ax.start.log; then
+                    [[ -r ~/.inputrc_autox ]] && bind -f ~/.inputrc_autox
+                    echo "ok"
+                    return $?
+                else
+                    echo "fail"
+                    echo "FATAL: errors during snapshot load, reverting to interpreter mode..."
+                    AX_OP_MODE=INTERPRETER
+                fi
+            else
+                echo "missing!!"
+                echo "FATAL: $AX_SNAPSHOT MISSING, reverting to interpreter mode..."
+                AX_OP_MODE=INTERPRETER
+            fi
+            ;&
+
+        INTERPRETER)
+            if [[ -r ~/.hushlogin ]]; then
+                echo "interpreting quietly thanks to ~/.hushlogin..."
+                builtin source "$BASH_SOURCE" "$@" 2> /tmp/axstartup.$USER.$HOSTNAME.log 1>/dev/null
+            else
+                builtin source "$BASH_SOURCE" "$@"
+            fi
+
+            echo -n "compiling environment... "
+            echo -n "[var shopt comp alias trap hash alias func "
+            { declare -p; set; shopt -po; shopt -p; complete; alias; trap; hash -l; umask -p; } > $AX_SNAPSHOT
+            echo -n "bind "
+            bind -psv > ~/.inputrc_autox
+            echo "]...ok!"
+            echo -n "recording the manifest..."
+            shasum `find ax/ -type f` -a512 1> $AX_MANIFEST
+            echo "ok!"
+            ;;
+        *)
+            echo "failed (mode ${AX_OP_MODE- UNDEFINED} is unknown)"
+            echo "FATAL: mode was not determined, autox cannot be loaded!"
+            return 127;;
+    esac
+
+    AX_RETURN_GLOBAL=$?
+    # EXIT, RECORD SHA OF FILE SINCE WE ARE IN INTERPRETER MODE
+    (exit $AX_RETURN_GLOABAL)
+    return $?
+fi
 
 rr=$?
 if [[ $AX_SKIPAX -ge 1 ]]; then
@@ -14,6 +97,7 @@ if [[ $AX_SKIPAX -ge 1 ]]; then
     return $?
 else
     true debug echo "verified non skip session or LTZ value of skip, which is [$AX_SKIPAX] at this time."
+
 fi
 
 # TODO: HI-PRIORITY!: remove the 'temp' profilers b4 next cycle (targeted at jan 31)
@@ -1444,4 +1528,6 @@ fi
 #    fi
 #fi
 
+
 # END OF SCRIPT
+

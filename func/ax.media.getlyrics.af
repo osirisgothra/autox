@@ -1,0 +1,13 @@
+ax.media.getlyrics () 
+{ 
+    C=$1;
+    shift;
+    case $C in 
+        mocp)
+            ax.media.getlyrics.mm.mocp "$@"
+        ;;
+        *)
+            echo "unknown media player source: $C"
+        ;;
+    esac
+}
