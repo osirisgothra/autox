@@ -1,0 +1,1 @@
+alias ax.internal.genflagstr='grep '\''(?<=flags/)\w+[^/ ]*'\'' ax/ -rP --no-filename -o | sort | uniq'

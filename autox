@@ -8,21 +8,30 @@ else
 fi
 
 if [[ $AX_ENTRYCONTROL -eq $$ ]]; then
-    echo "starting autox..."
+    echo -e '[u[K[ustarting autox...'
 else
+    echo -ne '[s'
     declare -xirg AX_ENTRYCONTROL=$$
+    declare -xirg AX_USE_SHM=`[[ -r ~/.config/autox/flags/use_prefetch ]] && echo 1`
+    declare -xirg AX_SNAPMARK=$SECONDS
+    declare -gxr AX_SHM_VERBOSE='' # SET TO '--verbose' TO DEBUG
     declare -gxr AX_USERTMP="$(dirname $(mktemp -u))"
-    declare -gxr AX_MANIFEST="$AX_USERTMP/$USER.$HOSTNAME.axmanifest"
-    declare -gxr AX_SNAPSHOT="$AX_USERTMP/$USER.$HOSTNAME.axsnapshot"
-    # TODO: add -r when COMPILED is done
+    declare -gxr AX_MCRED="$USER.$HOSTNAME.ax"
+    declare -gxr AX_MANIFEST="$AX_USERTMP/${AX_MCRED}manifest"
+    declare -gxr AX_SHMLOC="/dev/shm/ax-${AX_MCRED}-prefetch"
+    declare -gxr AX_SNAPSHOT_SHM="${AX_SHMLOC}/${AX_MCRED}snapshot"
+    declare -gxr AX_SNAPBIND_SHM="${AX_SNAPSHOT_SHM}.bind"
+    declare -gx AX_SNAPSHOT="$AX_USERTMP/${AX_MCRED}snapshot"
+    declare -gx AX_SNAPBIND="${AX_SNAPSHOT}.bind"
     declare -gx  AX_OP_MODE=INTERPRETER
+    
     if [[ -r ~/.config/autox/flags/no_compile_mode ]]; then
-        echo "not checking manifest, compile mode is disabled (no_compile_mode flag is set)"
+        echo -e "[u[K[unot checking manifest, compile mode is disabled (no_compile_mode flag is set)"
     else
-        echo -n "searching for manifest ($AX_MANIFEST)..."
+        echo -ne "[u[K[usearching for manifest ($AX_MANIFEST)..."
         if [[ -r $AX_MANIFEST ]]; then
             if shasum -c "$AX_MANIFEST" -s; then
-                echo "compiled checksum ok"
+                echo -e "compiled checksum ok"
                 AX_OP_MODE=COMPILED
             else
                 rm "$AX_MANIFEST" -f
@@ -35,11 +44,21 @@ else
 
     case $AX_OP_MODE in
         COMPILED)
-            echo -n "loading compiled environment from $AX_SNAPSHOT..."
+            echo -n "[u[K[uchecking for prefetch..."
+            if [[ -r $AX_SNAPSHOT_SHM ]] && [[ -r $AX_SNAPBIND_SHM ]]; then
+                echo " using / read ok"
+                declare -gx AX_SNAPSHOT="${AX_SNAPSHOT_SHM}"
+                declare -gx AX_SNAPBIND="${AX_SNAPBIND_SHM}"
+            else
+                echo "no, fetch from disk..."
+            fi
+            echo -n "[u[K[uloading precompiled environment...[s"
             if [[ -r $AX_SNAPSHOT ]]; then
-                if source $AX_SNAPSHOT &> /tmp/last.ax.start.log; then
-                    [[ -r ~/.inputrc_autox ]] && bind -f ~/.inputrc_autox
-                    echo "ok"
+                if source $AX_SNAPSHOT &> /tmp/ax.$USER.$HOSTNAME.laststart.log; then
+                    [[ -r ~/.inputrc_autox ]] && bind -f ${AX_SNAPBIND}
+                    echo -n "[u[K[ucompleted "
+                    AX_SNAPMARK_CNT=$[ $SECONDS - ${AX_SNAPMARK} ]
+                    echo -e "in $AX_SNAPMARK_CNT sec(s) (of $SECONDS)"
                     return $?
                 else
                     echo "fail"
@@ -65,11 +84,32 @@ else
             echo -n "[var shopt comp alias trap hash alias func "
             { declare -p; set; shopt -po; shopt -p; complete; alias; trap; hash -l; umask -p; } > $AX_SNAPSHOT
             echo -n "bind "
-            bind -psv > ~/.inputrc_autox
+            bind -psv > "$AX_SNAPBIND"
             echo "]...ok!"
             echo -n "recording the manifest..."
             shasum `find ax/ -type f` -a512 1> $AX_MANIFEST
             echo "ok!"
+            if ((AX_USE_SHM)); then
+	            echo -n "flushing to prefetch (shared) memory..."
+	            if [[ -d "$AX_SHMLOC" ]] || mkdir --parents "$AX_SHMLOC" $AX_SHM_VERBOSE; then
+	              echo -n "dev=ok "
+    	          if cp $AX_SHM_VERBOSE --force --no-dereference "$AX_SNAPSHOT" "$AX_SNAPBIND" "$AX_SHMLOC"; then
+	                echo "commit=ok"
+	                echo -n "Notice: environment is loaded into shared memory until next reboot or checksum recycle"
+	                echo " and can be found in $AX_SHMLOC - remove these files if you want to force a reset"
+    	          else
+	                echo "commit=failed"
+	                echo "Warning: environment didn't copy, check permissions and existence of a /dev/shm on your system"
+	                sleep 1.5
+	              fi
+    	        else
+	                echo "dev=not found"
+	                echo "No Shared Memory Device (/dev/shm) could be accessed, you must have on to use the prefetch feature."
+                fi
+            else
+                echo "* prefetch is turned off (use_prefetch not flagged)"
+                rm -fr $AX_SHMLOC
+            fi
             ;;
         *)
             echo "failed (mode ${AX_OP_MODE- UNDEFINED} is unknown)"
@@ -88,7 +128,7 @@ if [[ $AX_SKIPAX -ge 1 ]]; then
     let AX_SKIPAX++
     export AX_SKIPAX
     if [[ $AX_SKIPAX -le 2 ]]; then
-        printf "%-"${COLUMNS-80}"s " "\e[1;30m(not running autox, AX_SKIPAX is defined [subsequent calls will be logged in /tmp if possible])\e[0m\n" 
+        printf "%-"${COLUMNS-80}"s " "[1;30m(not running autox, AX_SKIPAX is defined [subsequent calls will be logged in /tmp if possible])[0m\n" 
     else
         # trivial log if possible
         echo "additional session depth of $AX_SKIPAX-1 called on $(date)" >> /tmp/ax.session.$HOSTNAME.$USER.log
@@ -117,10 +157,10 @@ function sleep()
 echo "autox: it took your _other_ config files $SECONDS second(s) to run"
 echo "autox: now autox is running it's startup script(s)..."
 echo
-echo -ne "\e[1mAutoX alpha 1"
+echo -ne "[1mAutoX alpha 1"
 # TODO: rewrite kbhit so it is not dependant on a compiler, autox is supposed to be compile-free
 if which axkbhit &> /dev/null; then
-	echo -e ", you can interrupt startup to drop into:\n\t [\e[1ms\e[0m] = minimal session (bash --norc) \n\t [\e[1mr\e[0m] = stock session (as if new installed os)\n...\e[0m"
+	echo -e ", you can interrupt startup to drop into:\n\t [[1ms[0m] = minimal session (bash --norc) \n\t [[1mr[0m] = stock session (as if new installed os)\n...[0m"
 	trap 'R=$?;axkbhit; if [[ $? -gt 0 ]]; then read -sn1 AX_TAP; if [[ ${AX_TAP^^} == S ]]; then bash --norc; elif [[ ${AX_TAP^^} == r ]]; then env AX_SKIPAX=1 bash --rcfile /etc/skel/.bashrc; fi; fi; (exit $?)' DEBUG
 
 else
@@ -539,8 +579,8 @@ function livefunc__ax.cache.create()
 
 	declare -a STEPS=( value binding alias completion option hash trap shasum )
 	declare -i PERCENT=-1 STEP=-1 LAST=${#STEPS[@]}-1
-	declare incrementer='let STEP++ "PERCENT=STEP*100/LAST"; echo -e "\E8${STEPS[$STEP]}s... ($PERCENT% completed)\E[J"; STEPF="$AX_CACHE_SITE/${STEPS[$STEP]}.act"'
-	echo -e "Creating Cache...\E7"
+	declare incrementer='let STEP++ "PERCENT=STEP*100/LAST"; echo -e "[u[K[u${STEPS[$STEP]}s... ($PERCENT% completed)[J"; STEPF="$AX_CACHE_SITE/${STEPS[$STEP]}.act"'
+	echo -e "Creating Cache...[s"
 	while [[ $STEP < $LAST ]]; do
 		eval $incrementer
 		_ax__generate_values "$STEPF" $STEP $LAST
@@ -1128,18 +1168,18 @@ function ax.load()
 		    TMPZLF=$(mktemp -t autox-zero-files-XXXX)
 		    if find $ALIAS_DIR -size 0 -exec echo "FATAL: zero-length file in alias directory: {}" ';' | tee $TMPZLF; then
 		        if [[ -s $TMPZLF ]]; then
-    		        echo -e "\e[31;1mPOSSIBLE BAD SITUATION: \e[0;31mthere may be a corrupt disk here, zero length files detected. If you created these files with touch recently, ignore this message!"
+    		        echo -e "[31;1mPOSSIBLE BAD SITUATION: \e[0;31mthere may be a corrupt disk here, zero length files detected. If you created these files with touch recently, ignore this message!"
 	    	        echo -e "the names of all the files affected, logged to \e[0;5;1m$TMPZLF\e[0m"
 		            echo -e "\e[1;33m<press [C] to continue, [D] to purge tempfile+continue, or the [A] key to abort>\e[0m"
 		            while true; do
 		                read -e -sn1 || { echo "exit signaled; aborting..."; REPLY=A; break; }
 		                [[ ${REPLY^^} =~ [CAD] ]] && break
     		            echo "invalid choice, try again..."
-	    	            unset REPLY		        	           
+	    	            unset REPLY
 		            done
-		            [[ $REPLY == A ]] && return 127		        
+		            [[ $REPLY == A ]] && return 127
 		            [[ $REPLY == D ]] && { echo -ne "purging tempfile $TMPZLF ..."; rm "$TMPZLF" && echo "ok" || echo "failed($?)"; }
-    		        N="?";echo -ne "continuing (\e[s$N seconds)..."; [[ $REPLY == D ]] && N=0 || N=1; while ((N>0)); do sleep 1; let N--; echo -ne "\e[u$N"; done;
+    		        N="?";echo -ne "continuing ([s$N seconds)..."; [[ $REPLY == D ]] && N=0 || N=1; while ((N>0)); do sleep 1; let N--; echo -ne "[u[K[u$N"; done;
 	    	        unset N REPLY TMPZLF
 		            echo "continue in this dir [y/n]?"
 		         else		            
