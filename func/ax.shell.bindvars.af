@@ -1,0 +1,4 @@
+ax.shell.bindvars () 
+{ 
+    bind -V
+}

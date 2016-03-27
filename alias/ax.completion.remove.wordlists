@@ -1,0 +1,1 @@
+alias ax.completion.remove.wordlists='complete | grep -- -W  | sed '\''s/-W/-r/g;s/'\''"'\''"'\''[^'\''"'\''"'\'']*'\''"'\''"'\''//g'\'' > /tmp/t; for n in cat source; do eval source /tmp/t; done;'

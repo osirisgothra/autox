@@ -1,0 +1,1 @@
+alias ax.disk.swap.allon='sudo swapon -a'

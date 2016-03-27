@@ -1,0 +1,7 @@
+ax.shell.bindconf () 
+{ 
+    BTF="$(mktemp)";
+    echo "$@" > $BTF;
+    bind -f $BTF && echo "processing commands ok" || echo "error in command string, try again";
+    rm -f $BTF
+}

@@ -1,0 +1,4 @@
+ax.compgen.vmset () 
+{ 
+    ls --color=auto /proc/sys/vm -1
+}

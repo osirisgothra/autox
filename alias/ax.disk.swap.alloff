@@ -1,0 +1,1 @@
+alias ax.disk.swap.alloff='sudo swapoff -a'

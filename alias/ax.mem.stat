@@ -1,0 +1,1 @@
+alias ax.mem.stat='{ ls /proc/sys/vm -C1 | while read d; do if [[ ! -r /proc/sys/vm/$d ]]; then v="<value protected/unreadable>"; else v=`sudo cat /proc/sys/vm/$d`; fi; printf "%-40s %-20s\n" $d $v; done; } | ax.term.colorme'

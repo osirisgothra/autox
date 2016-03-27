@@ -1,0 +1,19 @@
+ax.mem.set () 
+{ 
+    val=$2;
+    tmp=$(mktemp);
+    nam=$1;
+    echo "$val" > $tmp;
+    if [[ -r /proc/sys/vm/$nam ]]; then
+        echo "really set $nam to $val? (current value is [$(cat /proc/sys/vm/$nam)]) [y/[n]]";
+        read -sn1;
+        if [[ $REPLY == y ]]; then
+            ${AX_SUDO_BINARY=$(which sudo)} cp "$tmp" "/proc/sys/vm/$nam" -f;
+        else
+            echo "user aborted [with $REPLY]";
+        fi;
+    else
+        echo "$nam does not exist as a memory setting, try ax.mem.stat to get one.";
+    fi;
+    rm -f $tmp
+}

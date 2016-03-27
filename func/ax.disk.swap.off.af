@@ -1,0 +1,4 @@
+ax.disk.swap.off () 
+{ 
+    ${AX_SUDO_BINARY=$(which sudo)} swapoff /dev/$1
+}

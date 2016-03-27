@@ -1,0 +1,1 @@
+alias ax.disk.loop.delete='udisksctl loop-delete'

@@ -1,0 +1,4 @@
+ax.disk.swap.on () 
+{ 
+    ${AX_SUDO_BINARY=$(which sudo)} swapon /dev/$1 --priority ${2- 1}
+}

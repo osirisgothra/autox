@@ -1,0 +1,1 @@
+alias ax.disk.swap.stat='swapon -ve --show=UUID,TYPE,SIZE,USED,PRIO,UUID,LABEL'

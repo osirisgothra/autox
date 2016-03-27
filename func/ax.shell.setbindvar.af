@@ -1,0 +1,10 @@
+ax.shell.setbindvar () 
+{ 
+    while [[ $# -ge 2 ]]; do
+        a=$1;
+        b=$2;
+        shift 2;
+        ax.shell.bindconf "set $a $b";
+        echo "$a -> $b";
+    done
+}

@@ -1,0 +1,1 @@
+alias ax.term.colorme='sed -r '\''s/^set //g;s/[[:punct:]]/[1;30m\0[0m/g;s/(\b(on|off|0)\b)/[31m\0[0m/g;s/(\s|\b|)[[:digit:]]+(\s|\t|$)/[32;1m\0[0m/g;s/\s[[:alpha:]]\S+/[36;1m\0[0m/g;s/show|hide|begin|end|mode|size/[3m\0[17m/g;s/\b[A-Z]+\b/[34;1m\0[0m/g'\'''

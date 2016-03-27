@@ -1,0 +1,15 @@
+ax.str.putf () 
+{ 
+    echo "characters in the range of $1 to $2";
+    ax.term.hrule;
+    echo -ne "generating table please wait...\n[1A";
+    { 
+        d=$1;
+        while [[ $d -lt $2 ]]; do
+            printf "%04x " $d;
+            eval $(printf "echo -e \"\\\\u%04x\"\n" $d);
+            let d++;
+        done
+    } | tr -s " " | column;
+    ax.term.hrule
+}
