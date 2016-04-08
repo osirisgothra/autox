@@ -1,6 +1,41 @@
 #!/bin/bash -c false -- "cannot run this file"
 # vim: ft=sh:fen:fdm=syntax:fcl=all:fdo=hor:tw=0:sw=2:ts=2
 
+# ax file-based bind configuration (loads FIRST)
+echo "looking for a bind configuration included with autox (both in user/system parts)..."
+for r in $AX_USERBASE/bind.conf $AX_BASE/bind.conf $HOME/.inputrc; do
+    if [[ -r $r ]]; then
+        echo "found bind config in $r, which will take precedence over any other location(s), including $HOME/.inputrc"
+        declare -gx AX_BINDCONF="$r"
+    fi
+done
+if [[ ! -r $AX_BINDCONF ]]; then
+    echo "warning: no bind config is defined!"
+    declare -gx AX_BINDCONF="$(mktemp)"
+    echo "placing dummy bind for this session in $AX_BINDCONF..."
+    echo "please copy this or make your own if you want to have a permanant primary configuration"
+    echo "(this of course does not take place of the config done by $BASH_SOURCE after this point!)"
+fi
+if [[ ! -r $AX_BINDCONF ]]; then
+    echo "Panic: something went unreadable: $AX_BINDCONF"
+    echo "binding not available, stop!"
+    echo "[ press any key to continue (aborting $BASH_SOURCE) ]"
+    read -sn1
+    return 129
+else
+    # everything is ok to this point and we have a valid AX_BINDCONF variable
+    # so load it
+    echo -ne "loading $AX_BINDCONF..."
+    if bind -f "$AX_BINDCONF"; then
+        echo "ok"
+    else
+        echo "error? ($?) - check $AX_BINDCONF for errors!"
+        echo "[ press any key to continue ]"
+        read -sn1
+    fi
+fi
+echo "bind primary loaded, now configuring subsystem-level bindings..."
+
 function _b_edit_loc 		{
 	[[ ! -v $EDITOR ]] && EDITOR=vim
 	$EDITOR ~/.bashrc
@@ -412,5 +447,6 @@ function _compbind.ax_REMOVE()	 {	ax.echo "$AX_DESCRIPTION{$(basename $BASH_SOUR
 _compbind.ax_POSTLOAD_stub() { : ; }
 _compbind.ax_PRELOAD_stub() { : ; }
 _compbind.ax_REMOVE_stub() { : ; }
+
 
 

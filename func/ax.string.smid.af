@@ -1,0 +1,16 @@
+ax.string.smid () 
+{ 
+    s=$1;
+    [[ $# -gt 2 ]] && { 
+        e=":$2";
+        a=$3
+    } || { 
+        e="";
+        a=$2
+    };
+    if [[ $# -lt 2 ]]; then
+        echo "not enough arguments, need [start [stop]] [str]";
+    else
+        eval echo \${a:$s$e};
+    fi
+}

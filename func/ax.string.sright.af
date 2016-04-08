@@ -1,0 +1,6 @@
+ax.string.sright () 
+{ 
+    a="$2";
+    declare -i p="$1";
+    echo ${a:$((`ax.string.len $a`-$p))}
+}

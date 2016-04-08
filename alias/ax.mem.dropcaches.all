@@ -1,0 +1,1 @@
+alias ax.mem.dropcaches.all='for i in {1..4}; do ax.mem.dropcaches $i; done'

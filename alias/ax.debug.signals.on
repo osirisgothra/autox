@@ -1,0 +1,1 @@
+alias ax.debug.signals.on='for SIG in `compgen -A signal`; do trap "echo -e '\''called signal \e[1m$SIG\e[0m'\''" $SIG; done'

@@ -1,0 +1,1 @@
+alias ax.warn.nonpriv='echo -ne "\e[1mPrivleged-Level Administrative Commands: \e[1;34m";sudo ls /root &> /dev/null && echo -e "ALLOWED\e[0m" || { echo -e "NO (you cannot run as root!)\e[0m"; (exit 1); }'

@@ -1,0 +1,123 @@
+#!/usr/bin/env bash -n
+#======================================================================================================================
+#
+#          FILE: conf.ax
+#
+#         USAGE: conf [arguments]
+#
+#   DESCRIPTION:
+#
+#       OPTIONS: ---
+#  REQUIREMENTS: ---
+#          BUGS: ---
+#         NOTES: ---
+#        AUTHOR: Gabriel Thomas Sharp (gts), osirisgothra@hotmail.com
+#  ORGANIZATION: Paradisim Enterprises, LLC, PA, USA
+#       CREATED: 05/03/2015 07:20
+#      REVISION:  ---
+#  HELP CONTENT:
+#					usage: conf <arguments>
+#
+#					<arguments>		options you can pass to conf
+#
+#					This script (C) Copyright 2014-2015 Paradisim Enterprises, LLC, PA, USA, Licensed under GNU GPL v3
+#					You may get a copy of this LICENSE at the website: http://gpl.gnu.org
+#					For more info, contact the author Gabriel Thomas Sharp osirisgothra@hotmail.com
+#======================================================================================================================
+
+conf()
+{
+	# conf handler
+
+	# set operating environment
+	shopt -s interactive_comments
+	set +o nounset                              			# Treat unset variables as normal
+	declare -i HELP_TRIMLEADINGCHARCOUNT=6					# Change if you reformat above (in-header) content!
+	local TMPFILE=$(mktemp)	# general use tempfile
+
+	# debug support
+	[[ $# -ge 1 ]] && [[ $1 == +X ]] && { set -x; shift; }                    #\
+	[[ $# -ge 1 ]] && [[ $1 == +V ]] && { set -v; shift; }					# >- allow use of +[X|V] for debugging (must be FIRST param!)
+	[[ $# -ge 1 ]] && [[ $1 == +XV || $1 == +VX ]] && { set -xv; shift; }     #/
+
+	# parse options
+	TEMP=`getopt -o h?ab:c:: --long help,a-long,b-long:,c-long:: -n '$FUNCNAME' -- "$@"`
+	TEMP_ERR=$?
+
+	# parse help from header (see beginning of this file for that)
+	HELP=$'\n'`cat $BASH_SOURCE | perl -wne 'print if /u[s]ag[e]:/ .. /mo[r]e [i]nfo, contac[t]/'`$'\n\n'  # note(2): random []'s to prevent this line from matching also (and viewing as part of the help text)
+	HELP_ERR=$?
+
+	# abort if option or help parsing failed
+	if [ $TEMP_ERR -gt 0 || HELP_ERR -gt 0 ] ; then echo "Terminating...[ERR: HELP=$HELP_ERR TEMP=$TEMP_ERR" >&2 ; exit 1 ; fi
+
+	# injecting back into positional parameters
+	eval set -- "$TEMP"
+
+	# parse option arguments
+	while true ; do
+		case "$1" in
+			-a|--a-long)
+				echo "Option a"
+				shift
+				;;
+			-b|--b-long)
+				echo "Option b, argument $2"
+				shift 2
+				;;
+			-c|--c-long)
+				# c has an optional argument. As we are in quoted mode,
+				# an empty parameter will be generated if its optional
+				# argument is not found.
+				case "$2" in
+					"")
+						echo "Option c, no argument"
+						shift 2
+						;;
+					*)
+						echo "Option c, argument $2"
+						shift 2
+						;;
+				esac
+				;;
+			--)
+				shift
+				break
+				;;
+			-h|-\?|--help)
+				# str(i,l-(y-x)) = trim off first x chars before y text data -- do NOT change
+				echo -n "$HELP" | sed -r 's/^.{'$HELP_TRIMLEADINGCHARCOUNT'}//g'
+				exit 0
+				;;
+			*)
+				echo "Internal error (disk full?)"
+				exit 1
+				;;
+		esac
+	done
+
+	# parse non-option arguments
+	echo "Remaining arguments:"
+	for arg do
+		echo '--> '"\`$arg'"
+	done
+
+	# clean up
+	[[ -r $TMPFILE ]] && rm -f $TMPFILE
+
+}
+
+__conf_loader()
+{
+	echo "* Shell configuration GUI"
+	unset -f $FUNCNAME
+}
+
+# entry point
+__conf_loader
+
+
+
+
+
+

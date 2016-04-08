@@ -1,5 +1,55 @@
 #!/bin/bash -r # will fail, please dont run as an executable - please edit with atom or sublime text
 
+#CHANGE: moved $- for i to first line, the way its supposed to be
+#        to prevent futile checking and execution
+#        new: preserve also the $? state as it was when first called
+#             when possible!
+
+AX_ENTRY_RETURN_CODE=$?
+if [[ ! $- =~ i ]]; then
+	echo "autox: not an interactive shell, autox not needed, skipping load"
+	exit $AX_ENTRY_RETURN_CODE
+fi
+
+#TODO: find out why this is important:
+cd "$HOME"
+#TODO: move this to another place if needed (find out /if/ it is needed)
+# find out if it is a bona-fide login     | < this is important for the
+# shell (if user uses the -l flag to      |   compint environment compiler
+# immitate a login shell, it will not be  |   since it relys on a contained
+# tricking us!)                           |   system (login is not contained)
+#                                         |   and startup files called in a
+#                                         |   non-login fashion, plus login shells
+#                                         |   are not the appropriate time for
+#                                         |   since they are done via the GUI
+#                                         |   in the background most times during
+#                                         |   system startup!
+if [[ `ps $PPID` =~ '/bin/login' ]]; then
+    AX_TRUE_LOGIN_SHELL=1
+    echo "Login Shell: autox will not compile the environment during such a process,"
+    echo "             please run bash in a terminal or start it indirectly to do this."
+    echo " (only compiled environment loader will be disabled) "
+    echo ""
+    if [[ $- =~ l ]]; then
+        true debug echo "note: shell contained proper flagging -l"
+    else
+        echo ""
+        echo "warn: shell was not flagged with -l properly, you might wish to fix this or alert your administrator!"
+        echo ""
+    fi
+else
+    AX_TRUE_LOGIN_SHELL=0
+    if [[ $- =~ l ]]; then
+        echo ""
+        echo "error: shell was started as login shell,  but is not a true login shell."
+        echo "       only shells started under the login process will be considered as a login shell!"
+        echo "(please fix this problem or alert your administrator!)"
+        echo ""
+    else
+        true debug echo "note: shell did not include -l flag, which is expected"
+    fi
+fi
+
 if [[ ${AX_BANNERS} =~ ax_compile ]]; then
     true debug echo skipping_ax_compile_message_not_first_time
 else
@@ -8,7 +58,7 @@ else
 fi
 
 if [[ $AX_ENTRYCONTROL -eq $$ ]]; then
-    echo -e '[u[K[ustarting autox...'
+    echo -e '[u[K[ucompiling autox environment...'
 else
     echo -ne '[s'
     declare -xirg AX_ENTRYCONTROL=$$
@@ -23,8 +73,8 @@ else
     declare -gxr AX_SNAPBIND_SHM="${AX_SNAPSHOT_SHM}.bind"
     declare -gx AX_SNAPSHOT="$AX_USERTMP/${AX_MCRED}snapshot"
     declare -gx AX_SNAPBIND="${AX_SNAPSHOT}.bind"
-    declare -gx  AX_OP_MODE=INTERPRETER
-    
+    declare -gx AX_OP_MODE=INTERPRETER
+
     if [[ -r ~/.config/autox/flags/no_compile_mode ]]; then
         echo -e "[u[K[unot checking manifest, compile mode is disabled (no_compile_mode flag is set)"
     else
@@ -77,10 +127,12 @@ else
                 echo "interpreting quietly thanks to ~/.hushlogin..."
                 builtin source "$BASH_SOURCE" "$@" 2> /tmp/axstartup.$USER.$HOSTNAME.log 1>/dev/null
             else
+                echo "entering recursion"
                 builtin source "$BASH_SOURCE" "$@"
+                echo "exiting recursion"
             fi
 
-            echo -n "compiling environment... "
+            echo -n "finalizing environment compilation... "
             echo -n "[var shopt comp alias trap hash alias func "
             { declare -p; set; shopt -po; shopt -p; complete; alias; trap; hash -l; umask -p; } > $AX_SNAPSHOT
             echo -n "bind "
@@ -1290,10 +1342,7 @@ function source()
 
 ## 3.A INIT
 
-if [[ ! $- =~ i ]]; then
-	echo "You must SOURCE this file, not run it!"
-	exit 1
-fi
+
 if [[ ! $(cat "$AX_BASE/autox.id" | tr -d '\n') == "3bdc9ba4-2429-11e5-8ae2-00196605e97c" ]]; then
 	echo "AUTOX Not installed properly, make sure you unpacked it with it's directories and ran any installers first!"
 	return 1
@@ -1567,6 +1616,7 @@ fi
 #        echo ""
 #    fi
 #fi
+
 
 
 # END OF SCRIPT

@@ -1,0 +1,18 @@
+ax.math.rand.multi () 
+{ 
+    n="";
+    min=$1;
+    max=$2;
+    len=$3;
+    sep=${4- };
+    for ((i=0; i<len; i++))
+    do
+        declare -i next=`ax.math.rand $min $max`;
+        [[ $n != NOSEP ]] && { 
+            n=NOSEP
+        } || { 
+            printf $sep
+        };
+        printf $next;
+    done
+}

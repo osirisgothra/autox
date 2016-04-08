@@ -1,0 +1,1 @@
+alias ax.debug.signals.off='for SIG in `compgen -A signal`; do trap $SIG; done'

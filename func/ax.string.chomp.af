@@ -1,0 +1,5 @@
+ax.string.chomp () 
+{ 
+    str="$*";
+    echo "${str//\ / }"
+}

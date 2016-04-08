@@ -1,0 +1,1 @@
+alias bindset='bind -f /dev/stdin <<<'

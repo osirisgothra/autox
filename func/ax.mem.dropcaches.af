@@ -1,0 +1,7 @@
+ax.mem.dropcaches () 
+{ 
+    [[ $1 == --help ]] && echo "$FUNCNAME [0-4]" && return 1;
+    echo -ne "[1mProcessing request [30m\"[0;32m${1-1}[1;30m\"[0;1m to the proc/vm/drop_caches[30m...[0m[s";
+    echo "${1-1}" | ${AX_SUDO_BINARY=$(which sudo)} tee /proc/sys/vm/drop_caches &> /dev/null && echo -e "[u[1;32mOK[0m" || echo -e "[uFAILED
+[2K[0;31mArgument must be a number from 1-4![0m"
+}

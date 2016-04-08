@@ -1,0 +1,15 @@
+ax.string.marquee () 
+{ 
+    z="$1";
+    w=$2;
+    d=${3-1};
+    i=0;
+    x=`ax.string.len $z`;
+    while [[ $i -lt $x ]]; do
+        echo -n "[s[2K";
+        ax.string.smid $i $2 $z;
+        let i+=1;
+        echo -n "[u";
+        /bin/sleep $d;
+    done
+}

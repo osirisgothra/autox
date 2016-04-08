@@ -1,0 +1,1 @@
+alias ax.gxdwm.run='`compgen -A command | dmenu`& disown'
