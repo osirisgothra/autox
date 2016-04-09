@@ -1,9 +1,23 @@
 #!/bin/bash -r # will fail, please dont run as an executable - please edit with atom or sublime text
 
-#CHANGE: moved $- for i to first line, the way its supposed to be
+# TODO: remove the following comments when changes are completed
+# pre-move check: move all loading of bootstrap.d to bootstrap which will launch the bootstrapper files
+# pre-move check: move alias handlers to bootstrap.d/00?persistalias.ax (b/c funcs are loaded in this manner)
+# NB: was going to move following into own dir, but its not needed because:
+# 1) it will further complicate link resolution
+# 2) it will make finding/changing/fixing script code harder
+# 3) source already written for it's directory so no change is needed
+# 4) hunting down (as in #2 and #3) will be harder in terms of symlinks, permissions, etc
+# pre-move check: move all pre-environment checks to prologuecheck.sh
+# pre-move check: move all environment-variable setups to prologuevars.sh
+# post-move check: move all cleanup/exiting proceedures to epilogue.sh
+#
+# TODO: remove the following comments when move is completed
+# CHANGE: moved $- for i to first line, the way its supposed to be
 #        to prevent futile checking and execution
 #        new: preserve also the $? state as it was when first called
 #             when possible!
+# NOTE: further TODOs about moving when complete will be tagged # TODO: MOVEME  or TODO: FIXME
 
 AX_ENTRY_RETURN_CODE=$?
 if [[ ! $- =~ i ]]; then
@@ -11,9 +25,11 @@ if [[ ! $- =~ i ]]; then
 	exit $AX_ENTRY_RETURN_CODE
 fi
 
-#TODO: find out why this is important:
+#TODO:FIXME
 cd "$HOME"
+
 #TODO: move this to another place if needed (find out /if/ it is needed)
+#MOVEME
 # find out if it is a bona-fide login     | < this is important for the
 # shell (if user uses the -l flag to      |   compint environment compiler
 # immitate a login shell, it will not be  |   since it relys on a contained
