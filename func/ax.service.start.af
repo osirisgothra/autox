@@ -1,0 +1,4 @@
+ax.service.start () 
+{ 
+    service $1 start
+}

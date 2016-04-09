@@ -1,0 +1,50 @@
+#!/bin/bash
+if [[ ! -r autox ]] || [[ ! -r bootstrap.d/axmacros.ax ]]; then
+    echo "you MUST run this while in the autox directory, please change to"
+    echo "this directory FIRST!!"
+    [[ $- =~ i ]] && return 2 || exit 2
+fi
+
+if [[ ! $- =~ i ]]; then
+    echo "warning: This is not being sourced but run"
+    echo "         environmental cleanup cannot happen"
+    echo
+fi
+echo
+echo " N O T I C E "
+echo
+echo " Please only run this process before committing to the branch"
+echo " or adding/removing files from the repo. Because backups are"
+echo " removed, please make sure you are not editing any sources "
+echo " from this branch or repo before proceeding, please type "
+echo " the phrase I UNDERSTAND to continue:"
+read
+if [[ $REPLY != "I UNDERSTAND" ]]; then
+    echo "Pharase did not match 'I UNDERSTAND' so aborting..."
+    [[ $- =~ i ]] && return 1 || exit 1
+fi
+
+echo "cleanup: removing backups and ignored files"
+for i in `cat .gitignore`; do
+    echo "files matching: $i ..."
+    if [[ $1 == "--force" ]]; then
+        INTERACTIVE="--force"
+    else
+        INTERACTIVE="--interactive"
+    fi
+    find -iname "$i" -exec rm --verbose $INTERACTIVE '{}' ';'
+done
+
+echo "cleanup: environment"
+if [[ $- =~ i ]]; then
+    echo "dropping caches"
+    ax.mem.dropcaches.all
+    echo "warning: restarting the shell is being done to clean up the environment due to bad backup files being accidently loaded into the system...."
+    echo "[in 5 seconds]"
+    /bin/sleep 5
+    echo "restarting shell..."
+    exec bash
+else
+    echo "not interactive, so cannot clean up environment"
+fi
+echo "cleanup: completed without restart (last return code = $?)"

@@ -1,0 +1,4 @@
+ax.service.status () 
+{ 
+    ${AX_SUDO_BINARY=$(which sudo)} service $1 status
+}

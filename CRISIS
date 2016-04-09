@@ -1,3 +1,24 @@
+CRISIS
+
+
+*) files in crisis
+
+*) files with problems
+
+*) semisevere issues needing taken care of
+  
+my current source tree has been rescued, but, to my unplanned dismay -- I
+accidently put it on a FAT32 partition!!! This means, the file permissions
+have been shot down (mainly, this is bad because of the executable permission
+on some of the files). I will have to wait until I get another place to put the
+entire source tree, which currently occupies about 30G on it's own USB stick. I
+will restore this as soon as that is possible.
+
+Since autox mainy 'sources' its scripts, this does not pose too much of an 
+issue so is marked as "semisevere".
+
+*) zero-length files due to hard drive crash (unverified as completed yet)
+
 /ax/with
 /ax/alias/ax.hue.ltcyan
 /ax/alias/ax.term.clearscreen
@@ -316,3 +337,5 @@
 /ax/lib/axlib/misc.py
 /ax/lib/home/osiris/bin/artistitle
 /ax/etc/axvim/axvim
+
+*) verified fixes
