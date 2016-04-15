@@ -1,4 +1,4 @@
-#!/bin/bash -r # will fail, please dont run as an executable - please edit with atom or sublime text
+#!/bin/bash -r # will fail, please dont run as an executable - please edit with atom or sublime_text
 
 # TODO: remove the following comments when changes are completed
 # pre-move check: move all loading of bootstrap.d to bootstrap which will launch the bootstrapper files
@@ -1380,6 +1380,7 @@ if [[ $(ps --format=%c $PPID) =~ bash ]]; then
     fi
 fi
 
+
 if ax.config.has enable_experimental_harmful_features && [[ -r $AX_BASE/cache/usecache ]]; then
 	AX_CACHE_SITE=$AX_BASE/cache/usecache
 	SHAPRINT_THIS="$(eval shasum $(find -type f -not -iname 'shasumprint' -not -type l -iname '*[^~]' -printf '"'$PWD'/%P"\n') | shasum)"
@@ -1607,10 +1608,11 @@ if ax.config.has no_shell_checking; then
     true debug echo "no_shell_checking is present, we will not check the shell (default for normal users, ie; non-developers of autox)"
 else
     [[ -z $AX_RCHECK_SNAME ]] && declare -gx AX_RCHECK_SNAME=DEBUG
-    # TODO: attach a reference for easy access (all mnenomics must start with AXM_ instead of AX_!)
+    # TODO: attach a reference for easy access (all read-only references (master-refs) must start with AXM_ instead of AX_!)
     declare -nrg AXM_RCSN=AX_RCHECK_SNAME
     true debug echo "attaching shell checks to $AXM_RCSN signals"
-    trap '__ax_do_resilliance_checks' $AXM_RCSN
+    # DOCUMENTME: AXM_AXR is for preserving $_ across commands
+    trap 'AXM_AXR=$_;__ax_do_resilliance_checks;true nop $AXM_AXR' $AXM_RCSN
     true debug echo "attachment to $AXM_RCSN complete, use 'trap $AXM_RCSN' to clear trap"
 fi
 
@@ -1633,6 +1635,28 @@ fi
 #    fi
 #fi
 
+
+# TODO: MOVEME
+if [[ -r autox ]] && [[ -r bootstrap.d/axmacros.ax ]] && git status --porcelain &> /dev/null; then
+    echo ""
+    echo "\e[0;32mThis copy of autox is a working git repository. You can use git to"
+    echo "update or submit changes for your copy of autox by typing \"git pull\"."
+    echo "please wbe aware that changes submitted must be requested if you do not"
+    echo "have membership of the target repository."
+    echo "For more information, please see <https://osirisgothra.github.io/autox> to"
+    echo "get all the links for the original autox repository!\e[31m"
+    echo ""
+    if [[ `git status --porcelain` == "" ]]; then
+        echo -e "\e[0;34mThis repository \e[1;30m(and any of it's connectable off-sites)\e[0;34m currently posess no changes\e[1;30m.\e[0m"
+    else
+        echo -e "\e[31;1mwarning\e[30m:\t\e[0;31m This repository contains \e[1m`git status --porcelain | grep '.*' -c`\e[0;31m changes\e[1;30m.\e[0;31m"
+        echo -e "\t\tyou may wish to consider using \e[1max.git.out\e[0;31m to publish your changes or if you are non\e[30;1m-\e[0;31mmember and just want"
+        echo -e "\t\tthe updates, use \e[1ax.git.in\e[0;31m to update your local copy and create a request to add your changes"
+        echo -e "\tto the server\e[1;30m.\e[0m"
+    fi
+else
+    true debug echo -e "\e[31;1mdirectory was not an autox git repo (must be autox AND git repo!)\e[0m"
+fi
 
 
 # END OF SCRIPT
