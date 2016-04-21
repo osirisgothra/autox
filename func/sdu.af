@@ -1,0 +1,4 @@
+sdu () 
+{ 
+    ionice nice du -hd1 -hd1 "$@" | sort -h
+}

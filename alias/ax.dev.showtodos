@@ -1,0 +1,1 @@
+alias ax.dev.showtodos='shopt -s globstar; perl -wne "print \"file=[$ARGV]\\n\" #if /(\\s|^)(TODO|FIXME|CHANGE|HACK|BUG):.*\$/g;" $AX_BASE/**; shopt -u globstar'

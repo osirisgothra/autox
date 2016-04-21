@@ -1,0 +1,4 @@
+ax.etc.reservedname () 
+{ 
+    echo -e "\e[1m$(caller) ($*)\e[0;31m this command is reserved for future expansion of the environment and is parked here, you can disable this if you wish by deleting its alias to $FUNCNAME\e[0m"
+}

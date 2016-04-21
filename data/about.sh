@@ -1,4 +1,3 @@
 #!/bin/bash -r
-echo "Autox Version ?.?.? build"
-echo "<get_from_server=github.com TODO>"
-echo ""
+# TODO: suspended until further notice
+# FIXME: determine if this file is needed or if current method is sufficient

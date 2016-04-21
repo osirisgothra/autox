@@ -1,0 +1,1 @@
+alias du='ionice nice du -hd1'

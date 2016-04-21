@@ -1,1 +1,0 @@
-alias apt-builds='${AX_SUDO_PATH} apt-get build-deps'

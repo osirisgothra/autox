@@ -78,6 +78,10 @@ if [[ $- =~ i ]]; then
 
 		function cnfh()
 		{
+		    echo "caller=$(caller)"
+		    echo "stack=${BASH_SOURCE[@]}"
+		    echo "fname=$FUNCNAME  lastrt=$?  lastcmd=$_  pwd=$PWD"
+		    echo "mode - flags: $-"
 			CMDPFX=""
 			PREFIX=${1: 0:1}
 			SUFFIX=${1: 1}
@@ -132,7 +136,7 @@ if [[ $- =~ i ]]; then
 				esac
 				if ((GI)); then
 					prefixer.warning "glob-interference prefix \"$CMDPFX\" used, be mindful of the filenames in $PWD when using a gi-prefix." "use backslash to override normal glob behavior (set prefixer_warnings=0 to turn off these messages)"
-				fi					
+				fi
 
 				if ax.config.has prefixer_notify && ! ax.config prefixer_notify; then
 					# in case we actually care what we are doing here.... we can uncomment:

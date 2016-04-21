@@ -1,0 +1,23 @@
+ax.misc.axtshell.func () 
+{ 
+    while true; do
+        { 
+            echo -e "\e[0;34maxtshell\e[1;30m>\e[0m ";
+            read -a R;
+            case $R in 
+                exit)
+                    return
+                ;;
+                "")
+                    echo -ne ""
+                ;;
+                help\|"?")
+                    echo "$FUNCNAME [exit\|help] or [query string for google via the t translator]"
+                ;;
+                *)
+                    t "${R[@]}"
+                ;;
+            esac
+        };
+    done
+}

@@ -1,0 +1,1 @@
+alias ax.apt.get.dependencies='${AX_SUDO_PATH} apt-get build-deps'

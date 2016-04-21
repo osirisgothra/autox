@@ -20,8 +20,14 @@
 # NOTE: further TODOs about moving when complete will be tagged # TODO: MOVEME  or TODO: FIXME
 
 AX_ENTRY_RETURN_CODE=$?
-if [[ ! $- =~ i ]]; then
-	echo "autox: not an interactive shell, autox not needed, skipping load"
+if [[ ! $- =~ i ]] || [[ AX_NOAUTOX -eq 1 ]]; then
+
+    if [[ $AX_NOAUTOX -eq 1 ]]; then
+        echo "AX_NOAUTOX is set to 1 (true), not running autox";
+    else
+        echo "autox: not an interactive shell, autox not needed, skipping load"
+    fi
+    return $AX_ENTRY_RETURN_CODE
 	exit $AX_ENTRY_RETURN_CODE
 fi
 
@@ -90,6 +96,15 @@ else
     declare -gx AX_SNAPSHOT="$AX_USERTMP/${AX_MCRED}snapshot"
     declare -gx AX_SNAPBIND="${AX_SNAPSHOT}.bind"
     declare -gx AX_OP_MODE=INTERPRETER
+    # FIX:get the correct tty, since it changes every session
+    #     and bash doesn't track it, we do
+    # TTY is now readonly since the tty cant change unless a new
+    #     shell is started on a new tty, and no known methods of
+    #     transferring a tty from one to the next exists (this could
+    #     change in the future, please notify me if you find such a
+    #     shell or terminal/tty).
+    declare -gxr TTY=$(tty)
+    # END EXPERIMENTAL FIX
 
     if [[ -r ~/.config/autox/flags/no_compile_mode ]]; then
         echo -e "[u[K[unot checking manifest, compile mode is disabled (no_compile_mode flag is set)"
@@ -120,9 +135,42 @@ else
             fi
             echo -n "[u[K[uloading precompiled environment...[s"
             if [[ -r $AX_SNAPSHOT ]]; then
+                # FIX: make readonly certain variables that should never
+                #      be included in the precompiled environment (EXPERIMENTAL FIX)
+                readonly DISPLAY
+                
+                # END EXPERIMENTAL FIX
                 if source $AX_SNAPSHOT &> /tmp/ax.$USER.$HOSTNAME.laststart.log; then
                     [[ -r ~/.inputrc_autox ]] && bind -f ${AX_SNAPBIND}
                     echo -n "[u[K[ucompleted "
+                    # FIX: fixed check for AX_BASE being valid in precompiled environments
+                    if [[ $(<$AX_BASE/autox.id) != "3bdc9ba4-2429-11e5-8ae2-00196605e97c" ]]; then
+                        echo "Fatal: AX_BASE ($AX_BASE) is NOT valid, you should restart autox with full compile."
+                        echo "this happens usually when the AX_BASE got moved to another location but not changed"
+                        echo "Recompile Environment (you will definitely get errors if you dont)"
+                        echo "[Y] recompile invalid environment"
+                        echo "[N] ignore and continue (NOT reccomended!)"
+                        while true; do read -sn1; [[ $REPLY =~ [yn] ]] && break; done
+                        case $REPLY in
+                            n)
+                                echo "continuing recklessly..."
+                                ;;
+                            y)
+                                echo "removing compiled environment files..."
+                                rm $AX_SNAPSHOT $AX_MANIFEST $AX_SNAPBIND $AX_SNAPSHOT_SHM $AX_SNAPBIND_SHM -f
+                                echo "restarting bash..."
+                                exec bash
+                                ;&
+                            *)
+                                echo "failsafe: $REPLY was pressed and passed, $? = last return code"
+                                echo "FAILSAFE: halting, program should not have met this point! notify author now!"
+                                while true; do read -sn1; done
+                                return 128; exit 128
+                                ;;
+                         esac
+                    else
+                        true debug echo "confirmed valid autox signature in $AX_BASE"
+                    fi
                     AX_SNAPMARK_CNT=$[ $SECONDS - ${AX_SNAPMARK} ]
                     echo -e "in $AX_SNAPMARK_CNT sec(s) (of $SECONDS)"
                     return $?
@@ -143,14 +191,14 @@ else
                 echo "interpreting quietly thanks to ~/.hushlogin..."
                 builtin source "$BASH_SOURCE" "$@" 2> /tmp/axstartup.$USER.$HOSTNAME.log 1>/dev/null
             else
-                echo "entering recursion"
                 builtin source "$BASH_SOURCE" "$@"
-                echo "exiting recursion"
             fi
 
             echo -n "finalizing environment compilation... "
-            echo -n "[var shopt comp alias trap hash alias func "
-            { declare -p; set; shopt -po; shopt -p; complete; alias; trap; hash -l; umask -p; } > $AX_SNAPSHOT
+            echo "[var shopt comp alias trap hash alias func "
+            # FIX:EXPERIMENTAL - remove variables that musnt be changed by us like the Xorg display, or the tty
+            { declare -p; set | grep '^\b(DISPLAY|XDG_.*|XAUTHORITY|XMODIFIERS|SESSION|SHLVL|BASH_.*|COLUMNS|LINES|PPID|PID|PWD|TTY)\b=' -Pv; shopt -po; shopt -p; complete; alias; trap; hash -l; umask -p; } > $AX_SNAPSHOT
+            # END EXPERIMENTAL
             echo -n "bind "
             bind -psv > "$AX_SNAPBIND"
             echo "]...ok!"
@@ -160,19 +208,17 @@ else
             if ((AX_USE_SHM)); then
 	            echo -n "flushing to prefetch (shared) memory..."
 	            if [[ -d "$AX_SHMLOC" ]] || mkdir --parents "$AX_SHMLOC" $AX_SHM_VERBOSE; then
-	              echo -n "dev=ok "
+	              echo -n "[dev=okay] "
     	          if cp $AX_SHM_VERBOSE --force --no-dereference "$AX_SNAPSHOT" "$AX_SNAPBIND" "$AX_SHMLOC"; then
-	                echo "commit=ok"
-	                echo -n "Notice: environment is loaded into shared memory until next reboot or checksum recycle"
-	                echo " and can be found in $AX_SHMLOC - remove these files if you want to force a reset"
+	                echo "[commit=ok]"
+	                echo "Using Stored Environment: $AX_SHMLOC"
     	          else
-	                echo "commit=failed"
-	                echo "Warning: environment didn't copy, check permissions and existence of a /dev/shm on your system"
+	                echo "[commit=fail]"
+	                echo "Cache Status: not copied (/dev/shm on your system and ok to use it?)"
 	                sleep 1.5
 	              fi
     	        else
-	                echo "dev=not found"
-	                echo "No Shared Memory Device (/dev/shm) could be accessed, you must have on to use the prefetch feature."
+	                echo "[device=missing]"
                 fi
             else
                 echo "* prefetch is turned off (use_prefetch not flagged)"
