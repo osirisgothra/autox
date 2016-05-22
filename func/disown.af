@@ -1,0 +1,6 @@
+disown () 
+{ 
+    echo -e "\e[0;1mdisown $* called...\n\n\e[1;31mbefore disown:\e[0;31m\n$(jobs)";
+    builtin disown "$@";
+    echo -e "\e[1;32mafter disown(ret=$?):\e[0;32m\n$(jobs)\n\e[0m"
+}

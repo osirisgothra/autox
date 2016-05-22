@@ -1,0 +1,4 @@
+CONT () 
+{ 
+    kill -18 `pidof "$@"`
+}

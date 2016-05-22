@@ -78,10 +78,20 @@ if [[ $- =~ i ]]; then
 
 		function cnfh()
 		{
-		    echo "caller=$(caller)"
-		    echo "stack=${BASH_SOURCE[@]}"
-		    echo "fname=$FUNCNAME  lastrt=$?  lastcmd=$_  pwd=$PWD"
-		    echo "mode - flags: $-"
+		# because these will change before needing them, they must be stored
+		# FIXED: moved to true debug instead of conditional evaluation in
+		#        favor of consistent execution times across modes.
+		    local LCMD=$_, LRT=$?
+		    true debug echo "----------------------"
+		    true debug echo "   caller(): $(caller)"
+		    true debug echo "BASH_SOURCE: ${BASH_SOURCE[@]}"
+		    true debug echo "   FUNCNAME: $FUNCNAME"
+		    true debug echo " \$PWD: $PWD"
+		    true debug echo "   \$-: $-"
+		    true debug echo "   \$?: $LRT"
+		    true debug echo "   \$_: <see next lines>"
+		    true debug echo "$LCMD"
+		    true debug echo "-----------------------"
 			CMDPFX=""
 			PREFIX=${1: 0:1}
 			SUFFIX=${1: 1}
@@ -112,7 +122,7 @@ if [[ $- =~ i ]]; then
 			else
 				true debug echo "prefixer warning already defined, using cached version"
 			fi
-			
+
 			if [[ -x $CMDNAME ]]; then
 				# BEGIN: please keep this structure in a "X) CMDPFX=xxxx;; #description" form so that help shows them properly
 				#        any other way of doing it WILL screw up the help feature

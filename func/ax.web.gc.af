@@ -1,0 +1,4 @@
+ax.web.gc () 
+{ 
+    google-chrome http://www.google.com/search?q=$(ax.str.webcat) & disown
+}

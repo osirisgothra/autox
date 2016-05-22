@@ -23,6 +23,7 @@ autox_ini_reader=../lib/axconfig.pl
 ;# Information Provided Here is For Informational Purposes Only, For Full Legal #
 ;# License and Documentation, Please Read The Accompanied LICENSE and README!!! #
 ;################################################################################
+; NEW: configuration_created AND this file are required for to be valid!
 
 [autox]
 configuration_created=1

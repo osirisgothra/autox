@@ -1,0 +1,4 @@
+ax.web.ff () 
+{ 
+    firefox http://www.google.com/search?q=$(ax.str.webcat) & disown
+}

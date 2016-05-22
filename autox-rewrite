@@ -1,1 +1,46 @@
 #!/bin/bash
+
+#    autox [aka autox-rewrite]
+#    autox.startup declaration(s)
+#    AUTOmated shell eXtensions library
+#    an "omnimatic" bourne shell extension and a hands-free persistent environment
+#
+#    Copyright (C) 2003-2016 Paradisim Enterprises, LLC
+#
+#    (Please see the end of this text for revision history)
+#
+#    Written by Gabriel T. Sharp <osirisgothra@hotmail.com>
+#    Latest versions of this and all other projects can be
+#    obtained by visiting <https://github.com/osirisgothra>
+#
+#    seasonal mirrors (subject to availability and uptime):
+#
+#    home-run servers:   <http://paradisim.twilightparadox.com>
+#    corporate hosted:   <http://paradisim.tk>
+#
+#    support website(s)
+#
+#    autox homepage:     <http://osirisgothra.github.io/autox>
+#    development repo:   <http://github.com/osirisgothra/autox>
+#    secondary url       <http://osirisgothra.github.com/autox>
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License along
+#    with this program; if not, write to the Free Software Foundation, Inc.,
+#    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#    REVISION HISTORY
+#
+#    * Tue 19 Apr 2016 01:34:02 PM EDT    osirisgothra on larnica initially created this file
+#                                         with the original name, "autox-rewrite"
+#    * Please see HISTORY, NEWS, and README for further revision history will not be listed!
+#

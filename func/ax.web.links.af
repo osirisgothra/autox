@@ -1,0 +1,4 @@
+ax.web.links () 
+{ 
+    links2 ${DISPLAY+-g} http://www.google.com/search?q=$(ax.str.webcat)
+}

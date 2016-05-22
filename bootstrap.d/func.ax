@@ -1,5 +1,4 @@
 #!/bin/bash
-
 unset AX_FUNCS
 declare -gA AX_FUNCS
 declare -g AX_FUNC_CMPMODE=or

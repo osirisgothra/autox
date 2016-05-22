@@ -30,7 +30,7 @@
 #======================================================================================================================
 
 
-compgen()
+function ax.complete.stub()
 {
 	# compgen handler
 
@@ -112,7 +112,7 @@ compgen()
 
 }
 
-__compgen_loader()
+__ax.complete.stub.compgen_loader()
 {
 	echo "* compgen loaded"
 	# TODO: fill in info here
@@ -120,7 +120,7 @@ __compgen_loader()
 }
 
 # entry point
-__compgen_loader
+__ax.complete.stub.compgen_loader $(<$AX_BASE/ax.id)
 
 
 

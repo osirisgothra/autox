@@ -1,0 +1,4 @@
+ax.web.surf () 
+{ 
+    surf http://www.google.com/search?q=$(ax.str.webcat)
+}

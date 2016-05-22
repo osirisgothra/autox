@@ -1,0 +1,9 @@
+ax.file.unshow () 
+{ 
+    if [[ -L "$1" ]] && [[ -r ".${1}" ]]; then
+        echo "Found file $1, a link to hidden file .$1, and removing it...";
+        rm -v "$1";
+    else
+        echo "Sorry, file $1 is not a symbolic link to a hidden nonlink .$1 - cannot unshow";
+    fi
+}

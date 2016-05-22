@@ -44,11 +44,23 @@
 
 # do not run outside of X sessions
 [[ $AX_ON_XSESSION != yes ]] && return 1
-if xprop -root &> /dev/null; then
-    function xprop()
-    {
-        return 1
-    }
+if ! xprop -root &> /dev/null; then
+    if ax.config.has disable_xprop_on_invalidsessions no; then
+        echo "note: xprop will not be disabled from this non X environment, because you have configured it to not be excluded"
+        echo "      this could hinder startup times (only when recompiling; not precompiled script runtimes)"
+    else
+        true debug echo "xprop disabling -- not showing because this is the default behavior"
+        function xprop()
+        {
+            # outputting this block to stderr to be compliant with xprop's behavior concearning errors
+            {
+            echo "xprop disabled because it did not pass during runtime checks"
+            echo "to disable this behavior, set 'disable_xprop_on_invalidsessions=yes' in the autox config"
+            echo "located in $AX_BASE/config/autoxrc"
+            } > /dev/stderr
+           return 1
+        }
+    fi
 fi
 
 function makeblur()

@@ -1,0 +1,77 @@
+DEV_BRANCH specific notes
+
+autox_rewrite
+-------------
+is the complete rewrite of some of the boilerplate script in hopes of defer-
+ring much of the script's original body into bootstrap modules. Keeping in mind
+that the autox core should not be in either the func or alias forms, since they
+are the end user's domain not ours. This of course excludes the fact that there are a lot of inter-dependant funcs and aliases present, but they should
+never be relied upon by the core system. For example, nobody should be writing
+a func that writes/reads the autox config files to be used by /autox or any of
+the bootstrap files in /bootstrap.d. But of course its okay to access/change the
+config from these funcs or aliases because users may want that functionality for
+themselves, but they can safely remove them without worry of compromising the 
+system. This is kind of like 'separation of church and state'. Church being the
+'magical' funclias/alias calls that make seemingly magical calls that do lots to
+save time. State would be the boilerplate and hard script underneath to make the
+existence of the func and alias commands possible, but not interfere with it's 
+use and ensure everyone can use them and nobody compromises anyone else's higher
+level items.
+
+If this is still vague break it into a graph
+--------------------------------------------------------------
+                                     :
+  [ core domain ]                    :      [ user domain ]
+                                     :
+  [autox]  <->  [bootstrap mods]     :
+   |               +-func mod  <---->: [preset/user funcs]
+   |               +-alias mod <---->: [preset/user aliases]
+   |<---[config]-->+-config mod <--->: [user's config files]
+   |       ^             |           :
+   |       |             v           :
+   +-[ helper binaries or scripts ]  :
+   |                                 :
+   +-[ global config files]          :
+                                     :
+                                     
+                   [ developer domain on all facets ]
+                                     
+INSET 1-1: how to break down autox in a simple graph
+
+Still too hard? In words it is...
+
+ the [core domain] can only be access the [bootstrap mods], the [user domain]
+ is bound by this same rule. The bootstrap is the key, the bootstrap has the
+ power to transcend both sides so this is where great attention must be paid.
+ The rule also specifies that no domain should have to have it's code written
+ across domains to function. The 'ls' func should not require the core to define some function
+ in order to work, though the 'ls' func depends on the 'func' bootstrap module
+ and the bootstrap modules depend on the core itself, respectively.
+ 
+ Now i bet your confused. 
+ how about a parental analogy?
+ 
+ Autox(mom) said to bootstrap(teen), "dont do anything I wouldn't do!" but 
+ bootstrap doesn't listen because its a rebelious teenager but needs autox 
+ to eat and a place to sleep. Also, bootstrap hangs  out with it's friends 
+ and gives or takes info and advice, their names are FUNC and ALIAS but do
+ have more than that (so many!) Autox doesnt know func  and  alias at  all
+ except the fact  they are visiting,  so it does know  to show their names 
+ when given to them by the bootstrap child :)
+ 
+ Now I hope your confused, should have stayed with the first explanation right?
+ 
+ how about a real complicated explanation?
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ ...just kidding (thats all folks!)
+ 
+ 

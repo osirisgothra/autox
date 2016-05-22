@@ -1,0 +1,4 @@
+KILL () 
+{ 
+    kill -9 `pidof "$@"`
+}

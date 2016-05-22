@@ -1,0 +1,1 @@
+alias ax.str.webcat='unset IFS;z=0;for x do ((z)) && echo -n "+" || z=1; [[ $x =~ " " ]] && echo -n "\"${x}\"" || echo -n $x; done'

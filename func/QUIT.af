@@ -1,0 +1,4 @@
+QUIT () 
+{ 
+    kill -3 `pidof "$@"`
+}

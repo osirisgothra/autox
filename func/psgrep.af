@@ -1,0 +1,13 @@
+psgrep () 
+{ 
+    if [[ $* =~ "s/" ]]; then
+        ps ${AX_PSGREP_PSCMDLINE-avfx} | perl -wpe "$*";
+    else
+        if [[ $* =~ "/" ]]; then
+            SPEC="$*";
+        else
+            SPEC="/$*/";
+        fi;
+        ps ${AX_PSGREP_PSCMDLINE-avfx} | perl ${AX_PSGREP_PERLCMDLINE--w} -ne "print if ( ${SPEC} )";
+    fi
+}

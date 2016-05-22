@@ -1,5 +1,15 @@
 #!/bin/bash -r # will fail, please dont run as an executable - please edit with atom or sublime_text
 
+# IMPORTANT: we are moving much of the code to bootstraps and rewriting autox's
+# startup script (this scirpt) and creating a stub that is not directly related
+# to it (so main script is not linked into user's directory!).
+# PLEASE IF YOU WANT TO CONTRIBUTE BEAR IN MIND THAT THIS FILE WILL BE REMOVED
+# IN FUTURE RELEASES AND TRY TO KEEP COMPLIANT: DEVELOP ON THE BOOTSTRAP OR 
+# SPECIALTY SCRIPTS THAT RUN FROM ANOTHER SUBDIR!!!
+
+# This file will be removed in the next release commit at which point
+# this file will be renamed to autox.old for historical reasons.
+
 # TODO: remove the following comments when changes are completed
 # pre-move check: move all loading of bootstrap.d to bootstrap which will launch the bootstrapper files
 # pre-move check: move alias handlers to bootstrap.d/00?persistalias.ax (b/c funcs are loaded in this manner)
@@ -34,7 +44,23 @@ fi
 #TODO:FIXME
 cd "$HOME"
 
-#TODO: move this to another place if needed (find out /if/ it is needed)
+# FIX: detect multiple recalls from the same source, this of course does not
+#      include user-sourced instances or self-resourcing!
+if [[ -v AX_RUNTIMES ]]; then
+    for i in "${AX_RUNTIMES[@]}"; do
+        if [[ "$i" == ${BASH_SOURCE[1]} ]]; then
+            echo -e "\e[1;31mnote: $i has already called autox once, it is being ignored this time\e[0m"
+            [[ $- =~ i ]] && return 0
+            echo -e "\e[1;31mcaution: noninteractive shell detected - sending exit instead of return\e[0m"
+            exit 123
+        fi
+    done
+    AX_RUNTIMES=( "${AX_RUNTIMES[@]}" "${BASH_SOURCE[1]}" )
+else
+    declare -gax AX_RUNTIMES=( "${BASH_SOURCE[1]}" )
+fi
+
+#TODO: move this to another place if needed (find out /if/ it is really needed)
 #MOVEME
 # find out if it is a bona-fide login     | < this is important for the
 # shell (if user uses the -l flag to      |   compint environment compiler
@@ -462,9 +488,104 @@ function ax.config.get()
 
 function ax.config.has()
 {
-	# [name]
-	ax.config "$1" &> /dev/null
-	return $ax_config_error;
+    # NEW: additional argument refers to its expected value
+    # NEW: pairs are treated as multiple queries in AX_CONFIG_RESULTS[_HAS/_VALUE]
+    case $# in
+        1)
+	    # [name]
+	    ax.config "$1" &> /dev/null
+	    return $ax_config_error;
+	    ;;
+	    0)
+	    # NEW: no arguments = return 1 if config file is present
+	    if [[ -s "$AX_BASE/config/autoxrc" ]] && grep -Pq "configuration_created" "$AX_BASE/config/autoxrc"; then
+	        return 0
+	    else
+  	        if [[ -s "$AX_BASE/config/autoxrc" ]]; then
+  	            echo "WARNING: $AX_BASE/config/autoxrc found but invalid!"
+  	            echo "         making a backup copy of it before removing it"
+  	            declare -g BACKUPCOPY=$(mktemp autoxrcXXXX_backup_$USER)
+  	            if mv "$AX_BASE/config/autoxrc" "$BACKUPCOPY"; then
+  	                echo "copy of it saved in $BACKUPCOPY, and will get delted"
+  	                echo "on next restart of this server, or sooner!"
+  	            else
+  	                echo "failed because copy operation had an error, please"
+  	                echo "check these files manually!"
+  	                echo "original will NOT be destroyed"
+  	            fi
+  	        else
+  	            true debug echo "$FUNCNAME config file missing/incorrect"
+  	            echo "NOTICE: config file missing (autoxrc) under $AXBASE/config"
+  	            echo "you can ignore this message if this is the first time you"
+  	            echo "have run autox."
+  	        fi
+	        return 1
+	    fi
+	    ;;
+	2)
+	    ax.config "$1" &> /dev/null
+	    if [[ "$RETV" == "  $2" ]]; then
+	        # true
+	        declare -gi AX_CONFIG_ISEQ=1
+	        return 0
+	    else
+	        # false
+	        declare -gi AX_CONFIG_ISEQ=0
+	        return 1
+	    fi
+	    ;;
+    *)
+        declare -gai AX_CONFIG_HAS=( )
+        declare -ga AX_CONFIG_VAL=( )
+        declare -gai AX_CONFIG_EQU=( )
+        while [[ $# -gt 0 ]]; do
+            # count-specific operations
+            if [[ $# -ge 2 ]]; then
+                ax.config.has "$1" "$2"
+                AX_CONFIG_EQU+=( $AX_CONFIG_ISEQ )
+                shift 2
+            else
+                echo "uneven: handling last as single argument: $1"
+                ax.config "$1" &> /dev/null
+                AX_CONFIG_EQU+=( 1 )
+                shift 1
+            fi
+            # common operations
+            AX_CONFIG_HAS+=( "$ax_config_error" )
+            AX_CONFIG_VAL+=( "$RETV" )
+        done
+        # MULTI-OPERATION return values
+        # ------------------------------
+        # while single operation values are straight forward, multi-op is not
+        # because bash cant return more than one value in 'return'
+        # so we will use the 'return' value here to have special meaning:
+        # TABLE [ax.config.has@A]
+        # VALUE(int16)      MEANING         NOTE(S), IF ANY OR N/A
+        # -------------------------------------------------------------
+        # 0 (true)          all values returned true in AX_CONFIG_EQU
+        # 1-65535           one or more values were false, the value in
+        #                   the return code is a bitmask, supporting up
+        #                   to 16 paralell states allowing for a multiple
+        #                   evaluation to be done in one fell swoop.
+        declare -i ALLEQ=1
+        declare -i EQMASK=0
+        declare -i EQPOS=0
+        for i in ${AX_CONFIG_EQU[@]}; do
+            if [[ $i -eq 0 ]]; then
+                ALLEQ=0
+            else
+                let EQMASK="EQMASK | (1 << EQPOS)"
+                true debug echo "setting bit $EQPOS of the mask, new result is now $EQMASK"
+            fi
+            let EQPOS++
+        done
+        if [[ $ALLEQ -eq 1 ]]; then
+            return 0
+        else
+            return $EQMASK
+        fi
+        ;;
+    esac
 }
 
 function ax.config.set()
@@ -1037,7 +1158,6 @@ function alias()
 		if [[ $1 =~ = ]]; then
 			# handle single argument
 			local NAME="${1%%=*}"
-
 			if [[ ! $NAME =~ ' '+ ]]; then
 				declare -gx LASTALIASSET=$NAME
 			else

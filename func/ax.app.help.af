@@ -1,0 +1,7 @@
+ax.app.help () 
+{ 
+    while [[ $# -ge 1 ]]; do
+        eval "$1 --help";
+        shift;
+    done
+}

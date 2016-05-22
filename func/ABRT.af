@@ -1,0 +1,4 @@
+ABRT () 
+{ 
+    kill -6 ABRT `pidof "$@"`
+}
