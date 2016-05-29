@@ -1,0 +1,4 @@
+ax.doc.afnames () 
+{ 
+    eval declare -pF | grep --color=auto -P \(?\<\=declare\ -f\ \)ax\\..+ -o --color=never
+}

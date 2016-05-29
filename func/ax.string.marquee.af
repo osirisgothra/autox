@@ -1,15 +1,34 @@
 ax.string.marquee () 
 { 
+    true dnl (use true dnl to enable end-user visible comments), params follow in order left to right:
+    true dnl params: z = string to cycle   w = force down width (must be <= than string width!)
+    true dnl params: d = delay between updates, i = starting/current offset in text (must be <= string width!)
+    true dnl notes: you can use the banner func to pad the whole thing, which is why its not included here!
     z="$1";
     w=$2;
+    true dnl NB! next lines are not arithmetic, it substitutes values in ${X-Y} context
+    true dnl NB! (substitutes the value 'X' in case parameter 'Y' was not specified)
     d=${3-1};
-    i=0;
+    i=${4-0};
+    j=0;
+    r=${5-1};
+    if [[ $r -le 0 ]]; then
+        true debug "ERROR: specified zero iterations - nothing to display!"
+    fi
     x=`ax.string.len $z`;
-    while [[ $i -lt $x ]]; do
-        echo -n "[s[2K";
-        ax.string.smid $i $2 $z;
-        let i+=1;
-        echo -n "[u";
-        /bin/sleep $d;
+    while [[ $r -gt 0 ]]; do
+        let r--
+        while [[ $j -lt $x ]]; do
+            echo -ne "\e[s\e[2K";
+            ax.string.smid $i $w $z;
+            let i+=1;
+            if [[ $i -ge $x ]]; then
+                true dnl wrap around at length
+                i=0
+            fi
+            let j+=1;
+            echo -n "\e[u";
+            /bin/sleep $d;
+        done
     done
 }

@@ -29,6 +29,13 @@
 #             when possible!
 # NOTE: further TODOs about moving when complete will be tagged # TODO: MOVEME  or TODO: FIXME
 
+# BIGBIGCHANGE: now slicing this file into 'work chunks' which will be dealt with on a day-to-day basis until the entire
+#				autox-rewrite has been completed, this includes:
+#				-- rearranging steps to proper order
+#				-- eliminate duplicate, redundant, or useless/unused script code
+#				-- move function groups into proper bootstrap modules
+#				-- move many 'configured-here' variables into the config file (autoxrc)
+
 AX_ENTRY_RETURN_CODE=$?
 if [[ ! $- =~ i ]] || [[ AX_NOAUTOX -eq 1 ]]; then
 
@@ -163,8 +170,10 @@ else
             if [[ -r $AX_SNAPSHOT ]]; then
                 # FIX: make readonly certain variables that should never
                 #      be included in the precompiled environment (EXPERIMENTAL FIX)
-                readonly DISPLAY
-                
+                # FIX 2: DISPLAY is readonly ONLY if it was already defined!
+                if [[ -v DISPLAY ]]; then
+                    readonly DISPLAY
+                fi
                 # END EXPERIMENTAL FIX
                 if source $AX_SNAPSHOT &> /tmp/ax.$USER.$HOSTNAME.laststart.log; then
                     [[ -r ~/.inputrc_autox ]] && bind -f ${AX_SNAPBIND}

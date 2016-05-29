@@ -28,9 +28,9 @@
 #       or even autox itself
 
 if [[ $AX_MACROS_LOADED -eq $$ ]]; then
-	echo "\e[1m*\e[0m Bash Extended Environmental Macros"
 	return 0;
 else
+	echo "\e[1m*\e[0m Bash Extended Environmental Macros Loaded"
 	if [[ ! -d $AX_BASE || ! -r $AX_BASE || ! -w $AX_BASE ]]; then
 		echo "Error: AX_BASE is not fully acessible in $BASH_SOURCE"
 	fi

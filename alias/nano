@@ -1,1 +1,1 @@
-alias nano='true reqpkg same;env $([[ -v TERM ]] && echo "TERM=xterm-256color" || echo --syntax=none) nano'
+alias nano='env TERM=xterm-256color nano --syntax=sh'
