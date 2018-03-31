@@ -1,0 +1,17 @@
+unmxf () 
+{ 
+    local x c=0 msg="done (no problems to report)";
+    for x in "$@";
+    do
+        if [[ ! -s "$x" ]]; then
+            echo "removing unused $x file...";
+            rm $x;
+        else
+            echo "skipping $x because it has been modified!!";
+            let c++;
+            msg="\e[1;7;1munmxf is for accidental mxfs that need to be undone before modifications are made!\e[0m\n\e[32m($c errors)\n\e[0m";
+        fi;
+    done;
+    echo -ne "$msg";
+    unset msg
+}

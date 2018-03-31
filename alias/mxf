@@ -1,0 +1,1 @@
+alias mxf='true ly "makes empty + executable to-be-script file(s)"; function _ly() { local x; local IFS; for x in "$@"; do touch "$x" && chmod a+x "$x" || echo "creating $x failed with error code $?"; done; unset -f _ly; }; _ly'

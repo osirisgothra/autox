@@ -1,0 +1,15 @@
+makemt () 
+{ 
+    echo -e "\e[31mWarning: This is a destructive command setting zero-length each of the files you specified:\e[1m $@";
+    echo -e "\e[0mIf you wish to continue press [C]. Otherwise, press [SOMETHING ELSE] to cancel.";
+    read -sn1 R;
+    if [[ $R == C ]]; then
+        echo -e "\e[32;1mConfirmed, setting lengths to \e[34mzero\e[0m...";
+        for x in "$@";
+        do
+            truncate --size 0 --no-create "$x" && echo "$x truncated" || echo "$x failed with ERR=$?";
+        done;
+    else
+        echo -e "\e[34mCancelled by User!\e[0m";
+    fi
+}

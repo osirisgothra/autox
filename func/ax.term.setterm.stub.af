@@ -1,0 +1,4 @@
+ax.term.setterm.stub () 
+{ 
+    eval setterm" $@"
+}

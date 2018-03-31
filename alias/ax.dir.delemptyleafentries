@@ -1,0 +1,1 @@
+alias ax.dir.delemptyleafentries='find -mindepth 1 -maxdepth 1 -type d -empty -exec rmdir --verbose "{}" ";"'

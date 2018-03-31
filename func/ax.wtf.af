@@ -1,0 +1,1 @@
+function wtf () { shopt -s xpg_echo; echo "\nRegular Database";/usr/games/wtf "$@" || { echo "\nTechnical Database"; /usr/games/wtf -f /usr/share/games/bsdgames/acronyms.comp "$@"; }; echo; }

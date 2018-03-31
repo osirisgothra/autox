@@ -1,0 +1,28 @@
+Usage: ax.util.files "[find(1) argument-list]" "[pipe command line]" "[sed arguments]"
+   or: ax.util.files --help | -?
+Uses find(1) to display file(s) in the current directory and then
+filters them through sed(1) to remove (by default) the prefixing "./"
+and then filters again through one more pipe, which is column(1)
+by default. For their argument lists, please review these program's
+respective man(1) pages, or info(1) pages. Each argument set must be
+enclosed in quotes. If there are spaces in any list, you can use bash(1)
+word-splitting rules to properly place them. See the bash(1) help
+manpage or infopage for more details on word-splitting.
+
+  --help, -?            this help and exit
+
+Defaults:
+
+  find(1) defaults:     -maxdepth 1 -type f
+     pipe defaults:     column
+     sed defaults:      s!\./!!g
+
+Be advised that find(1) command line does not get replaced but appended. This
+is done to prevent accidental errors that would produce no output at all, since
+all error text is dumped to /dev/null.
+
+Each argument must be in the form of "argument 'argument with spaces' etc"
+
+GXBASE Tools online help: <http://osirisgothra.github.io/gxbase/>
+Full documentation at: <http://github.io/osirisgothra/gxbase/>
+or available locally within: <ax-root>/doc/*

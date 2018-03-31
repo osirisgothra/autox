@@ -1,0 +1,11 @@
+ax.util.files () 
+{ 
+    case $1 in 
+        --help | -?)
+            cat $AX_BASE/doc/$FUNCNAME
+        ;;
+        *)
+            eval "find -maxdepth 1 -type f ${1}  2>/dev/null | sed -r ${3-s!\./!!g} | ${2-column}"
+        ;;
+    esac
+}

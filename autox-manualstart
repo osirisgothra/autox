@@ -1,0 +1,71 @@
+#!/bin/bash
+#
+# autox-manualstart
+#
+# starts autox for current bash environment automatically
+# without needing to link ~/.bash_completion to <AX_INSTALL_DIR>
+# 
+# Requirements
+#
+# You must run this script interactively by using this command:
+# (extra spaces provided for readibility only!)
+#
+# bash (usually /bin/bash, the default linux shell)
+#   1) when not in the same or in an unknown/dynamic directory:
+#           source  <AX_INSTALL_DIR>/autox-manualstart 
+#           .       <AX_INSTALL_DIR>/autox-manualstart 
+#   2) within same directory ($PWD == <AX_INSTALL_DIR>)
+#           source autox-manualstart
+#           .      autox-manualstart
+#
+#  any other shell: (or directly from xdg-run or software-invoked spawn)
+#   
+#  /usr/bin/env bash -c "<CMD>"
+#
+#  where <CMD> is one of the commands from the 'bash' method above (1 or 2)
+#
+# FAQ
+#
+# Q: can i just source 'autox' instead
+# A: no, you need to run this file because 'autox' won't know the intention and crash
+#    and/or attempt to make modifications to your ~ directory, and start up again the
+#    next time.
+#
+# Q: do i need to use the provided install script to use this?
+# A: no, in fact, you SHOULD NOT use install script for this to work right (or delete ~/.bash_completion)
+#
+# Q: why can't i just RUN it the same way for any shell using the second method (env /bin/bash)?
+# A: you can, but you'll have TWO bash shells then running, one waiting for the other (it still will work though)
+#
+
+# TODO: remove reliance on ~/.bash_completion
+
+AMS_DIR=`readlink -m $BASH_SOURCE/..`
+if [[ -d $AMS_DIR ]] && [[ -r $AMS_DIR/autox ]]; then
+if [[ -r ~/.bash_completion ]]; then
+    echo ".bash_completion exists, saving it until after run"
+    bcbu=1
+else
+    bcbu=0
+fi
+
+declare -i q=0
+((bcbu)) && t=$(mktemp)                         || let q++
+((bcbu)) && mv ~/.bash_completion "$t" --force  || let q++
+
+if [[ $q -gt 0 ]]; then
+        echo "too many errors ($q) aborting! stop."
+else
+   source ~/.bash_completion           || let q++
+   ((bcbu)) && echo "restoring backed up .bash_completion"
+   ((bcbu)) && mv "$t" ~/.bash_completion --force  || let q++
+fi
+
+if [[ $q -gt 0 ]]; the
+    echo "completed with errors ($q) please check your installation and command line! (FAILED!)"
+    return $(( 129 + q ))
+ese
+    echo "$BASH_SOURCE finished without any problems. (SUCCESS)"
+    return $q
+i
+

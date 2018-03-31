@@ -1,0 +1,1923 @@
+#!/bin/bash -r # will fail, please dont run as an executable - please edit with atom or sublime_text
+
+# NB NB NB NB!!!!
+# NB NB NB NB!!!!
+# NB NB NB NB!!!!
+# NB NB NB NB!!!!
+
+# As of june 13, 2016 @ 6:00am EST:
+
+# autox -> autox-original
+# autox <- autox-rewrite
+
+# no more changes to autox-original shall be made
+
+# and, its executable bit will be stripped, made readonly (a-w)
+# AND; also will have (a) manual code block->
+# CODEBLOCK
+tput reset
+tput setab 1
+tput setaf 7
+tput bold
+tput blink
+tput italic
+tput underline
+echo "this file is obsolete and not compatible with autox 1.06.16"
+echo "autox ($BASH_SOURCE) is no longer started from this file!"
+echo "please  change your symbolic link or re-run the install script"
+echo "advancd users can do this manually."
+tput sgr0
+# CODEBLOCK
+# NB NB NB NB!!!!
+# NB NB NB NB!!!!
+# NB NB NB NB!!!!
+# NB NB NB NB!!!!
+while true; do read -sn1; done; return 127; exit 127;
+while true; do read -sn1; done; return 127; exit 127;
+while true; do read -sn1; done; return 127; exit 127;
+# NB BARRIER^^^
+
+# IMPORTANT: we are moving much of the code to bootstraps and rewriting autox's
+# startup script (this scirpt) and creating a stub that is not directly related
+# to it (so main script is not linked into user's directory!).
+# PLEASE IF YOU WANT TO CONTRIBUTE BEAR IN MIND THAT THIS FILE WILL BE REMOVED
+# IN FUTURE RELEASES AND TRY TO KEEP COMPLIANT: DEVELOP ON THE BOOTSTRAP OR 
+# SPECIALTY SCRIPTS THAT RUN FROM ANOTHER SUBDIR!!!
+
+# This file will be removed in the next release commit at which point
+# this file will be renamed to autox.old for historical reasons.
+
+# TODO: remove the following comments when changes are completed
+# pre-move check: move all loading of bootstrap.d to bootstrap which will launch the bootstrapper files
+# pre-move check: move alias handlers to bootstrap.d/00?persistalias.ax (b/c funcs are loaded in this manner)
+# NB: was going to move following into own dir, but its not needed because:
+# 1) it will further complicate link resolution
+# 2) it will make finding/changing/fixing script code harder
+# 3) source already written for it's directory so no change is needed
+# 4) hunting down (as in #2 and #3) will be harder in terms of symlinks, permissions, etc
+# pre-move check: move all pre-environment checks to prologuecheck.sh
+# pre-move check: move all environment-variable setups to prologuevars.sh
+# post-move check: move all cleanup/exiting proceedures to epilogue.sh
+#
+# TODO: remove the following comments when move is completed
+# CHANGE: moved $- for i to first line, the way its supposed to be
+#        to prevent futile checking and execution
+#        new: preserve also the $? state as it was when first called
+#             when possible!
+# NOTE: further TODOs about moving when complete will be tagged # TODO: MOVEME  or TODO: FIXME
+
+# BIGBIGCHANGE: now slicing this file into 'work chunks' which will be dealt with on a day-to-day basis until the entire
+#				autox-rewrite has been completed, this includes:
+#				-- rearranging steps to proper order
+#				-- eliminate duplicate, redundant, or useless/unused script code
+#				-- move function groups into proper bootstrap modules
+#				-- move many 'configured-here' variables into the config file (autoxrc)
+
+# MUST be first line or it's value will be inaccurate
+AX_ENTRY_UNDERSCORE=$_
+if [[ ! -v AX_ENTRY_RETURN_CODE ]]; then
+    readonly AX_ENTRY_RETURN_CODE=$?
+    readonly AX_ENTRY_IFS=$IFS
+    readonly AX_ENTRY_PWD=$PWD
+    declare -i AX_ENTRY_TIMES=0
+fi
+
+echo -e "\e[33;1miteration called by: ${BASH_SOURCE[1]}\e[0m"
+let AX_ENTRY_TIMES++
+echo "entered iteration number: $AX_ENTRY_TIMES"
+if [[ $TERM == linux ]] && [[ -r ~/.noconsoleautox ]]; then
+    echo "Not running autox because ~/.noconsoleautox exists and the"
+    echo "terminal is set to \"$TERM\". Delete this file if you want"
+    echo "to run autox in console (text-only) CLI environments."
+    return 0 || exit 0
+fi
+if [[ $AX_ENTRY_WAITING -eq 1 ]]; then
+    if [[ $AX_ENTRY_TIMES -eq $AX_ENTRY_WAIT_UNTIL ]]; then
+        echo "reached last iteration, autox now will be loaded"
+        echo "iteration: passed"
+    else
+        echo "iteration of $BASH_SOURCE not met: waiting ($AX_ENTRY_TIMES/$AX_ENTRY_WAIT_UNTIL)"
+        return 0
+    fi
+else
+    if [[ -r ~/.config/ax_entry_times_$TERM ]]; then
+        AX_ENTRY_TIMES_TERM=$(cat ~/.config/ax_entry_times_$TERM)
+        if [[ $AX_ENTRY_TIMES -lt $AX_ENTRY_TIMES_TERM ]]; then
+            echo "pre-recorded number of passes for this TERM, setting to wait"
+            echo "for that iteration: waiting"
+            AX_ENTRY_WAIT_UNTIL=$AX_ENTRY_TIMES_TERM
+            AX_ENTRY_WAITING=1
+            return 0
+        else
+            # means we wrote to it previously and are ahead of it
+            echo "$AX_ENTRY_TIMES" > ~/.config/ax_entry_times_$TERM
+        fi
+    else
+        echo "pass count for this terminal type has not been recorded, ever"
+        echo "creating new record..."
+        echo "$AX_ENTRY_TIMES" > ~/.config/ax_entry_times_$TERM
+        echo "WARNING: first time run - autox may load multiple times, but will not as long as it completes its run cycle"
+        echo "         please avoid pressing CTRL+C during this time!"
+    fi
+    echo "pass evaluation finished: passing (first time run testing)"
+fi
+
+
+if [[ ! $- =~ i ]] || [[ AX_NOAUTOX -eq 1 ]]; then
+
+    if [[ $AX_NOAUTOX -eq 1 ]]; then
+        echo "AX_NOAUTOX is set to 1 (true), not running autox";
+    else
+        echo "autox: not an interactive shell, autox not needed, skipping load"
+    fi
+    return $AX_ENTRY_RETURN_CODE
+	exit $AX_ENTRY_RETURN_CODE
+fi
+
+#TODO:FIXME
+cd "$HOME"
+
+# FIX: detect multiple recalls from the same source, this of course does not
+#     
+if [[ -v AX_RUNTIMES ]]; then
+    for i in "${AX_RUNTIMES[@]}"; do
+        if [[ "$i" == ${BASH_SOURCE[1]} ]]; then
+            echo -e "\e[1;31mnote: $i has already called autox once, it is being ignored this time\e[0m"
+            [[ $- =~ i ]] && return 0
+            echo -e "\e[1;31mcaution: noninteractive shell detected - sending exit instead of return\e[0m"
+            exit 123
+        fi
+    done
+    AX_RUNTIMES=( "${AX_RUNTIMES[@]}" "${BASH_SOURCE[1]}" )
+else
+    declare -gax AX_RUNTIMES=( "${BASH_SOURCE[1]}" )
+fi
+
+#TODO: move this to another place if needed (find out /if/ it is really needed)
+#MOVEME
+# find out if it is a bona-fide login     | < this is important for the
+# shell (if user uses the -l flag to      |   compint environment compiler
+# immitate a login shell, it will not be  |   since it relys on a contained
+# tricking us!)                           |   system (login is not contained)
+#                                         |   and startup files called in a
+#                                         |   non-login fashion, plus login shells
+#                                         |   are not the appropriate time for
+#                                         |   since they are done via the GUI
+#                                         |   in the background most times during
+#                                         |   system startup!
+if [[ `ps $PPID` =~ '/bin/login' ]]; then
+    AX_TRUE_LOGIN_SHELL=1
+    echo "Login Shell: autox will not compile the environment during such a process,"
+    echo "             please run bash in a terminal or start it indirectly to do this."
+    echo " (only compiled environment loader will be disabled) "
+    echo ""
+    if [[ $- =~ l ]]; then
+        true debug echo "note: shell contained proper flagging -l"
+    else
+        echo ""
+        echo "warn: shell was not flagged with -l properly, you might wish to fix this or alert your administrator!"
+        echo ""
+    fi
+else
+    AX_TRUE_LOGIN_SHELL=0
+    if [[ $- =~ l ]]; then
+        echo ""
+        echo "error: shell was started as login shell,  but is not a true login shell."
+        echo "       only shells started under the login process will be considered as a login shell!"
+        echo "(please fix this problem or alert your administrator!)"
+        echo ""
+    else
+        true debug echo "note: shell did not include -l flag, which is expected"
+    fi
+fi
+
+if [[ ${AX_BANNERS} =~ ax_compile ]]; then
+    true debug echo skipping_ax_compile_message_not_first_time
+else
+    echo "[30;1mautox compint™ aglorithim v1.0-1 boot[0m"
+    AX_BANNERS+=".ax_compile"
+fi
+
+if [[ $AX_ENTRYCONTROL -eq $$ ]]; then
+    echo -e '[u[K[ucompiling autox environment...'
+else
+    echo -ne '[s'
+    declare -xirg AX_ENTRYCONTROL=$$
+    declare -xirg AX_USE_SHM=`[[ -r ~/.config/autox/flags/use_prefetch ]] && echo 1`
+    declare -xirg AX_SNAPMARK=$SECONDS
+    declare -gxr AX_SHM_VERBOSE='' # SET TO '--verbose' TO DEBUG
+    declare -gxr AX_USERTMP="$(dirname $(mktemp -u))"
+    declare -gxr AX_MCRED="$USER.$HOSTNAME.ax"
+    declare -gxr AX_MANIFEST="$AX_USERTMP/${AX_MCRED}manifest"
+    declare -gxr AX_SHMLOC="/dev/shm/ax-${AX_MCRED}-prefetch"
+    declare -gxr AX_SNAPSHOT_SHM="${AX_SHMLOC}/${AX_MCRED}snapshot"
+    declare -gxr AX_SNAPBIND_SHM="${AX_SNAPSHOT_SHM}.bind"
+    declare -gx AX_SNAPSHOT="$AX_USERTMP/${AX_MCRED}snapshot"
+    declare -gx AX_SNAPBIND="${AX_SNAPSHOT}.bind"
+    declare -gx AX_OP_MODE=INTERPRETER
+    # FIX:get the correct tty, since it changes every session
+    #     and bash doesn't track it, we do
+    # TTY is now readonly since the tty cant change unless a new
+    #     shell is started on a new tty, and no known methods of
+    #     transferring a tty from one to the next exists (this could
+    #     change in the future, please notify me if you find such a
+    #     shell or terminal/tty).
+    declare -gxr TTY=$(tty)
+    # END EXPERIMENTAL FIX
+
+    if [[ -r ~/.config/autox/flags/no_compile_mode ]]; then
+        echo -e "[u[K[unot checking manifest, compile mode is disabled (no_compile_mode flag is set)"
+    else
+        echo -ne "[u[K[usearching for manifest ($AX_MANIFEST)..."
+        if [[ -r $AX_MANIFEST ]]; then
+            if shasum -c "$AX_MANIFEST" -s; then
+                echo -e "compiled checksum ok"
+                AX_OP_MODE=COMPILED
+            else
+                rm "$AX_MANIFEST" -f
+                echo "checksum out of date"
+            fi
+        else
+            echo "not found"
+        fi
+    fi
+
+    case $AX_OP_MODE in
+        COMPILED)
+            echo -n "[u[K[uchecking for prefetch..."
+            if [[ -r $AX_SNAPSHOT_SHM ]] && [[ -r $AX_SNAPBIND_SHM ]]; then
+                echo " using / read ok"
+                declare -gx AX_SNAPSHOT="${AX_SNAPSHOT_SHM}"
+                declare -gx AX_SNAPBIND="${AX_SNAPBIND_SHM}"
+            else
+                echo "no, fetch from disk..."
+            fi
+            echo -n "[u[K[uloading precompiled environment...[s"
+            if [[ -r $AX_SNAPSHOT ]]; then
+                # REMOVED: DISPLAY EXPERIMENTAL FIX (NOT EFFECTIVE!)
+                if source $AX_SNAPSHOT &> /tmp/ax.$USER.$HOSTNAME.laststart.log; then
+                    [[ -r ~/.inputrc_autox ]] && bind -f ${AX_SNAPBIND}
+                    echo -n "[u[K[ucompleted "
+                    # FIX: fixed check for AX_BASE being valid in precompiled environments
+                    if [[ $(<$AX_BASE/autox.id) != "3bdc9ba4-2429-11e5-8ae2-00196605e97c" ]]; then
+                        echo "Fatal: AX_BASE ($AX_BASE) is NOT valid, you should restart autox with full compile."
+                        echo "this happens usually when the AX_BASE got moved to another location but not changed"
+                        echo "Recompile Environment (you will definitely get errors if you dont)"
+                        echo "[Y] recompile invalid environment"
+                        echo "[N] ignore and continue (NOT reccomended!)"
+                        while true; do read -sn1; [[ $REPLY =~ [yn] ]] && break; done
+                        case $REPLY in
+                            n)
+                                echo "continuing recklessly..."
+                                ;;
+                            y)
+                                echo "removing compiled environment files..."
+                                rm $AX_SNAPSHOT $AX_MANIFEST $AX_SNAPBIND $AX_SNAPSHOT_SHM $AX_SNAPBIND_SHM -f
+                                echo "restarting bash..."
+                                exec bash
+                                ;&
+                            *)
+                                echo "failsafe: $REPLY was pressed and passed, $? = last return code"
+                                echo "FAILSAFE: halting, program should not have met this point! notify author now!"
+                                while true; do read -sn1; done
+                                return 128; exit 128
+                                ;;
+                         esac
+                    else
+                        true debug echo "confirmed valid autox signature in $AX_BASE"
+                    fi
+                    AX_SNAPMARK_CNT=$[ $SECONDS - ${AX_SNAPMARK} ]
+                    echo -e "in $AX_SNAPMARK_CNT sec(s) (of $SECONDS)"
+                    return $?
+                else
+                    echo "fail"
+                    echo "FATAL: errors during snapshot load, reverting to interpreter mode..."
+                    AX_OP_MODE=INTERPRETER
+                fi
+            else
+                echo "missing!!"
+                echo "FATAL: $AX_SNAPSHOT MISSING, reverting to interpreter mode..."
+                AX_OP_MODE=INTERPRETER
+            fi
+            ;&
+
+        INTERPRETER)
+            if [[ -r ~/.hushlogin ]]; then
+                echo "interpreting quietly thanks to ~/.hushlogin..."
+                builtin source "$BASH_SOURCE" "$@" 2> /tmp/axstartup.$USER.$HOSTNAME.log 1>/dev/null
+            else
+                builtin source "$BASH_SOURCE" "$@"
+            fi
+
+            echo -n "finalizing environment compilation... "
+            echo "[var shopt comp alias trap hash alias func "
+            # FIX:EXPERIMENTAL - remove variables that musnt be changed by us like the Xorg display, or the tty
+            #     added: AX_ENTRY_ variables which are dynamic
+            #            XDG_ and BASH_ variables which are run-time set
+            #            TERM which is set at login/execution
+            # FIX: EXPERIMENTAL
+            #       changed: using delcare -pf instead of 'set' because
+            #                set does not set empty variables, nor does it set
+            #                their properties/attributes correctly
+            { declare -p; declare -pf | grep '^(TERM|DISPLAY|XDG_.*|XAUTHORITY|XMODIFIERS|SESSION|IFS|AX_RUNTIMES|AX_ENTRY_.*|SHLVL|BASH_.*|COLUMNS|LINES|PPID|PID|PWD|TTY)\b=' -Pv; shopt -po; shopt -p; complete; alias; trap; hash -l; umask -p; } > $AX_SNAPSHOT
+            # END EXPERIMENTAL
+            echo -n "bind "
+            bind -psv > "$AX_SNAPBIND"
+            echo "]...ok!"
+            echo -n "recording the manifest..."
+            shasum `find ax/ -type f` -a512 1> $AX_MANIFEST
+            echo "ok!"
+            if ((AX_USE_SHM)); then
+	            echo -n "flushing to prefetch (shared) memory..."
+	            if [[ -d "$AX_SHMLOC" ]] || mkdir --parents "$AX_SHMLOC" $AX_SHM_VERBOSE; then
+	              echo -n "[dev=okay] "
+    	          if cp $AX_SHM_VERBOSE --force --no-dereference "$AX_SNAPSHOT" "$AX_SNAPBIND" "$AX_SHMLOC"; then
+	                echo "[commit=ok]"
+	                echo "Using Stored Environment: $AX_SHMLOC"
+    	          else
+	                echo "[commit=fail]"
+	                echo "Cache Status: not copied (/dev/shm on your system and ok to use it?)"
+	                sleep 1.5
+	              fi
+    	        else
+	                echo "[device=missing]"
+                fi
+            else
+                echo "* prefetch is turned off (use_prefetch not flagged)"
+                rm -fr $AX_SHMLOC
+            fi
+            ;;
+        *)
+            echo "failed (mode ${AX_OP_MODE- UNDEFINED} is unknown)"
+            echo "FATAL: mode was not determined, autox cannot be loaded!"
+            return 127;;
+    esac
+
+    AX_RETURN_GLOBAL=$?
+    # EXIT, RECORD SHA OF FILE SINCE WE ARE IN INTERPRETER MODE
+    (exit $AX_RETURN_GLOABAL)
+    return $?
+fi
+
+rr=$?
+if [[ $AX_SKIPAX -ge 1 ]]; then
+    let AX_SKIPAX++
+    export AX_SKIPAX
+    if [[ $AX_SKIPAX -le 2 ]]; then
+        printf "%-"${COLUMNS-80}"s " "[1;30m(not running autox, AX_SKIPAX is defined [subsequent calls will be logged in /tmp if possible])[0m\n" 
+    else
+        # trivial log if possible
+        echo "additional session depth of $AX_SKIPAX-1 called on $(date)" >> /tmp/ax.session.$HOSTNAME.$USER.log
+    fi
+    (exit $rr)
+    return $?
+else
+    true debug echo "verified non skip session or LTZ value of skip, which is [$AX_SKIPAX] at this time."
+
+fi
+
+# TODO: HI-PRIORITY!: remove the 'temp' profilers b4 next cycle (targeted at jan 31)
+PATH=$(dirname $(readlink -e $BASH_SOURCE))/bin:$PATH
+
+# temp: profiling sleep calls (if any) while speed profiling
+function sleep()
+{
+    if [[ ! -r ~/.dont-like-fast-startups ]]; then
+        true fx sleep "$@";
+    else
+        return $?
+    fi
+    # dont enable this if you like fast startups
+}
+# temp: profiling tattler (otherscript startup times)
+echo "autox: it took your _other_ config files $SECONDS second(s) to run"
+echo "autox: now autox is running it's startup script(s)..."
+echo
+echo -ne "[1mAutoX alpha 1"
+# TODO: rewrite kbhit so it is not dependant on a compiler, autox is supposed to be compile-free
+if which axkbhit &> /dev/null; then
+	echo -e ", you can interrupt startup to drop into:\n\t [[1ms[0m] = minimal session (bash --norc) \n\t [[1mr[0m] = stock session (as if new installed os)\n...[0m"
+	trap 'R=$?;axkbhit; if [[ $? -gt 0 ]]; then read -sn1 AX_TAP; if [[ ${AX_TAP^^} == S ]]; then bash --norc; elif [[ ${AX_TAP^^} == r ]]; then env AX_SKIPAX=1 bash --rcfile /etc/skel/.bashrc; fi; fi; (exit $?)' DEBUG
+
+else
+
+	echo -e ", starting, please wait a moment..."
+	echo "warning: axkbhit not found in path, extended key pooling will NOT be available"
+	echo "         you can either copy axkbhit (or compile it) yourself, or install it"
+	echo "         using the provided installer! -- however this is not critical"
+	echo
+fi
+# temp: header WILL be the first thing, as soon as we get the version banner
+#       positioned the way it needs to be...
+
+# shellcheck disable=2030
+# [SublimeLinter: exclude="2031,2086"]
+# vim: tw=0:noet:hls:nospell:sw=4:ts=4:fdc=2:fcl=all:fdo=hor:fen:vbs=0:cf:aw
+#===============================================================================
+#
+#          FILE: autox
+#
+#         USAGE: ./autox [prologue|epilogue|runtime|exit] {--reload (only needed if ran already)}
+#
+#   DESCRIPTION: autoalias and other functions (hence, autox)
+#
+#		 the 'other' stuff is handled by the bootstrap in the
+#		 subdir, bootstrap.d/*, see those files for their information!
+#
+#		 This script will load global alias support and start the bootstrap
+#		 to load all other support. This is the only script you need to
+#		 execute!!! (checker is in place for that as well)
+#
+# 		 new alias functions 'aka superaliases' separates alias
+#		 definitions into a 'local set' and a 'global set'
+#		 The local set is set by 'lalias' and 'lunalias'
+#		 The global aliases are set by 'galias' and 'gunalias'
+#		 A local alias may be exported to the global table by
+#		 using the 'gexport'. Globals are deleted using 'gunalias'
+#		 and local ones are deleted by using 'lunalias'. Note that
+#		'gunalias' will remove the local copy if the '--all' flag
+#		 is used.
+#
+#         NOTES:alias(1)
+#					- more than one argument present AND...
+# 					- the first argument is either '-p' or '--' THEN...
+#					- remove it from the argument list
+# 					otherwise:
+#   				- leave them and treat them as actual arguments
+#					** in both cases, these flags modify nothing, this is a bash(1) quirk
+#					so it must be duplicated it in order to keep function of the alias
+# 					command identical in all other cases!
+#				alias(2)
+#				    if.....called by a function  --or-- has only one argument
+#					else...not called by a function + has more than one argument
+#
+# OPTIONS: o:lalias	[--print|-p] | [alias[=value]] [...]
+#          d:--print,-p:print in reusable format//alias:name of alias to show or define//value:command line the alias represents$
+#		   o:lunalias	[name] [...] | [--all|-a]
+#		   d:--all,-a:remove all local aliases//name:name of local alias to remove$
+#		   o:galias	[--print|-p] [alias[=value]] | [search pattern]
+#		   d:--print,-p:print in reuable format//alias:name of alias to show or define globally//value:command line the alias represents$
+#		   o:gunalias	[--keep-local|-k] [name] | [--all|-a]
+#		   d:--all,-a:remove all aliases. If -k is used, the local instances of these aliases will remain until the shell exits.//name:name of alias to remove//--keep-local|-k:do not remove local copy of this alias$
+#		   o:gexport	[--all|-a] | [local alias name]
+#		   d:--all,-a:promote all local aliases to global aliases//local alias name:name of local alias to promote$
+#
+#  REQUIREMENTS: ---
+#          BUGS: ---
+#         NOTES: ---
+#        AUTHOR: Gabriel Thomas Sharp
+#  ORGANIZATION: Paradisim, LLC, SW PA, Latrobe, WC 45
+#       CREATED: 02/06/2015 10:47
+#      REVISION: 09/04/2015 10:54
+#===============================================================================
+
+#### 0. shopt pre-set (temporary)
+
+# TODO: if more than one of these get set, please then move
+#       this operation into a function of some sort, because
+#       it will be a LOT of typing if you dont!
+#       the first 3 lines are for foolproof cleanup of what happens on line 4:
+#       and, remember each AX_SHOPT_?? that gets created must be run and unset
+
+export AX_SHOPT_PRESET_XPGECHO="$(mktemp)"
+shopt -p xpg_echo >> "$AX_SHOPT_PRESET_XPGECHO"
+echo "rm $AX_SHOPT_PRESET_XPGECHO -f" >> "$AX_SHOPT_PRESET_XPGECHO"
+echo "unset AX_SHOPT_PRESET_XPGECHO" >> "$AX_SHOPT_PRESET_XPGECHO"
+shopt -s xpg_echo
+
+
+
+####
+#### 1. GLOBALLY ACCESSABLE VARIABLES
+####
+
+eval declare -gxA AX_IGNORED_DUPLICATES=( `grep -P '^[^#].*' $(dirname $(readlink -e $BASH_SOURCE))/data/ignoreduplicates.dat --word-regexp | sed 's/.*/[\0]="1"/g'` )
+declare -gx AX_SUDO_BIN="$(which sudo)"
+[[ -x "$AX_SUDO_BIN" ]] || { echo "SEVERE: sudo binary not executable!! please check settings! STOP"; break; };
+
+declare -gx AX_BASHSOURCE_REAL=$(readlink -e "$BASH_SOURCE" 2> /dev/null || echo none)
+declare -gx AX_BASHSOURCE_LINK="$BASH_SOURCE"
+
+declare -gx AX_USERBASE=~/.config/autox
+declare -gx AX_BASE=$(dirname "$AX_BASHSOURCE_REAL" 2> /dev/null || echo none)
+
+declare -gixa AX_RUN_COUNT[$$]=$(( ${AX_RUN_COUNT[$$]} + 1))
+
+###
+### 2. FUNCTIONS
+###
+
+
+function ax.config()
+{
+	# this is the heart of the ax.config getter, however, it has some funky
+	# internalist workings, so you should probably want 'ax.config.get' and
+	# /or 'ax.config.has'. The first one echos the value if it is set, the second
+	# one does not, both return 0 or 1 if they exist or not, respectively.
+	# ax.config.set is only for adding values that do not already exist, at this time.
+	#declare -p CONFIG_CACHE
+	CACHELOAD=0
+	if [[ ! -v "CONFIG_CACHE[initialized]" ]]; then
+		declare -gA CONFIG_CACHE=( [initialized]="true" )
+	fi
+	unset RETV
+	if [[ $1 == cacheok ]]; then
+		shift
+		if [[ ${CONFIG_CACHE[$*]} ]]; then
+			RETV=${CONFIG_CACHE[$*]}
+			CACHELOAD=1
+		fi
+	fi
+	declare -gix ax_config_error=0
+	if [[ -v RETV ]] || [[ -r $AX_BASE/config/autoxrc ]]; then
+	# config file read OK:
+		if [[ -v RETV ]] || RETV=$(grep "(?<=^${*}=).*$" -Po $AX_BASE/config/autoxrc); then
+			# store in cache (for later use of 'cacheok')
+			# only if not loaded from cache on this run
+			[[ $CACHELOAD == 0 ]] && CONFIG_CACHE[$*]="$RETV"
+			# decide on numeric or string return method
+			# numeric may need to use config.has to get a true boolean due
+			# to booleans reflecting of 1 and 0 can be returns as well
+			if [[ $RETV =~ ^[0-9]+$ ]]; then
+				return $RETV
+			else
+				echo $RETV
+				return 1
+			fi
+		else
+			CONFIG_CACHE[$*]="1"
+			ax_config_error=1
+			return 1
+		fi
+	else
+	# config file unreadable, one will be created if not existing
+		mkdir --parents $AX_BASE/config
+		touch $AX_BASE/config/autoxrc
+		cat <<-EOF > $AX_BASE/config/autoxrc
+		#
+		# autoxrc
+		# autox configuration
+		#
+		configuration_created=1
+		EOF
+		if (($?)); then
+			echo "WARNING: could not create configuration file!"
+			tty -s && sleep 2 # dont wait if no point
+		else
+			echo "Configuration File Was Created: $AX_BASE/config/autoxrc"
+		fi
+	fi
+}
+
+function ax.config.get()
+{
+	# [name]
+	# returns 1 if bad value or 0 if good value, echos the value
+	if ax.config.has $1; then
+		VALUE="$(ax.config $1)"
+		echo ${VALUE:-$?}
+		return 0
+	else
+		return 1
+	fi
+}
+
+function ax.config.has()
+{
+    # NEW: additional argument refers to its expected value
+    # NEW: pairs are treated as multiple queries in AX_CONFIG_RESULTS[_HAS/_VALUE]
+    case $# in
+        1)
+	    # [name]
+	    ax.config "$1" &> /dev/null
+	    return $ax_config_error;
+	    ;;
+	    0)
+	    # NEW: no arguments = return 1 if config file is present
+	    if [[ -s "$AX_BASE/config/autoxrc" ]] && grep -Pq "configuration_created" "$AX_BASE/config/autoxrc"; then
+	        return 0
+	    else
+  	        if [[ -s "$AX_BASE/config/autoxrc" ]]; then
+  	            echo "WARNING: $AX_BASE/config/autoxrc found but invalid!"
+  	            echo "         making a backup copy of it before removing it"
+  	            declare -g BACKUPCOPY=$(mktemp autoxrcXXXX_backup_$USER)
+  	            if mv "$AX_BASE/config/autoxrc" "$BACKUPCOPY"; then
+  	                echo "copy of it saved in $BACKUPCOPY, and will get delted"
+  	                echo "on next restart of this server, or sooner!"
+  	            else
+  	                echo "failed because copy operation had an error, please"
+  	                echo "check these files manually!"
+  	                echo "original will NOT be destroyed"
+  	            fi
+  	        else
+  	            true debug echo "$FUNCNAME config file missing/incorrect"
+  	            echo "NOTICE: config file missing (autoxrc) under $AXBASE/config"
+  	            echo "you can ignore this message if this is the first time you"
+  	            echo "have run autox."
+  	        fi
+	        return 1
+	    fi
+	    ;;
+	2)
+	    ax.config "$1" &> /dev/null
+	    if [[ "$RETV" == "  $2" ]]; then
+	        # true
+	        declare -gi AX_CONFIG_ISEQ=1
+	        return 0
+	    else
+	        # false
+	        declare -gi AX_CONFIG_ISEQ=0
+	        return 1
+	    fi
+	    ;;
+    *)
+        declare -gai AX_CONFIG_HAS=( )
+        declare -ga AX_CONFIG_VAL=( )
+        declare -gai AX_CONFIG_EQU=( )
+        while [[ $# -gt 0 ]]; do
+            # count-specific operations
+            if [[ $# -ge 2 ]]; then
+                ax.config.has "$1" "$2"
+                AX_CONFIG_EQU+=( $AX_CONFIG_ISEQ )
+                shift 2
+            else
+                echo "uneven: handling last as single argument: $1"
+                ax.config "$1" &> /dev/null
+                AX_CONFIG_EQU+=( 1 )
+                shift 1
+            fi
+            # common operations
+            AX_CONFIG_HAS+=( "$ax_config_error" )
+            AX_CONFIG_VAL+=( "$RETV" )
+        done
+        # MULTI-OPERATION return values
+        # ------------------------------
+        # while single operation values are straight forward, multi-op is not
+        # because bash cant return more than one value in 'return'
+        # so we will use the 'return' value here to have special meaning:
+        # TABLE [ax.config.has@A]
+        # VALUE(int16)      MEANING         NOTE(S), IF ANY OR N/A
+        # -------------------------------------------------------------
+        # 0 (true)          all values returned true in AX_CONFIG_EQU
+        # 1-65535           one or more values were false, the value in
+        #                   the return code is a bitmask, supporting up
+        #                   to 16 paralell states allowing for a multiple
+        #                   evaluation to be done in one fell swoop.
+        declare -i ALLEQ=1
+        declare -i EQMASK=0
+        declare -i EQPOS=0
+        for i in ${AX_CONFIG_EQU[@]}; do
+            if [[ $i -eq 0 ]]; then
+                ALLEQ=0
+            else
+                let EQMASK="EQMASK | (1 << EQPOS)"
+                true debug echo "setting bit $EQPOS of the mask, new result is now $EQMASK"
+            fi
+            let EQPOS++
+        done
+        if [[ $ALLEQ -eq 1 ]]; then
+            return 0
+        else
+            return $EQMASK
+        fi
+        ;;
+    esac
+}
+
+function ax.config.set()
+{
+	# [name] [newvalue]
+	cfgfile="$AX_BASE/config/autoxrc"
+	if ax.config.has "$1"; then
+		# set config myself
+		echo "replacing value: $1=$2"
+		tmpfile="$(mktemp)"
+		grep -Pv "^\s*$1\s*=" "$cfgfile"; echo "$1=$2" >> "$tmpfile"
+		mv -f "$cfgfile" "${cfgfile}.bak"
+		mv -f "$tmpfile" "$cfgfile"
+	else
+		# add config str
+		echo "$1=$2" >> "$cfgfile"
+	fi
+function ax.helperalias()
+{ # [alias helper (reserved for internal use) ]
+
+	#SHIM FOR INTERNAL USE: echo "$FUNCNAME $*"
+	if [[ ! -v AX_HELPER_ALIASES ]]; then
+		# make sure no internal function or alias from ax gets aliased over either
+		# because we would lose function over the entire library!
+		declare -gxa AX_HELPER_ALIASES=( $(grep '^ax\.[^\( ]+' -Po "$BASH_SOURCE") )
+	fi
+	if [[ $# -gt 1 ]]; then
+		for item in "$@"; do ax.helperalias "$item"; done
+	elif [[ $# -eq 1 ]]; then
+		# do it
+		NAME="${*%%=*}"
+		OVERWRITE=NO
+		for i in "${AX_HELPER_ALIASES[@]}"; do
+			if [[ "$i" == "$NAME" ]]; then
+				echo "Warning, This ax.helper alias is being overwritten: $i"
+				OVERWRITE=YES
+			else
+				if ax.config cacheok debug_helperalias; then
+					echo "debug: ax.helper $i being set for first time ok"
+				fi
+			fi
+		done
+		builtin alias "$@"
+
+		[[ $OVERWRITE == NO ]] && AX_HELPER_ALIASES+=( $NAME )
+		# end
+	else # zero
+		echo -e "builtin helper aliases:\n"
+		if [[ -v AX_HELPER_ALIASES ]]; then
+			local -i n=0
+			for i in "${AX_HELPER_ALIASES[@]}"; do
+				echo -e "\t$i"
+				let n++
+			done
+			echo -e "\n$n alias(es).\n"
+		else
+			echo -e "\t<<NONE>>\n\nZero alias(es).\n"
+		fi
+	fi
+
+}
+
+function livefunc__ax.cache.exists()
+{
+	if [[ -r "$AX_BASE/cache/use" ]]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+function livefunc__ax.cache.create()
+{
+    # TODO: split ax.cache.create into smaller parts, due to screen-spanning (screen meaning 80x25 text cells)
+
+	unset OPTIND OPTERR OPTARG
+	if [[ $# -gt 0 ]]; then
+		while true; do
+			# getopts opstring name [arg]
+			getopts dh AXOPT
+
+    # *** NB: part of FUNCTION ax.cache.create (LIVE) ***
+
+			case $AXOPT in
+				d)	DELETE_CACHE=1
+					echo "-- entering cache removal mode --"
+					;;
+				h)  echo -e "usage: $FUNCNAME [-d] [-h]\n\n\t-d\tremove cache instead\n\t-h\tthis help text\n\nUse this command to create the cache for fast startup mode. It will be evaluated each time startups are made and recreated if needed. To disable this feature, use this command with the -d switch to delete the cache, or remove the cache manually.\n\n"
+					return 1
+					;;
+				*) 	echo "unknown argument(s) passed, use $FUNCNAME -h for help!"
+					return 2
+					;;
+			esac
+			[[ $OPTERR == 1 ]] && break
+		done
+	fi
+
+	#####################################################################################
+	# the following environmental items must be cached, they are listed by filename followed by
+	# a brief description:
+	# value.act
+	# - values (from 'set') includes functions and variables of all kinds
+	#   anything that can be viewed with 'declare'
+	# binding.act
+	# - bindings (from 'bind') what is viewed by typing 'bind -psvX'
+	#   note must be loaded with 'bind -f [fname]'
+	# alias.act
+	# - aliases that come from typing 'alias'
+	# completion.act
+	# - completions from typing 'complete'
+	# option.act
+	# - shell options from 'shopt {-p,-po}'
+	# hash.act
+	# - hash executable names (from using 'hash -l')
+
+    # *** NB: part of FUNCTION ax.cache.create (LIVE) ***
+
+	# trap.act
+	# - traps (by using trap -l)
+	# shasum.act
+	# - a SHA256SUM of all the files above that are created
+	#
+	# Files are first created then a shasum is created to identify them
+	# TODO: future versions may roll into single file, ie, an XML with CDATA
+	#       once this method is perfected! (it is to remain the core method!)
+	#####################################################################################
+
+	if [[ -r $AX_BASE/autox ]]; then
+		AXBM="pre"
+	else
+		declare -gx AX_BASE
+		AX_BASE=$(readlink -a "$(dirname "$BASH_SOURCE")")
+		AXBM="manually "
+	fi
+
+	echo "AutoX base path has been ${AXBM}configured for use in $(tput bold)$AX_BASE$(tput sgr0)"
+
+	if [[ ! -r $AX_BASE/autox ]]; then
+		echo "...but it isnt valid, Stop."
+		return 1
+	fi
+
+    # *** NB: part of FUNCTION ax.cache.create (LIVE) ***
+
+	AX_CACHE_SITE=$AX_BASE/cache/usecache
+	((DELETE_CACHE)) && echo "Removing cache site..." || echo "Creating cache site..."
+	if [[ -d $AX_CACHE_SITE ]]; then
+		echo "Do you want to remove the old cache? (no undo) [y/n]:"
+		while [[ $(choice -sn1; echo $REPLY) =~ ^[^yn]$ ]]; do
+
+			echo "Please press [y] or [n]"
+		done
+		if [[ $REPLY == n ]]; then
+			echo "Aborted."
+			return 1
+		fi
+		if ! rm -fr "$AX_CACHE_SITE"; then
+			echo "Can't remove old data, check permissions"
+			return 1
+		fi
+	fi
+	if ((DELETE_CACHE)); then
+		echo "All That Can Be Done Has Been Done."
+		return 0
+	fi
+
+    # *** NB: part of FUNCTION ax.cache.create (LIVE) ***
+
+	if ! mkdir -p "$AX_CACHE_SITE" || ! touch "$AX_CACHE_SITE/.site_validation"; then
+		echo "Failed to create/write-to new cache site, please check your permissions!"
+		echo "at: $AX_CACHE_SITE"
+		return 1
+	fi
+
+	############ CACHE GENERATOR CODE[0*] ################
+	# Req Globals (Name)	(Default)	(Purpose)			(Possible Value(s))
+	#
+	# AX_BASE 				*			Tells where to find your AX install, usually in /usr[/local]/share/ax (systemwide) or ~/.local/share/ax (useronly)
+	#                                   but can self-detect on the fly, if needed (not usually needed though!)
+	#
+	#
+	# Locals (Name)			(Default)	(Purpose)			(Possible Value(s))
+	#
+	# AX_CACHE_SHA_SIZE		512256		Checksum Algorithm 	1, 224, 256, 384, 512, 512224, or 512256
+	# PROCS					*			commands used to store each section, the 'shasum' entry should NOT be changed
+	# STEPS                 *           the ORDERED keylisting of PROCS, since ${!PROCS[@]} may not be guarenteed order**
+	# PERCENT               -1			Used to track progress of the loop
+	# STEP, LAST            -1,#STEPS   Loop counter and Fixed End-Of-Array Bound
+	# incrementer			*			Expression used to initialize the state for each loop's file, step, and progress
+	# _ax__generate_values  * 			Functional (python-like) generator that processes the keys defined in PROC (and is self-destructable)
+	#
+	# Local Types: All items are type 'int' (integer, -i) except the generator (function), PROCS (dictionary), STEPS (list)
+	#
+	# Notes[0*] All types are local, however, we must execute the resulting in a global fashion, for this reason the function generates the final output
+	#         	for the loader to run AFTER it exits
+	#	    *   Item default is too long to list here, see original source for values on github or in your static directory
+	#      **   In programming, all programmers must assume lists to be ordered and dictionaries to be randomly ordered if at all, this
+	#           is proven and documented to be true in many scripting languages such as perl, python, javascript, to name a few. We also
+	#           borrow terms from python: list actually is 'array' and dictionary is actually 'named array'
+	#			however even if named arrays are constant-ordered, the order could change between versions of bash or compiled copies for that
+	# 			matter. There is no guarentee in the documentation that states the order to be fixed always in any specific manner.
+	#    ***    Shasums are used here to verify if a part of the system is out of sync with another part. We check our signature against
+	#  			the last-modified-time from stat (or axstat if installed in lib, see AX_CACHE_SHA_STAT). If any modification times have
+	#			changed on ANY file, the cache must be rebuilt, unless a force is used in which case it always will get built.
+	#           Conversely, if the cache is to be ignored, then the cache will never be rebuilt. (SEE AX_CACHE_PROVISION_STATE=IGNORE|ALWAYS|NONE)
+
+
+	# note: using a generator-style implementation to save on execution code size
+
+    # *** NB: part of FUNCTION ax.cache.create (LIVE) ***
+
+	declare -i AX_CACHE_SHA_SIZE=512
+	function _ax__generate_values() { eval "${PROCS[${STEPS[$2]}]}" > "$1" &&	(($2==$3)) && unset -f $FUNCNAME; }
+	declare -A PROCS=( [value]='builtin declare'
+					   [binding]='builtin bind -psvX'
+					   [alias]='builtin alias -p'
+					   [completion]='builtin complete'
+					   [option]='shopt -p; shopt -po'
+					   [hash]='hash -l'
+					   [trap]='trap -l'
+					   [shasum]='shasum $AX_CACHE_SITE/!(shasum.act) -a $AX_CACHE_SHA_SIZE'
+					 )
+
+	declare -a STEPS=( value binding alias completion option hash trap shasum )
+	declare -i PERCENT=-1 STEP=-1 LAST=${#STEPS[@]}-1
+	declare incrementer='let STEP++ "PERCENT=STEP*100/LAST"; echo -e "[u[K[u${STEPS[$STEP]}s... ($PERCENT% completed)[J"; STEPF="$AX_CACHE_SITE/${STEPS[$STEP]}.act"'
+	echo -e "Creating Cache...[s"
+	while [[ $STEP < $LAST ]]; do
+		eval $incrementer
+		_ax__generate_values "$STEPF" $STEP $LAST
+	done
+    # NB: part of FUNCTION ax.cache.create (LIVE) -- ENDS HERE
+}
+
+function ax.updatecache()
+{
+	# TODO: complete this - checks the signature (sha) and updates
+	#       if needed
+	true
+}
+
+function ax.isreadonlyfunc()
+{
+	declare -i final=0
+	while [[ -n "$1" ]]; do
+		if declare -pFr | grep -wqn "$1"; then
+			let final++
+		fi
+		shift
+	done
+	if [[ $final -gt 0 ]]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+function qunalias()
+{
+    unalias "$@" &> /dev/null
+}
+
+
+function ax.echo()
+{
+	case $1 in  on|off)
+		case $1 in 	on) AX_DEBUGGING=1;;
+					off) AX_DEBUGGING=0;;
+		esac;
+		echo "ax.echo is now $1";
+		return 0;;
+	esac
+	((AX_DEBUGGING)) && echo "$@";
+}
+
+function galias()
+{
+	ax.checkaliasdir || return 2
+	alias --nolocal "$@"
+}
+
+function gunalias()
+{
+	ax.checkaliasdir || return 2
+	unalias --nolocal "$@"
+}
+
+function lalias()
+{
+	ax.checkaliasdir || return 2
+	builtin alias "$@";
+}
+
+function lunalias()
+{
+	ax.checkaliasdir || return 2
+	builtin unalias "$@"
+}
+
+function gexport()
+{
+	ax.checkaliasdir || return 2
+	local EXPCNT=0
+	if [[ $# -gt 0 ]]; then
+		for i in "$@"; do
+			local EXPORTED=0
+			for j in "${!BASH_ALIASES[@]}"; do
+				if [[ "$i" == "$j" ]]; then
+					# i is an alias
+					# j is the alias's name too
+					builtin alias "$j" >> $AX_BASE/"$i"
+					ax.echo "exported $j"
+					EXPORTED=1
+				fi
+			done
+			let EXPCNT+=EXPORTED
+			((EXPORTED)) || echo "alias not found: $i"
+		done
+		ax.echo "$EXPCNT alias(es) exported$(let EXPCNT-$# && echo ,\ $((\ EXPCNT-$#\ ))\ skipped. || echo \.)"
+	else
+		local n=0
+		echo
+		echo "Aliases on $HOSTNAME for $USER($UID):"
+		echo
+		for i in $AX_BASE/*; do
+			ax.echo "$i[30G$(stat $i --format=%s)"
+			let n+=1
+		done
+		echo
+		echo "$n aliases."
+		echo
+	fi
+}
+
+function cpalias()
+{
+    #1# argcount checks
+	case $# in
+		0) echo "usage: $FUNCNAME [srcaliasname] [dstaliasname]";;
+		1) echo "Not enough arguments, please specify both an srcaliasname AND a dstaliasname!!";;
+		2)
+
+		# $ ` " '
+		# |  & ; ( ) < > space tab
+
+		#2# sanity checks
+		    function failing() { echo "failed: ERROR, $*, please check and try again!"; unset -f "$FUNCNAME"; return 2; }
+		    local SRCEXISTS=1 DSTNOEXISTS=1 LEGALNAMES=1
+		    [[ "$1$2" =~ [\]\[$\`\"\'\|\&\;\(\)\<\>{}\#\*\?\/\\=]+ ]] && LEGALNAMES=0
+	        [[ -r $AX_BASE/alias/$1 ]] || SRCEXISTS=0
+	        [[ -r $AX_BASE/alias/$2 ]] && DSTNOEXISTS=0
+	        # failing on any of:
+	        [[ $SRCEXISTS -eq 0 ]] && { failing "source alias doesnt exist!"; return; }
+            [[ $DSTNOEXISTS -eq 0 ]] && { failing "destination alias already exists!"; return; }
+	        [[ $LEGALNAMES ]] && failing "the name \"$1\" and \"$2\" must BOTH be legal alias names, but they are not!"
+	    #3# gathering of data, perparation to copy
+	        perl -wpe "s/(?<=alias )$1(?==)/$2/g" "$AX_BASE/alias/$1" > $AX_BASE/alias/$2
+	    #4# verification thereof, using sha1sum [reverse conversion]
+	        echo 'verifing alias copied via reverse checksum...'
+	        echo 'generating tempfile...'
+	        TMPFILE=$(mktemp)
+	        echo 'generating checksum file...'
+	        perl -wpe "s/(?<=alias )$2(?==)/$1/g" "$AX_BASE/alias/$2" | sha1sum | perl -wpe "s/-/${AX_BASE//\//\\/}\/alias\/$1/g" > $TMPFILE
+	        echo 'checking regent against original...'
+	        if ! sha1sum -c "$TMPFILE"; then
+	            echo "check failed!"
+	            echo "this could be due to low disk space or insufficient permissions"
+	            echo "or, in extreme cases, memory or hard disk failure."
+	            echo "Please resolve this problem with your administrator, and try again!"
+	            echo "check failed, no copy should be considered viable!"
+	            echo "system unstable, no further action will be taken,"
+	            echo "Stop."
+	            echo "giving bad status 3 and three second pause."
+	            sleep 3
+	            return 3
+	        fi
+	        echo "regent checks out okay...(good!)"
+	        #sleep 0.5
+	        echo "removing regent tempfile..."
+	        rm -f "$TMPFILE"
+	        echo "copy process completed - giving good status code 0"
+	        return 0
+	        ;;
+
+		*)
+		echo ""
+		echo ""
+		echo "Fatal Error: Too many arguments provided. "
+		echo ""
+		echo "Be advised that $FUNCNAME does not work "
+		echo "on dangling lists of items nor does it allow"
+		echo "more than one to be renamed from many, or vice-versa!"
+		;;
+	esac
+
+	echo "giving not-good status 2 and second pause"
+    for r in 2; do
+    sleep $r; return $r; done
+
+}
+function rmalias()
+{
+    let AX_MRM_CA++
+    case $# in
+        1)  echo "single alias deletion"
+            if [[ -r $AX_BASE/alias/$1 ]]; then
+                declare -i n=0
+                echo "global alias exists..."
+                echo "removing local alias entry..."
+                builtin unalias $1 && let n++
+                echo "removing global physical data..."
+                rm "$AX_BASE/alias/$1" -f && let n++
+                [[ $n -eq 2 ]] && echo "all removed ok." || { echo "failed (Stop(3))"; return 3; }
+                echo "checking command-name for any new/default meanings..."
+                [[ -r $AX_BASE/func/$1.af ]] && echo "- An autox.func with same name still exists" && let r++
+                builtin hash -r
+                which $1 && echo "- Command is registered to preceeding binary/script(s)" && let r++
+                whatis --section 1 $1 2>/dev/null && echo "- Name is registered to the following additional program(s) (may not be in PATH)" && let r++
+                [[ $r -lt 1 ]] && echo "no other association (a free command name)"
+                [[ $r -ge 1 ]] && echo "$r other usage(s)"
+            else
+                echo "Alias \"$1\" not defined globally"
+                if [[ ${#BASH_ALIASES[$1]} -eq 0 ]]; then
+                    echo "Alias \"$1\" not defined locally"
+                else
+                    echo "removing local-only alias \"$1\"..."
+                    if builtin unalias "$1"; then
+                        echo "remove succeeded"
+                        if [[ ${#BASH_ALIASES[$1]} -eq 0 ]]; then
+                            echo "remove re-verified OK, giving status 0"
+                            let AX_MRM_CT++
+                            return 0
+                        else
+                            echo "remove cannot be verified"
+                            echo "giving status 1, but succeeding"
+                            return 1
+                        fi
+                    else
+                        echo "remove NOT okay, giving status 2, failing..."
+                        return 2
+                    fi
+               fi
+         fi
+         echo "remove function unstable (code reached unreachable point)"
+         echo "giving status 4, failing..."
+         return 4
+         ;;
+    *)
+        echo "Incorrect number of arguments ($#)"
+        echo "use mrmalias to remove more than one alias at a time!"
+        echo "usage: $FUNCNAME [alias]"
+        echo "removes alias [alias] from local and/or global alias table entries"
+        echo "return values:"
+        echo " 0 = removed, fully verified "
+        echo " 1 = removed, unverifiable"
+        echo " 2 = unremoved"
+        echo " 3 = incorrect # of args (here)"
+        echo " 4 = unstable/corrupt function state (bad!)"
+        echo " ? = should NEVER get these!"
+        echo
+        echo "returning state 3 (inoa $#)"
+        return 3
+        ;;
+    esac
+    echo "returning function state bad, 4, failed!"
+    return 4
+
+}
+function iswildcard()
+{
+    # TODO: right now depends on isregex() is false as well, maybe we shouldn't
+    if [[ "$*" =~ (\*|\?) ]]; then
+        if ! isregex "$@"; then
+            return 0
+        fi
+    fi
+    return 1
+
+}
+function isregex()
+{
+    # TODO: make a bit more elaborate with some taintchecking??
+    # NOTE: dont call iswildcard() because this would introduce a cycle
+    ls | perl -wne '/'$1'/'
+    case $? in
+        0)  return 0;;
+        *)  return 1;;
+    esac
+}
+
+function mrmalias()
+{
+    declare -gi AX_MRM_CT=0 AX_MRM_CA=0
+    case $# in
+        0)  echo "usage: $FUNCNAME [alias] [...] | <wildcards> | <regular expressions>"
+            return 2
+            ;;
+
+        1)  if [[ $1 == "--help" || $1 == "-?" ]]; then
+                mrmalias
+                return
+            fi
+            ;&
+
+        *)
+            for i in "$@"; do
+                # GAZE UPON SECT
+                ISWC=0 ISREGEX=0 ISNORMAL=0
+                if isregex "$i"; then
+                    ISREGEX=1
+                elif iswildcard "$i"; then
+                    ISWC=1
+                else
+                    ISNORMAL=1
+                fi
+
+                # ACT UPON SECT
+                if (( ! ISNORMAL )); then
+                    if (( ISWC )); then
+                        # perform wildcard expansion on item
+                        mapfile -t SUBITEMS < <(find "$AX_BASE/alias" -iname "$i" -printf '%f\n' )
+                    else
+                        # perform regex expansion on item
+                        mapfile -t SUBITEMS < <(find "$AX_BASE/alias" -regex "$i" -printf '%f\n' )
+                    fi
+                    if [[ ${#SUBITEMS[@]} -gt 0 ]]; then
+                        echo "added ${#SUBITEMS[@]} more matches from wild/regex entry..."
+                        for si in "${SUBITEMS[@]}"; do
+                            rmalias "$si"
+                            echo "$si"
+                        done
+                    else
+                        echo "no matches from $i: sorry, wilcard/regex feature may not fully currently available... but will try"
+                    fi
+                    continue
+                else
+                    rmalias "$i"
+                    echo "$i"
+                fi
+            done
+            echo "Process Completed."
+            echo "After calling for $AX_MRM_CA aliases to be removed, we are"
+            echo "done, having removed $AX_MRM_CT alias(es) in all."
+
+        ;; #<## END OF "*)" block in "case $# in"
+    esac
+
+}
+
+
+function alias()
+{
+	# prevents scripts from declaring permanant aliases
+	declare -gi AX_ALIAS_CALLS
+	if [[ $0 =~ bash ]]; then
+		let AX_ALIAS_CALLS++
+	else
+		builtin alias "$@"
+		return $?
+	fi
+	# dir check, no dir, act like normal 'alias' -- fails back to normal operation silently!
+	ax.checkaliasdir && NOGLOB=0 || NOGLOB=1
+	# pre check, exempt from usual out-of-place checks
+	[[ $1 == '--nolocal' ]] && { NOLOC=1; shift; } || NOLOC=0
+
+	if [[ $# -eq 1 ]]; then
+		if [[ $1 =~ = ]]; then
+			# handle single argument
+			local NAME="${1%%=*}"
+			if [[ ! $NAME =~ ' '+ ]]; then
+				declare -gx LASTALIASSET=$NAME
+			else
+				echo "$NAME - alias name contains illegal characters!"
+				return 1
+			fi
+		else
+			# query for just an alias name, pass to builtin
+			# and check global if none
+			if [[ ${BASH_ALIASES[$1]} ]]; then
+				builtin alias "$1"
+				return $?
+			else
+				if [[ -r $AX_BASE/alias/$1 ]]; then
+					echo "global version: currently offline"
+					echo "value: $(cat $AX_BASE/alias/$1)"
+					# return error value so other scripts don't choke
+					return 1
+				else
+					echo "no alias, $1, defined global or local"
+					return 1
+				fi
+			fi
+		fi
+	elif [[ $# -eq 0 ]]; then
+		builtin alias
+		return $?
+	else
+		# iterate through multiple arguments
+		FINALRET=0
+		for i in "$@"; do
+			if [[ $i =~ .*=.* ]]; then
+				# a setter, handle ourselves via single argument handler ^ above
+				alias "$i"
+			elif [[ $i == -p ]]; then
+				: # do nothing, its just print...
+			else
+				# call alias to handle it (shows the alias)
+				builtin alias "$i"
+			fi
+			[[ $? -ne 0 ]] && FINALRET=1
+		done
+		# alias builtin behavior for multi-alias mixed failures is to
+		# return 0 if ALL has succeeded, and 1 if one or more (or all)
+		# have failed to be set, for any reason.
+		return $FINALRET
+	fi
+	# if we made it here, we are ok
+	if [[ $NOLOC == 0 ]]; then
+			builtin alias "$@";
+	fi
+	if [[ $NOGLOB == 0 ]]; then
+			builtin alias "$NAME" > $AX_BASE/alias/$NAME
+		fi
+}
+
+function unalias()
+{
+	if [[ $0 =~ bash ]]; then
+		ax.checkaliasdir || return 2
+		local NOLOC=0
+		[[ $1 == '--nolocal' ]] && NOLOC=1
+		if [[ $NOLOC -ne 1 ]]; then
+			builtin unalias "$@"
+		else
+			if [[ $# == 0 ]]; then
+				echo "required: alias name"
+			fi
+		fi
+		[[ $# -eq 0 ]] && return
+		if [[ -r ${AX_BASE}/alias/$1 ]]; then
+			rm ${AX_BASE}/alias/$1
+			ax.echo "Global alias removed"
+		else
+			ax.echo "Not global so no global file removed."
+		fi
+	else
+		# prevent unalias from removing global aliases when using a script
+		builtin unalias "$@"
+		return $?
+	fi
+}
+
+function ax.contains()
+{
+	# search for in array
+	# contains [ITEM] [ARRAY CONTENTS]
+	ITEM=$1
+	shift
+	for i do
+		if [[ "$i" == "$ITEM" ]]; then
+			return 0
+		fi
+	done
+	return 1
+}
+
+function ax.contains.i()
+{
+	# ax.contains.i [ITEM] [ARRAYNAME] [ITEM2] [ARRAYNAME2]
+	local NOT_CONTAINS=0
+	# contains.i [ITEM] [ARRAY-NAME]
+	while (( $# % 2 == 0 )); do
+		ITEM=$1
+		ARRAY_NAME=$2
+		shift 2
+		eval 'ARRAY_VALUES=( "${'$ARRAY_NAME'[@]}" )'
+		if ax.contains $ITEM "$@"; then
+			echo "$( [[ $INDEX -gt 0 ]] && echo ' ' )$INDEX"
+			continue
+		fi
+		echo "$ARRAY_NAME"
+		let NOT_CONTAINS++
+	done
+	return $NOT_CONTAINS
+}
+function ax.choice()
+{
+    local REPLY
+    declare -gx AX_CHOICE_REPLY
+    while true; do 
+        echo -ne '[y/n]:'
+        read -sn1
+        if [[ ${REPLY^^} =~ [YN] ]]; then
+            break
+        fi
+    done
+    declare R=${REPLY^^}
+    $AX_CHOICE_REPLY=$R
+    declare -i T=0 F=1
+    case $1 in not|opposite|anti|backward*|flip|invert|inverse|non|reverse) T=1; F=0;; esac
+    case $R in Y)  return $T;; N)  return $F;; esac
+    echo "fatal: choice invalid value, notify admin or author if bug!"
+    echo "continues in 5 seconds..."
+    sleep 5        
+    return 255
+}
+function ax.fatal()
+{
+    R=$?
+    tput setaf 1
+    tput bold
+    echo "FATAL: $* ($R)"
+    echo "[press any key to continue, or CTRL-C to abort]"
+    read -sn1
+}
+function ax.pause()
+{
+    echo "waiting $1..."
+    case $# in
+        0)  sleep 0.$RANDOM;;
+        1)  sleep $1${2+.$2};;
+        *)  while (($# > 0)); do ax.pause $1; shift; done;;
+    esac
+}   
+
+
+
+function ax.acquire()
+{
+	return
+	# load source if needed
+	# syntax: ax.acquire ~/.autox/boostrap.d/00bootstrapmacros.ax
+	# same as: ax.acquire <00bootstrapmacros>
+	# you MUST surround in <> to intend on using expansion!
+	# no <> means it must be an absolute path!
+	# so: 'ax.acquire "/$AX_BASE/bootstrap.d/00bootstrapmacros.ax" is legal
+	# and: <bootstrapmacros> is the same thing
+	#
+	declare -gA AX_ACQUISITIONS
+	for x in "$@"; do
+		[[ ${x: 0:1} == "<" ]] && [[ ${x: -1:1} == ">" ]] && BRACED=1 || BRACED=0
+		# trim suffixes
+		j="${x%%>}"
+		i="${j##<}"
+		i="${j##[0-9][0-9]}"
+
+		if ax.contains.i AX_ACQUISITIONS "$i"; then
+			return 1; # already loaded, skip
+		else
+			if [[ $BRACED == 1 ]]; then
+				ITEMS=( $(
+				find -L $AX_BASE -iname '$i') )
+				ITEM="${ITEMS[0]}"
+			else
+				ITEM="$x"
+			fi
+		fi
+		source "$ITEM"
+	done
+}
+function ax.load.metadata()
+{
+	echo "Notice: this method is currently only for informational purposes, the metadata is not yet put into use!"
+	echo "Notice: metadata is observable only in two forms, XML and ASCII. Other forms such as binary may not be supported properly!"
+	# TODO: support for this metadata will be left to the bootstrap 'metadata.ax' at some time
+	# TODO: to be called when signatures change only
+	# TODO: might be experimental ??
+	true debug echo "metadata loading from all sources in the autox tree $AX_BASE and $AX_USERBASE..."
+	local ITEMS=( $(grep '^METADATA_START$' -PRl "$AX_BASE"/* "$AX_USERBASE"/*) )
+	unset AX_METADATA
+	declare -gxA AX_METADATA
+	AX_METADATA[$$]="parent_process=$PPID"
+	for ITEMDIR in ${ITEMS[@]}; do
+			local OBSERVE=$(mktemp)
+			local METADATA_CONTENTS=$(cat "$ITEMDIR" | perl -wne 'print if /METADATA_START/ .. /METADATA_END/' | tail -n+2 | head -n-1)
+			echo "$METADATA_CONTENTS" > $OBSERVE
+			echo "Metadata found for $ITEMDIR (${#ITEMDIR} bytes): $(file -b $OBSERVE)"
+			AX_METADATA[$ITEMDIR]="$METADATA_CONTENTS"
+	done
+	echo "Finished Loading, there are now ${#AX_METADATA[@]} object(s) loaded."
+}
+
+
+function ax.load()
+{
+	#  note that only lines that start with 'alias' will be executed in the /alias directories
+	true debug echo "Entering ax.load which loads the aliases"
+	ax.checkaliasdir || return 2
+	# TODO: swap these two to make the user's dir the write dir in the future versions
+	local ALIAS_DIRS=( "$AX_BASE/alias" "$AX_USERBASE/alias" )
+	for ALIAS_DIR in ${ALIAS_DIRS[@]}; do
+	    if [[ ! -d $ALIAS_DIR ]]; then
+	        if [[ -w $(basename $ALIAS_DIR) ]]; then
+	            echo "(first time pass) creating $ALIAS_DIR.."
+	            if mkdir --parents "$ALIAS_DIR"; then
+	                echo "$ALIAS_DIR has been created, continuing..."
+	            else
+	                echo "$ALIAS_DIR couldn't be created, please check the parent disk for problems ($?)!"
+	            fi
+	        else
+	            # silently ignored because nobody can do anything about it :)
+	            true debug echo "assert: skipped nonexisting directory: $ALIAS_DIR (no create because parent not writable!)"
+	        fi
+	        continue
+	    fi
+		true debug echo "Processing directory: $ALIAS_DIR"		
+		# TODO: maybe evaluate stderr here and report error when an alias directory is not present
+		ALIAS_ITEMS=( $(grep -P '^\s*alias \S+=' $ALIAS_DIR/* --line-number 2>/dev/null | grep '^[^:]*(?=:1)' -P -o) )
+		ALIAS_CACHE=$(mktemp)
+		tput setaf 1
+		    TMPZLF=$(mktemp -t autox-zero-files-XXXX)
+		    if find $ALIAS_DIR -size 0 -exec echo "FATAL: zero-length file in alias directory: {}" ';' | tee $TMPZLF; then
+		        if [[ -s $TMPZLF ]]; then
+    		        echo -e "[31;1mPOSSIBLE BAD SITUATION: \e[0;31mthere may be a corrupt disk here, zero length files detected. If you created these files with touch recently, ignore this message!"
+	    	        echo -e "the names of all the files affected, logged to \e[0;5;1m$TMPZLF\e[0m"
+		            echo -e "\e[1;33m<press [C] to continue, [D] to purge tempfile+continue, or the [A] key to abort>\e[0m"
+		            while true; do
+		                read -e -sn1 || { echo "exit signaled; aborting..."; REPLY=A; break; }
+		                [[ ${REPLY^^} =~ [CAD] ]] && break
+    		            echo "invalid choice, try again..."
+	    	            unset REPLY
+		            done
+		            [[ $REPLY == A ]] && return 127
+		            [[ $REPLY == D ]] && { echo -ne "purging tempfile $TMPZLF ..."; rm "$TMPZLF" && echo "ok" || echo "failed($?)"; }
+    		        N="?";echo -ne "continuing ([s$N seconds)..."; [[ $REPLY == D ]] && N=0 || N=1; while ((N>0)); do sleep 1; let N--; echo -ne "[u[K[u$N"; done;
+	    	        unset N REPLY TMPZLF
+		            echo "continue in this dir [y/n]?"
+		         else		            
+		            rm -f "$TMPZLF"
+		            true debug echo "assert: removed zero-length $TMPZLF, this is normal!"
+		            unset N REPLY TMPZLF
+		         fi
+    	    fi   		    
+	    tput sgr0
+		if [[ ${#ALIAS_ITEMS[@]} -gt 0 ]]; then
+			true debug echo "Loading aliases..."
+			true debug echo "$(declare -p ALIAS_ITEMS)"
+			cat "${ALIAS_ITEMS[@]}" | sed 's/^alias/builtin alias/g' > $ALIAS_CACHE
+			true debug echo "Evaluating the cache, this pass it is: $ALIAS_CACHE"
+			source $ALIAS_CACHE
+			true debug echo "Removing Cache"
+			rm $ALIAS_CACHE && true debug echo "Removal OK" || true debug echo "Removal FAILED!"
+		else
+			true debug echo "No aliases have been defined in $ALIAS_DIR"
+		fi
+	done
+}
+
+function ax.checkaliasdir()
+{
+	[[ -r $AX_BASE/alias/alias.id ]] || { echo "error: AX_BASE not set properly, alias.id missing from alias directory!"; return 1; }
+}
+
+function ax.unload()
+{
+	ax.checkaliasdir || return 2
+	for i in $AX_BASE/alias/*; do builtin unalias $(basename $i)
+		ax.echo "unloading global alias $i"
+	done
+}
+
+function ax.reload()
+{
+	if {
+	if [[ -r $AX_BASE/autox ]] && [[ -v AX_BASE ]]; then
+		local AX_BASE_TEMP=$AX_BASE
+		unset AX_BASE
+		source "$AX_BASE_TEMP/autox"
+	else
+		echo "$FUNCNAME: warning - autox AX_BASE not set or not right, loading fresh copy..."
+		source "$BASH_SOURCE"
+	fi
+	}; then
+		if [[ -v AX_BASE ]] && [[ -d $AX_BASE/alias ]]; then
+			echo "Load succeeded!"
+			return 0
+		else
+			echo "Load okay, but AX_BASE does not point to a proper location!!! Please check your installation files!!"
+			return 1
+		fi
+	else
+		echo "Failed! *check your permissions/environment/installation*"
+		return 2
+	fi
+}
+
+# live function support:
+#  restrictions: 1) start must match with "^livefunc__[[:alnum:].]()"
+#                2) end must match with "^}$"
+#                3) matches must be exact or they wont be loaded!
+#                4) a shim function is created that sources it from disk each time it is needed to be called
+# important!
+# please note that the function name restriction is greater than that of a bash function name
+# the only punctuation that is allowed is the period, that and alphanumerics (not even underscores!)
+# Of course we will allow letters that fall into the upper unicode ranges such as the umlat (letter umlat)
+function echo_livefunc()
+{
+	perl -wne 'print if /livefunc__'$1'/ .. /^}/' "$BASH_SOURCE"
+}
+
+function echo_livefuncnames()
+{
+	perl -wne 'print("$1\n") if /(?<=^livefunc__)(\S+?)(?=\(\))/' "$BASH_SOURCE"
+}
+
+function update_livefunctiontables()
+{
+	[[ -v IFS ]] && OLDIFS=$IFS
+	IFS=$'\n'
+	for LIVE_FUNC_NAME in $(echo_livefuncnames); do
+		[[ $- =~ x ]] && echo "Making live function $LIVE_FUNC_NAME"
+		eval "
+		function ${LIVE_FUNC_NAME}()
+		{
+			eval \"\$(echo_livefunc $LIVE_FUNC_NAME)\"
+			livefunc__$LIVE_FUNC_NAME \"\$@\"
+		}
+		"
+	done
+}
+
+function source()
+{
+	builtin source "$@"
+	local rv=$?
+	update_livefunctiontables
+	return $rv
+}
+
+##
+## 3. MAIN EXECUTION SECTION
+##
+
+## 3.A INIT
+
+
+if [[ ! $(cat "$AX_BASE/autox.id" | tr -d '\n') == "3bdc9ba4-2429-11e5-8ae2-00196605e97c" ]]; then
+	echo "AUTOX Not installed properly, make sure you unpacked it with it's directories and ran any installers first!"
+	return 1
+else
+	true debug echo "[AutoX verified via GUID ok]"
+fi
+if [[ -r ~/.bash_completion.ax ]]; then
+	if [[ ! -v AX_BASHCOMPLETION_RAN ]]; then
+		builtin source ~/.bash_completion.ax "$@"
+		AX_BASHCOMPLETION_RAN=1
+	fi
+fi
+
+if [[ $(ps --format=%c $PPID) =~ bash ]]; then
+    if [[ -d "$AX_BASSE" ]] && cd "${AX_BASE}"; then
+    	if ! ax.config.has no_axdir_change_with_subshell; then
+    		echo "Subshell Started, Starting in ${AX_BASE}"
+    	fi
+    fi
+fi
+
+
+if ax.config.has enable_experimental_harmful_features && [[ -r $AX_BASE/cache/usecache ]]; then
+	AX_CACHE_SITE=$AX_BASE/cache/usecache
+	SHAPRINT_THIS="$(eval shasum $(find -type f -not -iname 'shasumprint' -not -type l -iname '*[^~]' -printf '"'$PWD'/%P"\n') | shasum)"
+	[[ -r $AX_BASE/shasumprint ]] && SHAPRINT_PREV="$(cat $AX_BASE/shasumprint)" || SHAPRINT_PREV=NONE
+	if [[ "$SHAPRINT_THIS" == "$SHAPRINT_PREV" ]]; then
+		echo "No changes in any files, cache load will continue..."
+		echo "Loading from Cache: use 'ax.updatecache' if you want to force an update of the cache"
+		echo "(or delete $AX_BASE/shasumprint)"
+		if for i in $AX_BASE/cache/usecache/*.cache; do source "$i"; done; then
+			echo "Cache load succeeded."
+		else
+			echo "Cache load failed, please check to make sure your cache is backed up properly!"
+		fi
+		read -sn1
+	else
+		echo "Files have changed, doing a full load... please use ax.cache.create to make a new cache if you"
+		echo "want to enable cache support again!"
+	fi
+fi
+
+if [[ ! -v AX_USER_VARS_INITIALIZED ]]; then
+	declare -g AX_STARTUP_FILE_NAME="$BASH_SOURCE"
+	declare -gi AX_USER_BASHRC_ORIGINATED=0
+	declare -gi AX_USER_BASHRC_ORIGIN_COUNT=0
+	declare -gr AX_USER_VARS_INITIALIZED=1
+	declare -gi AX_STARTUP_CYCLE_COUNT=1
+else
+    let AX_STARTUP_CYCLE_COUNT++
+fi
+
+for x in "${BASH_SOURCE[@]}"; do
+	true debug printf "%s <- " "$x"
+	if [[ $x == ~/.bashrc ]]; then
+		AX_USER_BASHRC_ORIGINATED=1
+		let AX_USER_BASHRC_ORIGIN_COUNT++
+	fi
+done
+if [[ -r ~/.ax_lowlevel_debug_messages ]]; then
+
+    function _ax_true_false()
+    {
+        retval=$1
+        if [[ $2 == debug ]]; then
+            shift 2
+            eval echo "$@"
+            retval=0
+        else
+            # pass to builtin, maybe
+            if enable | grep -Pnqw $1; then
+                builtin "$@"
+            fi
+        fi
+        if ax.config.has debug_pause; then
+            echo "[Press Any Key]"
+            read -sn1
+        fi
+        return $retval
+    }
+    function true()
+    {
+        _ax_true_false $FUNC_NAME "$@";
+    }
+    function false()
+    {
+        _ax_true_false $FUNC_NAME "$@";
+    }
+else
+    unset -f true
+    unset -f false
+    qunalias true
+    qunalias false
+fi
+
+if [[ $AX_USER_BASHRC_ORIGINATED -eq 1 ]]; then
+	true debug echo "Triggering AutoX Load OK (request comes from user's home)"
+else
+	true debug echo "Triggering AutoX Load DENY (request comes from outside user's home)"
+	return 0
+fi
+
+if [[ -v AX_BASE ]]; then
+	if [[ $AX_PHASE -eq 1 ]]; then
+		ax.echo "skipping re-run of autox, it is already run (unset AX_BASE to allow a new run!)"
+		return
+	fi
+fi
+
+# hardwire a unique session id
+if [[ ! -v AX_SESSION_ID ]] && [[ -d $AX_BASE ]] && [[ -r $AX_BASE/autox ]]; then
+	AX_SESSION_ID_PREFIX="$USER:$GROUP:"
+	if [[ $AX_SESSION_ID_PREFIX == "$USER:$GROUP" ]]; then
+		AX_SESSION_ID=${AX_SESSION_ID_PREFIX}_0${RANDOM: 0: 5}
+	fi
+fi
+# hardwire $TTY to $(tty) for this session
+export TTY=$(tty 2>/dev/null || echo dumb)
+
+# detect and set the
+# AX_TERMINAL and AX_TERMINAL_PID variables
+if command xprop -root 2> /dev/null | grep _NET_ACTIVE_WINDOW -q; then
+	eval $(ps -p $(xprop -id $(xprop -root -notype | grep -Po '(?<=_NET_ACTIVE_WINDOW: window id # )[[:xdigit:]x]+') | grep PID | grep '[[:digit:]]*' -o) --no-header -o "AX_TERMINAL=\"%c\" AX_TERMINAL_PID=\"%p\"" | sed -r 's/(")( *)([^ ]+)( *)(")/\1\3\5/g')
+else
+	# TODO: further checking for hardware/ssh
+	# when via a real tty or over-the-line connections (remote or otherwise),
+	# the terminal is considered to be 'hardware' meaning that the user's keyboard
+	# and screen are directly connected to the terminal device via the kernel, or simmilar
+	# this applies to any @/dev/ttyn terminals, or, /dev/ttySnn, and not ptmx terminals.
+	# ptmx is always controlled by something, if that something is not identified then
+	# we assume it is ssh remotea
+	if [[ $TTY =~ /dev/tty ]]; then
+		AX_TERMINAL=hardware
+	elif [[ $TTY =~ /dev/.*pt ]]; then
+		AX_TERMINAL=ptmx_ssh
+	else
+		declare AX_TERMINAL=special
+	fi
+	# since no terminal emulator is running, it is bash itself that is
+	# will end the "session" ultimately and it's parent (usually getty)
+	# that can identify who will be starting the next round (might be
+	# useful)
+	AX_TERMINAL_PID=$$
+fi
+AX_TERMINAL_PPID=$PPID
+# ax main loader
+ax.load
+# ax bootstrap loader
+for i in $AX_BASE/bootstrap.d/*.ax; do
+    if [[ ! -s "$i" ]]; then
+        echo "[31;1mFATAL: $i is zero-length, this can often mean corrupted disk state! if you just created this file then disregard this message![0m (3sec pause)"
+        sleep 3.$RANDOM
+    fi
+
+	true extdebug echo "-------------- BOOTSTRAPPER $i ------------ "
+	if [[ -s "$i" ]]; then
+
+		ax.echo $(declare -p BASH_SOURCE | sed 's/declare\s?//g') source "$i" "$$" "$USER" "$AX_BASE"
+		. "$i" "$$" "$USER" "$AX_BASE"
+	fi
+	true extdebug echo "----------- END BOOTSTRAPPER $i ----------- "
+done
+function _comperr() { A=$1;B=$2;shift 2;echo "Completer Error(Error# $A, File $B): $*"; return 1; }
+# TODO: begin devel area for DLCE
+for i in $AX_BASE/completers/*.ac; do
+	if [[ -s "$i" ]]; then
+		mapfile COMPDATA < "$i"
+		#  completer files must have at least 5 lines (see COMPLETER_FORMAT in /doc)
+		case "${#COMPDATA[*]}" in
+			[0-4])	_comperr 1 "$i" "Insufficient Data In File";;
+			*)	echo "warning: completer $i not loaded (dynamic live completion engine is still in development!)"
+				true;;
+		esac
+	fi
+done
+# TODO: end devel area for DLCE
+unset -f _comperr
+[[ -v OLDIFS ]] && IFS=$OLDIFS
+[[ -v AX_TERMINAL_PID ]] || echo "warning: terminal PID not set (AX_TERMINAL_PID)"
+[[ -v AX_TERMINAL_PPID ]] || echo "warning: terminal parent PID not set (AX_TERMINAL_PPID)"
+# --- make sure some settings are forced off they will screw up things if not
+# --- TODO: create a user-level and shell-level environment separately so user can use any shopts (s)he wants
+set +o nounset
+set +EHxvT
+update_livefunctiontables
+if ax.config.has hatewhitespace; then
+	true "";
+else
+	echo "";
+fi
+
+# Z. shopt post-set (cleanup temp)
+#    the good news is each cleanup stub sets the value
+#    to it's original state, removes the stub file, and
+#    frees the variables in memory referring to it, no
+#    additional action must be taken, and no reference will
+#    be left behind after the execution of each item.
+#    TODO: see counter-part section 0. where we explain the
+#          meanings of these items. Also, the multi-storage
+#          will mean yet another variable, AX_SHOPT_PRESET_VALUES[@]
+#          not now though!
+
+source "$AX_SHOPT_PRESET_XPGECHO"
+# 3. EXPERIMENTAL: shell resilliance setting, this keeps certain values that cause
+#                  completion to not work properly set to their correct values. If
+#                  it is too intrusive then set it to:
+#                  INTRUSIVE  --- DEBUG <- after every single issued command
+#                       ^         SIGCHLD <- every executable return
+#                       |         SIGTERM <- every executable gracefully terminated (not so often)
+#                       |         RETURN  <- only script returns
+#                       v         SIGKILL <- every executable ungracefully terminated (ie, via xkill or 'kill -KILL')
+#              LEAST INTRUSIVE--- ERR <- only after a source/script error
+# dont set -ET while using or else functions traps will overwrite them!
+function __ax_do_resilliance_checks()
+{
+    if declare -pF __ax_disable_resilliance_checks &> /dev/null; then
+        if [[ -v AX_DISABLE_RCHECKS ]]; then
+            unset -f __ax_disable_resilliance_checks
+            unset -f __ax_do_resilliance_checks
+            trap DEBUG
+        fi
+    else
+        function __ax_disable_resilliance_checks()
+        {
+            export AX_DISABLE_RCHECKS=1
+        }
+    fi
+    # WARNING: dont set things that don't affect programmable completion, else the user will
+    #          not have control over their own system, let THEM decide their settings otherwise
+    # TODO: issue warnings maybe instead of setting back settings, or warn then set, or maybe give a choice? gather some intel first..
+    [[ $AX_RCHECK_IFS -ne 0 ]] && unset IFS
+    [[ $AX_RCHECK_GLOBS ]] && {
+        shopt -u nullglob
+        shopt -u dotglob
+        shopt -u globstar
+        shopt -u failglob
+    }
+    [[ $AX_RCHECK_PROGCOMP ]] && { shopt -s progcomp; }
+}
+
+# remove the "[s] for emergency session" keypress checker
+# because the user will be typing after this!
+true debug echo "keyfilter removed"
+trap DEBUG
+
+if ax.config.has no_shell_checking; then
+    true debug echo "no_shell_checking is present, we will not check the shell (default for normal users, ie; non-developers of autox)"
+else
+    [[ -z $AX_RCHECK_SNAME ]] && declare -gx AX_RCHECK_SNAME=DEBUG
+    # TODO: attach a reference for easy access (all read-only references (master-refs) must start with AXM_ instead of AX_!)
+    declare -nrg AXM_RCSN=AX_RCHECK_SNAME
+    true debug echo "attaching shell checks to $AXM_RCSN signals"
+    # DOCUMENTME: AXM_AXR is for preserving $_ across commands
+    trap 'AXM_AXR=$_;__ax_do_resilliance_checks;true nop $AXM_AXR' $AXM_RCSN
+    true debug echo "attachment to $AXM_RCSN complete, use 'trap $AXM_RCSN' to clear trap"
+fi
+
+# TODO: rewrite crash handler code in a child language, like perl or python
+# TODO: remove ax.apport.crash* and move to bootstrap.d/99crashandler.ax
+#if sudo true; then
+#    pushd .
+#    cd /var/crash
+#    ax.apport.crashsummary.parse
+#    popd
+#else
+#    if [[ $(ax.config.get no_sudo_complaints) -eq 1 ]]; then
+#        true debug "no_sudo_complaints set to: true (skip message)"
+#    else
+#        echo "* automatic crash management is off because you cannot run commands as root"
+#        echo ""
+#        echo "  (hint: if this message annoys you, you can set the no_sudo_complaints to 1 using"
+#        echo "   ax.config.set)"
+#        echo ""
+#    fi
+#fi
+
+
+# TODO: MOVEME
+if [[ -r autox ]] && [[ -r bootstrap.d/axmacros.ax ]] && git status --porcelain &> /dev/null; then
+    echo ""
+    echo "\e[0;32mThis copy of autox is a working git repository. You can use git to"
+    echo "update or submit changes for your copy of autox by typing \"git pull\"."
+    echo "please wbe aware that changes submitted must be requested if you do not"
+    echo "have membership of the target repository."
+    echo "For more information, please see <https://osirisgothra.github.io/autox> to"
+    echo "get all the links for the original autox repository!\e[31m"
+    echo ""
+    if [[ `git status --porcelain` == "" ]]; then
+        echo -e "\e[0;34mThis repository \e[1;30m(and any of it's connectable off-sites)\e[0;34m currently posess no changes\e[1;30m.\e[0m"
+    else
+        echo -e "\e[31;1mwarning\e[30m:\t\e[0;31m This repository contains \e[1m`git status --porcelain | grep '.*' -c`\e[0;31m changes\e[1;30m.\e[0;31m"
+        echo -e "\t\tyou may wish to consider using \e[1max.git.out\e[0;31m to publish your changes or if you are non\e[30;1m-\e[0;31mmember and just want"
+        echo -e "\t\tthe updates, use \e[1ax.git.in\e[0;31m to update your local copy and create a request to add your changes"
+        echo -e "\tto the server\e[1;30m.\e[0m"
+    fi
+else
+    true debug echo -e "\e[31;1mdirectory was not an autox git repo (must be autox AND git repo!)\e[0m"
+fi
+
+
+# END OF SCRIPT
+
